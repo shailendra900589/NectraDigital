@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /includes/
+Disallow: /admin/
+Disallow: /process.php
+Disallow: /push-subscribe.php
+Disallow: /assets/uploads/ad_*
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-News
+Allow: /
+
+Sitemap: https://nectradigital.com/sitemap.xml
+Sitemap: https://nectradigital.com/news-sitemap.xml

@@ -1,0 +1,18 @@
+# Uploads (user-generated content)
+assets/uploads/
+
+# Environment & config with secrets
+includes/db.php
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Admin password reset utility
+admin/reset_password.php

@@ -1,0 +1,49 @@
+# ========================================================
+# 1. CORE SECURITY & SETTINGS
+# ========================================================
+Options -Indexes
+DirectoryIndex index.php index.html
+RewriteEngine On
+RewriteBase /nectradigital_final/
+
+# ========================================================
+# 2. SITEMAP, LLMS & RSS REWRITE
+# ========================================================
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+RewriteRule ^llms\.txt$ llms.php [L]
+RewriteRule ^rss\.xml$ rss.php [L]
+RewriteRule ^news-sitemap\.xml$ news-sitemap.php [L]
+RewriteRule ^feed\.json$ json-feed.php [L]
+
+# ========================================================
+# 3. FORCE HTTPS & WWW (DISABLED FOR LOCAL DEV)
+# ========================================================
+# RewriteCond %{HTTPS} off [OR]
+# RewriteCond %{HTTP_HOST} !^www\. [NC]
+# RewriteRule ^(.*)$ https://www.nectradigital.com/$1 [L,R=301]
+
+# ========================================================
+# 4. REMOVE TRAILING SLASH
+# ========================================================
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ /nectradigital_final/$1 [L,R=301]
+
+# ========================================================
+# 5. PRIORITY 1: REAL PAGES (Clean URLs)
+# ========================================================
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+# ========================================================
+# 6. PRIORITY 2: BLOG POSTS (Catch-All)
+# ========================================================
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-zA-Z0-9-]+)$ post.php?slug=$1 [L,QSA]
+
+# ========================================================
+# 7. ERROR PAGES
+# ========================================================
+ErrorDocument 404 /nectradigital_final/404.php
+ErrorDocument 500 /nectradigital_final/index.php

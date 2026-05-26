@@ -1,0 +1,24 @@
+{
+    "name": "Nectra Digital - Software Development Company",
+    "short_name": "Nectra Digital",
+    "description": "Leading software development & digital marketing company in Lucknow. Web development, SEO, AI automation & more.",
+    "start_url": "/nectradigital_final/",
+    "display": "standalone",
+    "background_color": "#0a0a0a",
+    "theme_color": "#00E5FF",
+    "orientation": "any",
+    "categories": ["business", "technology"],
+    "icons": [
+        {
+            "src": "/nectradigital_final/assets/favicon_io/favicon-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/nectradigital_final/assets/images/logo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
