@@ -19,9 +19,9 @@
 -- Current Database: `nectrogl_NectraDigital`
 --
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `nectrogl_NectraDigital` /*!40100 DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci */;
+-- CREATE DATABASE /*!32312 IF NOT EXISTS*/ `nectrogl_NectraDigital` /*!40100 DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci */;
 
-USE `nectrogl_NectraDigital`;
+-- USE `nectrogl_NectraDigital`;
 
 --
 -- Table structure for table `admins`
