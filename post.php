@@ -46,9 +46,10 @@ if (!function_exists('sanitize_post_content')) {
         $html = $safe_preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
         $html = $safe_preg_replace('/<iframe\b[^>]*>.*?<\/iframe>/is', '', $html);
 
-        // Remove mojibake glyphs and common broken emoji strings.
+        // Remove mojibake glyphs and emoji artifacts.
         $html = str_replace(['ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe'], '', $html);
         $html = preg_replace('/[\x{1F7E2}\x{1F449}]/u', '', $html);
+        $html = strip_garbled_tokens($html);
 
         // Remove WhatsApp CTA junk lines inserted in post bodies.
         $html = $safe_preg_replace('/<h[1-6][^>]*>.*?Click\s+Here\s+to.*?(WhatsApp|Talk to Our Experts|Local Sales|Start Your|Business Growth).*?<\/h[1-6]>/is', '', $html);
@@ -76,8 +77,22 @@ if (!function_exists('strip_garbled_tokens')) {
             return $text;
         }
 
-        $text = str_replace(['ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe'], '', $text);
-        $text = preg_replace('/[\x{1F7E2}\x{1F449}]/u', '', $text);
+        // Remove known broken emoji/mixed-encoding tokens.
+        $text = str_replace(
+            ['ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe', 'Ÿ¢', '‘‰'],
+            '',
+            $text
+        );
+
+        // Remove mojibake chunks that start with "ðŸ" and spill into 1-3 chars.
+        $text = preg_replace('/ðŸ[^\s<]{0,3}/u', '', $text);
+
+        // Remove actual emoji if present in proper unicode.
+        $text = preg_replace('/[\x{1F300}-\x{1FAFF}]/u', '', $text);
+        $text = preg_replace('/[\x{2600}-\x{27BF}]/u', '', $text);
+
+        // Normalize extra spaces left by removals.
+        $text = preg_replace('/\s{2,}/', ' ', $text);
         return trim($text);
     }
 }
