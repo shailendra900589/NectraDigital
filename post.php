@@ -25,6 +25,38 @@ if(!defined('SITE_URL')) {
     require_once 'includes/config.php';
 }
 
+if (!function_exists('sanitize_post_content')) {
+    function sanitize_post_content($html) {
+        if (!is_string($html) || $html === '') {
+            return '';
+        }
+
+        // Remove known broken/injected wrapper tags from copied content.
+        $html = preg_replace('/<\/?response-element\b[^>]*>/i', '', $html);
+        $html = preg_replace('/<\/?link-block\b[^>]*>/i', '', $html);
+        $html = preg_replace('/\s(data-hveid|data-path-to-node|data-index-in-node|ng-star-inserted)="[^"]*"/i', '', $html);
+        $html = str_replace(['<!---->', '&nbsp;'], ['', ' '], $html);
+        $html = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $html);
+        $html = preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
+        $html = preg_replace('/<iframe\b[^>]*>.*?<\/iframe>/is', '', $html);
+
+        // Remove mojibake glyphs and common broken emoji strings.
+        $html = str_replace(['ðŸŸ¢', 'Ã°Å¸Å¸Â¢', 'öYYe'], '', $html);
+
+        // Remove WhatsApp CTA junk lines inserted in post bodies.
+        $html = preg_replace('/<h[1-6][^>]*>.*?Click\s+Here\s+to.*?(WhatsApp|Talk to Our Experts|Local Sales|Start Your|Business Growth).*?<\/h[1-6]>/is', '', $html);
+        $html = preg_replace('/<p[^>]*>.*?Click\s+Here\s+to.*?(WhatsApp|Talk to Our Experts|Local Sales|Start Your|Business Growth).*?<\/p>/is', '', $html);
+
+        // Remove invisible control characters which can break mobile rendering.
+        $html = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $html);
+
+        // Avoid broken nested tags causing layout collapse on mobile.
+        $html = preg_replace('/<(h[1-6]|p|div)([^>]*)>\s*<\/\1>/i', '', $html);
+
+        return trim($html);
+    }
+}
+
 // 3. FETCH POST DATA
 if(isset($_GET['slug'])) {
     $slug = clean_input($_GET['slug']);
@@ -264,6 +296,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                                 "\xC3\x82\xC2\xA0"                   => " ",
                             ];
                             $content = str_replace(array_keys($mojibake), array_values($mojibake), $content);
+                            $content = sanitize_post_content($content);
                             
                             ob_start(); get_ad('content', $conn); $ad_html = ob_get_clean();
                             
@@ -305,6 +338,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                                     $img = $row['image'];
                                     if(!empty($img) && strpos($img, 'http') === false) $img = SITE_URL . '/' . ltrim($img, '/');
                                     if(empty($img)) $img = SITE_URL . '/assets/images/logo.png';
+
+                                    $rel_title = str_replace(['ðŸŸ¢', 'Ã°Å¸Å¸Â¢', 'öYYe'], '', $rel_title);
 
                                     echo '
                                     <div class="col-md-6">
