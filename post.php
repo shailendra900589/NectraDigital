@@ -41,7 +41,7 @@ if (!function_exists('sanitize_post_content')) {
         $html = $safe_preg_replace('/<\/?response-element\b[^>]*>/i', '', $html);
         $html = $safe_preg_replace('/<\/?link-block\b[^>]*>/i', '', $html);
         $html = $safe_preg_replace('/\s(data-hveid|data-path-to-node|data-index-in-node|ng-star-inserted)="[^"]*"/i', '', $html);
-        $html = str_replace(['', '&nbsp;'], ['', ' '], $html);
+        $html = str_replace(['<!---->', '&nbsp;'], ['', ' '], $html);
         $html = $safe_preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $html);
         $html = $safe_preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
         $html = $safe_preg_replace('/<iframe\b[^>]*>.*?<\/iframe>/is', '', $html);
@@ -481,65 +481,5 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
         </div>
     </article>
 </main>
-
-<script>
-const canvas = document.getElementById('nectra-canvas');
-const ctx = canvas.getContext('2d');
-let particles = [];
-
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-resize();
-
-class Particle {
-    constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.5;
-        this.size = Math.random() * 2;
-    }
-    update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
-        if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
-    }
-    draw() {
-        ctx.fillStyle = 'rgba(0, 242, 255, 0.5)';
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
-for(let i=0; i<100; i++) particles.push(new Particle());
-
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for(let i=0; i<particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-        for(let j=i; j<particles.length; j++) {
-            const dx = particles[i].x - particles[j].x;
-            const dy = particles[i].y - particles[j].y;
-            const distance = Math.sqrt(dx*dx + dy*dy);
-            if(distance < 100) {
-                ctx.strokeStyle = `rgba(0, 242, 255, ${0.1 - distance/1000})`;
-                ctx.lineWidth = 0.5;
-                ctx.beginPath();
-                ctx.moveTo(particles[i].x, particles[i].y);
-                ctx.lineTo(particles[j].x, particles[j].y);
-                ctx.stroke();
-            }
-        }
-    }
-    requestAnimationFrame(animate);
-}
-animate();
-</script>
 
 <?php include 'includes/footer.php'; ?>
