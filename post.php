@@ -47,7 +47,8 @@ if (!function_exists('sanitize_post_content')) {
         $html = $safe_preg_replace('/<iframe\b[^>]*>.*?<\/iframe>/is', '', $html);
 
         // Remove mojibake glyphs and common broken emoji strings.
-        $html = str_replace(['ðŸŸ¢', 'Ã°Å¸Å¸Â¢', 'öYYe'], '', $html);
+        $html = str_replace(['ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe'], '', $html);
+        $html = preg_replace('/[\x{1F7E2}\x{1F449}]/u', '', $html);
 
         // Remove WhatsApp CTA junk lines inserted in post bodies.
         $html = $safe_preg_replace('/<h[1-6][^>]*>.*?Click\s+Here\s+to.*?(WhatsApp|Talk to Our Experts|Local Sales|Start Your|Business Growth).*?<\/h[1-6]>/is', '', $html);
@@ -66,6 +67,18 @@ if (!function_exists('sanitize_post_content')) {
         }
 
         return $html;
+    }
+}
+
+if (!function_exists('strip_garbled_tokens')) {
+    function strip_garbled_tokens($text) {
+        if (!is_string($text) || $text === '') {
+            return $text;
+        }
+
+        $text = str_replace(['ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe'], '', $text);
+        $text = preg_replace('/[\x{1F7E2}\x{1F449}]/u', '', $text);
+        return trim($text);
     }
 }
 
@@ -92,10 +105,12 @@ $decoded_title = $post['title'];
 while ($decoded_title !== htmlspecialchars_decode($decoded_title, ENT_QUOTES)) {
     $decoded_title = htmlspecialchars_decode($decoded_title, ENT_QUOTES);
 }
+$decoded_title = strip_garbled_tokens($decoded_title);
 $decoded_category = $post['category'];
 while ($decoded_category !== htmlspecialchars_decode($decoded_category, ENT_QUOTES)) {
     $decoded_category = htmlspecialchars_decode($decoded_category, ENT_QUOTES);
 }
+$decoded_category = strip_garbled_tokens($decoded_category);
 
 $page_title = $decoded_title;
 
@@ -105,6 +120,7 @@ if (!empty($post['meta_description'])) {
 } else {
     $page_desc = htmlspecialchars_decode(mb_substr(strip_tags($post['content']), 0, 160), ENT_QUOTES) . "...";
 }
+$page_desc = strip_garbled_tokens($page_desc);
 
 // Clean the title of special characters
 $clean_title = strtolower(preg_replace('/[^a-zA-Z0-9 ]/', '', $decoded_title));
@@ -351,7 +367,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                                     if(!empty($img) && strpos($img, 'http') === false) $img = SITE_URL . '/' . ltrim($img, '/');
                                     if(empty($img)) $img = SITE_URL . '/assets/images/logo.png';
 
-                                    $rel_title = str_replace(['ðŸŸ¢', 'Ã°Å¸Å¸Â¢', 'öYYe'], '', $rel_title);
+                                    $rel_title = strip_garbled_tokens($rel_title);
 
                                     echo '
                                     <div class="col-md-6">
