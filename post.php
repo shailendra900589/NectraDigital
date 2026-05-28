@@ -1,6 +1,28 @@
 <?php 
 // 1. SYSTEM FIXES: BUFFERING & CHARSET
-ob_start();
+if (!function_exists('final_output_cleanup')) {
+    function final_output_cleanup($buffer) {
+        if (!is_string($buffer) || $buffer === '') {
+            return $buffer;
+        }
+
+        // Final output-level cleanup: removes artifacts from any source (content/ad/comment/meta).
+        $tokens = [
+            'ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe',
+            '&#55357;&#56546;', '&#55357;&#56393;', '\\ud83d\\udfe2', '\\ud83d\\udc49'
+        ];
+        $buffer = str_replace($tokens, '', $buffer);
+
+        // Remove common CTA junk line pattern if still present in rendered output.
+        $buffer = preg_replace('/Click\s+Here\s+to\s+(?:Explode|Talk|Start)[^<]{0,200}(?:WhatsApp[^<]{0,120})?/i', '', $buffer);
+        if ($buffer === null) {
+            return str_replace($tokens, '', $buffer);
+        }
+
+        return $buffer;
+    }
+}
+ob_start('final_output_cleanup');
 header('Content-Type: text/html; charset=utf-8');
 
 require_once 'includes/db.php';
