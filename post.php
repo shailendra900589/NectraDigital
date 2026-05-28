@@ -31,29 +31,41 @@ if (!function_exists('sanitize_post_content')) {
             return '';
         }
 
+        $original_html = $html;
+        $safe_preg_replace = function ($pattern, $replacement, $subject) {
+            $result = preg_replace($pattern, $replacement, $subject);
+            return ($result === null) ? $subject : $result;
+        };
+
         // Remove known broken/injected wrapper tags from copied content.
-        $html = preg_replace('/<\/?response-element\b[^>]*>/i', '', $html);
-        $html = preg_replace('/<\/?link-block\b[^>]*>/i', '', $html);
-        $html = preg_replace('/\s(data-hveid|data-path-to-node|data-index-in-node|ng-star-inserted)="[^"]*"/i', '', $html);
+        $html = $safe_preg_replace('/<\/?response-element\b[^>]*>/i', '', $html);
+        $html = $safe_preg_replace('/<\/?link-block\b[^>]*>/i', '', $html);
+        $html = $safe_preg_replace('/\s(data-hveid|data-path-to-node|data-index-in-node|ng-star-inserted)="[^"]*"/i', '', $html);
         $html = str_replace(['<!---->', '&nbsp;'], ['', ' '], $html);
-        $html = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $html);
-        $html = preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
-        $html = preg_replace('/<iframe\b[^>]*>.*?<\/iframe>/is', '', $html);
+        $html = $safe_preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $html);
+        $html = $safe_preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
+        $html = $safe_preg_replace('/<iframe\b[^>]*>.*?<\/iframe>/is', '', $html);
 
         // Remove mojibake glyphs and common broken emoji strings.
         $html = str_replace(['ðŸŸ¢', 'Ã°Å¸Å¸Â¢', 'öYYe'], '', $html);
 
         // Remove WhatsApp CTA junk lines inserted in post bodies.
-        $html = preg_replace('/<h[1-6][^>]*>.*?Click\s+Here\s+to.*?(WhatsApp|Talk to Our Experts|Local Sales|Start Your|Business Growth).*?<\/h[1-6]>/is', '', $html);
-        $html = preg_replace('/<p[^>]*>.*?Click\s+Here\s+to.*?(WhatsApp|Talk to Our Experts|Local Sales|Start Your|Business Growth).*?<\/p>/is', '', $html);
+        $html = $safe_preg_replace('/<h[1-6][^>]*>.*?Click\s+Here\s+to.*?(WhatsApp|Talk to Our Experts|Local Sales|Start Your|Business Growth).*?<\/h[1-6]>/is', '', $html);
+        $html = $safe_preg_replace('/<p[^>]*>.*?Click\s+Here\s+to.*?(WhatsApp|Talk to Our Experts|Local Sales|Start Your|Business Growth).*?<\/p>/is', '', $html);
 
         // Remove invisible control characters which can break mobile rendering.
-        $html = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $html);
+        $html = $safe_preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $html);
 
         // Avoid broken nested tags causing layout collapse on mobile.
-        $html = preg_replace('/<(h[1-6]|p|div)([^>]*)>\s*<\/\1>/i', '', $html);
+        $html = $safe_preg_replace('/<(h[1-6]|p|div)([^>]*)>\s*<\/\1>/i', '', $html);
 
-        return trim($html);
+        $html = trim($html);
+        // Safety fallback: never blank out a valid post body.
+        if ($html === '' && trim(strip_tags($original_html)) !== '') {
+            return $original_html;
+        }
+
+        return $html;
     }
 }
 
