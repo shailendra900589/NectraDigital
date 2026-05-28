@@ -46,10 +46,12 @@ if (!function_exists('sanitize_post_content')) {
         $html = $safe_preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
         $html = $safe_preg_replace('/<iframe\b[^>]*>.*?<\/iframe>/is', '', $html);
 
-        // Remove mojibake glyphs and emoji artifacts.
+        // Remove mojibake glyphs and common broken emoji strings.
         $html = str_replace(['ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe'], '', $html);
-        $html = preg_replace('/[\x{1F7E2}\x{1F449}]/u', '', $html);
-        $html = strip_garbled_tokens($html);
+        $emoji_result = preg_replace('/[\x{1F7E2}\x{1F449}]/u', '', $html);
+        if ($emoji_result !== null) {
+            $html = $emoji_result;
+        }
 
         // Remove WhatsApp CTA junk lines inserted in post bodies.
         $html = $safe_preg_replace('/<h[1-6][^>]*>.*?Click\s+Here\s+to.*?(WhatsApp|Talk to Our Experts|Local Sales|Start Your|Business Growth).*?<\/h[1-6]>/is', '', $html);
@@ -77,39 +79,14 @@ if (!function_exists('strip_garbled_tokens')) {
             return $text;
         }
 
-        // Remove known broken emoji/mixed-encoding tokens.
-        $text = str_replace(
-            [
-                'ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe', 'Ÿ¢', '‘‰',
-                '&#55357;&#56546;', '&#55357;&#56393;', '\\ud83d\\udfe2', '\\ud83d\\udc49'
-            ],
-            '',
-            $text
-        );
+        $safe_u_replace = function ($pattern, $replacement, $subject) {
+            $result = preg_replace($pattern, $replacement, $subject);
+            return ($result === null) ? $subject : $result;
+        };
 
-        // Remove mojibake chunks that start with "ðŸ" and spill into 1-3 chars.
-        $text = preg_replace('/ðŸ[^\s<]{0,3}/u', '', $text);
-        $text = preg_replace('/Ã°[^\\s<]{0,8}/u', '', $text);
-
-        // Remove actual emoji if present in proper unicode.
-        $text = preg_replace('/[\x{1F300}-\x{1FAFF}]/u', '', $text);
-        $text = preg_replace('/[\x{2600}-\x{27BF}]/u', '', $text);
-
-        // Normalize extra spaces left by removals.
-        $text = preg_replace('/\s{2,}/', ' ', $text);
+        $text = str_replace(['ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe'], '', $text);
+        $text = $safe_u_replace('/[\x{1F7E2}\x{1F449}]/u', '', $text);
         return trim($text);
-    }
-}
-
-if (!function_exists('sanitize_fragment_keep_html')) {
-    function sanitize_fragment_keep_html($html) {
-        if (!is_string($html) || $html === '') {
-            return $html;
-        }
-        $clean = strip_garbled_tokens($html);
-        $clean = preg_replace('/(?:\s|&nbsp;)*(?:ðŸŸ¢|ðŸ‘‰|Ã°Å¸Å¸Â¢|Ã°Å¸â€˜â€°|öYYe)+/u', ' ', $clean);
-        $clean = preg_replace('/\s{2,}/', ' ', $clean);
-        return $clean;
     }
 }
 
@@ -260,10 +237,10 @@ function get_ad($placement, $conn) {
                 $ad_img = $ad['image_path'];
                 if(strpos($ad_img, 'http') === false) $ad_img = SITE_URL . '/' . ltrim($ad_img, '/');
                 echo '<a href="'.htmlspecialchars($ad['link']).'" target="_blank" rel="noopener" style="display:block; margin-top:15px;">
-                        <img src="'.htmlspecialchars($ad_img).'" class="img-fluid rounded" alt="'.htmlspecialchars(strip_garbled_tokens($ad['title'])).'">
+                        <img src="'.htmlspecialchars($ad_img).'" class="img-fluid rounded" alt="'.htmlspecialchars($ad['title']).'">
                       </a>';
             } elseif($ad['type'] == 'code' && !empty($ad['ad_code'])) {
-                echo '<div class="ad-code-wrap" style="margin-top:15px;">' . sanitize_fragment_keep_html($ad['ad_code']) . '</div>'; 
+                echo '<div class="ad-code-wrap" style="margin-top:15px;">' . $ad['ad_code'] . '</div>'; 
             }
             echo '</div>';
             return true;
@@ -360,7 +337,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                             ob_start(); get_ad('content', $conn); $ad_html = ob_get_clean();
                             
                             if($ad_html) {
-                                $ad_html = sanitize_fragment_keep_html($ad_html);
                                 $paragraphs = explode('</p>', $content);
                                 if(count($paragraphs) > 2) {
                                     array_splice($paragraphs, 2, 0, $ad_html);
@@ -452,8 +428,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                                              style="width:40px; height:40px; background: #00f2ff;">'.substr($com['name'], 0, 1).'</div>
                                     </div>
                                     <div class="flex-grow-1 ms-3">
-                                        <h6 class="text-white mb-1">'.strip_garbled_tokens($com['name']).'</h6>
-                                        <p class="text-white-50 small mb-0">'.sanitize_fragment_keep_html($com['comment']).'</p>
+                                        <h6 class="text-white mb-1">'.$com['name'].'</h6>
+                                        <p class="text-white-50 small mb-0">'.$com['comment'].'</p>
                                     </div>
                                 </div>';
                             }
