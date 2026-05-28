@@ -1,28 +1,6 @@
 <?php 
 // 1. SYSTEM FIXES: BUFFERING & CHARSET
-if (!function_exists('final_output_cleanup')) {
-    function final_output_cleanup($buffer) {
-        if (!is_string($buffer) || $buffer === '') {
-            return $buffer;
-        }
-
-        // Final output-level cleanup: removes artifacts from any source (content/ad/comment/meta).
-        $tokens = [
-            'ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe',
-            '&#55357;&#56546;', '&#55357;&#56393;', '\\ud83d\\udfe2', '\\ud83d\\udc49'
-        ];
-        $buffer = str_replace($tokens, '', $buffer);
-
-        // Remove common CTA junk line pattern if still present in rendered output.
-        $buffer = preg_replace('/Click\s+Here\s+to\s+(?:Explode|Talk|Start)[^<]{0,200}(?:WhatsApp[^<]{0,120})?/i', '', $buffer);
-        if ($buffer === null) {
-            return str_replace($tokens, '', $buffer);
-        }
-
-        return $buffer;
-    }
-}
-ob_start('final_output_cleanup');
+ob_start();
 header('Content-Type: text/html; charset=utf-8');
 
 require_once 'includes/db.php';
@@ -63,14 +41,25 @@ if (!function_exists('sanitize_post_content')) {
         $html = $safe_preg_replace('/<\/?response-element\b[^>]*>/i', '', $html);
         $html = $safe_preg_replace('/<\/?link-block\b[^>]*>/i', '', $html);
         $html = $safe_preg_replace('/\s(data-hveid|data-path-to-node|data-index-in-node|ng-star-inserted)="[^"]*"/i', '', $html);
-        $html = str_replace(['<!---->', '&nbsp;'], ['', ' '], $html);
+        $html = str_replace(['', '&nbsp;'], ['', ' '], $html);
         $html = $safe_preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $html);
         $html = $safe_preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
         $html = $safe_preg_replace('/<iframe\b[^>]*>.*?<\/iframe>/is', '', $html);
 
-        // Remove mojibake glyphs and common broken emoji strings.
-        $html = str_replace(['ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe'], '', $html);
-        $emoji_result = preg_replace('/[\x{1F7E2}\x{1F449}]/u', '', $html);
+        // FIX: Deep Auto-Restore for Mojibake Icons instead of deleting them
+        $emoji_restore = [
+            'ðŸŸ¢' => '🟢', 
+            'ðŸ‘‰' => '👉', 
+            'Ã°Å¸Å¸Â¢' => '🟢', 
+            'Ã°Å¸â€˜â€°' => '👉', 
+            'öYYe' => '📞',
+            'ðŸ“ž' => '📞',
+            'ðŸš€' => '🚀'
+        ];
+        $html = str_replace(array_keys($emoji_restore), array_values($emoji_restore), $html);
+        
+        // FIX: Changed replacement from '' to '$0' so it PRESERVES valid emojis if they exist!
+        $emoji_result = preg_replace('/[\x{1F7E2}\x{1F449}]/u', '$0', $html);
         if ($emoji_result !== null) {
             $html = $emoji_result;
         }
@@ -106,8 +95,20 @@ if (!function_exists('strip_garbled_tokens')) {
             return ($result === null) ? $subject : $result;
         };
 
-        $text = str_replace(['ðŸŸ¢', 'ðŸ‘‰', 'Ã°Å¸Å¸Â¢', 'Ã°Å¸â€˜â€°', 'öYYe'], '', $text);
-        $text = $safe_u_replace('/[\x{1F7E2}\x{1F449}]/u', '', $text);
+        // FIX: Restore icons in title/seo data as well
+        $emoji_restore = [
+            'ðŸŸ¢' => '🟢', 
+            'ðŸ‘‰' => '👉', 
+            'Ã°Å¸Å¸Â¢' => '🟢', 
+            'Ã°Å¸â€˜â€°' => '👉', 
+            'öYYe' => '📞',
+            'ðŸ“ž' => '📞',
+            'ðŸš€' => '🚀'
+        ];
+        $text = str_replace(array_keys($emoji_restore), array_values($emoji_restore), $text);
+        
+        // FIX: Preserve valid emojis
+        $text = $safe_u_replace('/[\x{1F7E2}\x{1F449}]/u', '$0', $text);
         return trim($text);
     }
 }
@@ -306,7 +307,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
 }
 ?>
 
-
 <main>
     <header class="post-hero-header text-center">
         <div class="container position-relative">
@@ -342,7 +342,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                         <?php 
                             $content = $post['content'];
                             
-                            // 8. ENCODING REPAIR (Mojibake fix via hex byte sequences)
+                            // 8. ENCODING REPAIR (Mojibake fix via hex byte sequences AND Emoji restore)
                             $mojibake = [
                                 "\xC3\xA2\xE2\x82\xAC\xE2\x84\xA2" => "\xE2\x80\x99",
                                 "\xC3\xA2\xE2\x82\xAC\xC5\x93"     => "\xE2\x80\x9C",
@@ -352,6 +352,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                                 "\xC3\xA2\xE2\x82\xAC\xCB\x9C"     => "\xE2\x80\x98",
                                 "\xC3\xA2\xE2\x82\xAC\xC2\xA6"     => "\xE2\x80\xA6",
                                 "\xC3\x82\xC2\xA0"                   => " ",
+                                'ðŸŸ¢'                               => '🟢',
+                                'ðŸ‘‰'                               => '👉',
+                                'ðŸ“ž'                               => '📞',
+                                'ðŸš€'                               => '🚀'
                             ];
                             $content = str_replace(array_keys($mojibake), array_values($mojibake), $content);
                             $content = sanitize_post_content($content);
@@ -403,7 +407,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                                     <div class="col-md-6">
                                         <div class="card h-100 border-secondary bg-transparent overflow-hidden hover-neon-border" style="transition:0.3s;">
                                             <div class="card-img-top-wrapper">
-                                                <img src="'.$img.'" class="w-100 h-100" alt="'.htmlspecialchars($rel_title).'">
+                                                <img src="'.$img.'" class="w-100 h-100 object-fit-cover" alt="'.htmlspecialchars($rel_title).'">
                                             </div>
                                             
                                             <div class="card-body d-flex flex-column justify-content-center" style="background: rgba(20,20,20,0.6);">
@@ -478,5 +482,64 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
     </article>
 </main>
 
+<script>
+const canvas = document.getElementById('nectra-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+class Particle {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.size = Math.random() * 2;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
+    }
+    draw() {
+        ctx.fillStyle = 'rgba(0, 242, 255, 0.5)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+for(let i=0; i<100; i++) particles.push(new Particle());
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for(let i=0; i<particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+        for(let j=i; j<particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            if(distance < 100) {
+                ctx.strokeStyle = `rgba(0, 242, 255, ${0.1 - distance/1000})`;
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.stroke();
+            }
+        }
+    }
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
 
 <?php include 'includes/footer.php'; ?>
