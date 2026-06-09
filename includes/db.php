@@ -4,11 +4,9 @@ $user = "nectrogl_NectraDigital";
 $pass = "9Rahul@1432";
 $dbname = "nectrogl_NectraDigital";
 
-// Production overrides (Hostinger: copy db.local.php.example → db.local.php)
+// Production DB overrides only (Hostinger: copy db.local.php.example → db.local.php)
 if (is_file(__DIR__ . '/db.local.php')) {
     require __DIR__ . '/db.local.php';
-} elseif (is_file(__DIR__ . '/config.local.php')) {
-    require __DIR__ . '/config.local.php';
 }
 
 $conn = new mysqli($host, $user, $pass, $dbname);

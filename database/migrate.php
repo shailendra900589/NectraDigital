@@ -1,14 +1,17 @@
 <?php
 /**
  * Run database migrations (v1 + v2)
+ * CLI: php database/migrate.php
+ * Web: https://www.nectradigital.com/database/migrate.php
  */
 ini_set('display_errors', '1');
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
 
-header('Content-Type: text/plain; charset=utf-8');
+if (php_sapi_name() !== 'cli') {
+    header('Content-Type: text/plain; charset=utf-8');
+}
 
 function run_sql_file(mysqli $conn, string $path): array {
     if (!file_exists($path)) {
@@ -50,4 +53,4 @@ $r2 = run_sql_file($conn, __DIR__ . '/schema-v2.sql');
 
 echo $r1['msg'] . $r2['msg'];
 echo "Total: " . ($r1['ok'] + $r2['ok']) . " ok, " . ($r1['fail'] + $r2['fail']) . " failed\n";
-echo "Admin: " . SITE_URL . "/admin/growth/\n";
+echo "Admin: https://www.nectradigital.com/admin/growth/\n";

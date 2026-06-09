@@ -1,0 +1,5 @@
+<?php
+// Server-only overrides (NOT in git). Copy to config.local.php on Hostinger.
+if (!defined('SITE_URL')) {
+    define('SITE_URL', 'https://www.nectradigital.com');
+}
