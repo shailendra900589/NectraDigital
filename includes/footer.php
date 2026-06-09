@@ -197,12 +197,12 @@ if (file_exists(__DIR__ . '/growth/bootstrap.php')) {
     $nectraChatbotEnabled = ge_setting('chatbot_enabled', '0') === '1';
 }
 ?>
-<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/floating-contact.css">
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/floating-contact.css?v=3">
 <?php if ($nectraChatbotEnabled): ?>
 <script>window.NECTRA_CHATBOT = { apiUrl: '<?php echo SITE_URL; ?>/api/chatbot.php' };</script>
-<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/growth-chatbot.css">
-<script src="<?php echo SITE_URL; ?>/assets/js/growth-chatbot.js"></script>
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/growth-chatbot.css?v=3">
+<script src="<?php echo SITE_URL; ?>/assets/js/growth-chatbot.js?v=3"></script>
 <?php endif; ?>
-<script src="<?php echo SITE_URL; ?>/assets/js/floating-contact.js"></script>
+<script src="<?php echo SITE_URL; ?>/assets/js/floating-contact.js?v=3"></script>
 </body>
 </html>
