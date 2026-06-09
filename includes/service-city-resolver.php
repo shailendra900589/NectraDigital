@@ -14,7 +14,7 @@ function ge_service_slug_from_url_prefix(string $prefix): ?string
         }
     }
 
-    if (file_exists(__DIR__ . '/growth/bootstrap.php')) {
+    if (is_file(__DIR__ . '/db.local.php') && file_exists(__DIR__ . '/growth/bootstrap.php')) {
         require_once __DIR__ . '/growth/bootstrap.php';
         if (function_exists('ge_is_ready') && ge_is_ready()) {
             $db = ge_conn();
@@ -52,6 +52,24 @@ function ge_parse_service_city_slug(string $slug): ?array
         'city' => $cities[$citySlug],
         'landing_page' => null,
     ];
+}
+
+function ge_dedupe_faqs(array $faqs): array
+{
+    $seen = [];
+    $out = [];
+    foreach ($faqs as $faq) {
+        if (empty($faq['q'])) {
+            continue;
+        }
+        $key = strtolower(trim($faq['q']));
+        if (isset($seen[$key])) {
+            continue;
+        }
+        $seen[$key] = true;
+        $out[] = $faq;
+    }
+    return $out;
 }
 
 function ge_city_faqs_for_service(array $service, array $city, string $citySlug): array
@@ -174,6 +192,7 @@ function ge_resolve_service_city_page(string $slug): ?array
             $faqs = array_merge($dbFaqs, $faqs);
         }
     }
+    $faqs = ge_dedupe_faqs($faqs);
 
     return [
         'service_slug' => $serviceSlug,

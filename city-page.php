@@ -75,7 +75,7 @@ output_faq_schema($city_faqs);
                         <div class="p-4 border border-secondary rounded bg-glass h-100 hover-effect">
                             <i class="fas <?php echo $s['icon']; ?> text-neon fa-2x mb-3"></i>
                             <h3 class="text-white h6"><?php echo htmlspecialchars(($s['silo'] ?? $s['h1']) . ' in ' . $city_name); ?></h3>
-                            <p class="text-white-50 small mb-0"><?php echo htmlspecialchars(mb_substr($s['intro'], 0, 120)); ?>...</p>
+                            <p class="text-white-50 small mb-0"><?php echo htmlspecialchars(mb_substr($s['intro'] ?? '', 0, 120)); ?>...</p>
                         </div>
                     </a>
                 </div>
@@ -86,7 +86,7 @@ output_faq_schema($city_faqs);
 
     <section class="py-5 bg-darker border-top border-secondary">
         <div class="container">
-            <div class="row align-items-center">
+            <div class="row align-items-center g-4">
                 <div class="col-lg-6 mb-4 mb-lg-0">
                     <h2 class="text-white h3 mb-4">Why <?php echo htmlspecialchars($city_name); ?> Businesses Choose Nectra Digital</h2>
                     <ul class="list-unstyled text-white-50">
@@ -114,6 +114,27 @@ output_faq_schema($city_faqs);
                 <?php foreach ($cities as $slug => $c): if ($slug === $city_slug) continue; ?>
                 <a href="/digital-agency-<?php echo $slug; ?>" class="badge bg-dark border border-secondary text-white-50 p-2 text-decoration-none hover-effect"><?php echo htmlspecialchars($c['name']); ?></a>
                 <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 border-top border-secondary">
+        <div class="container">
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-6">
+                    <h2 class="text-white h3 mb-3">Get a Free Audit in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h2>
+                    <p class="text-white-50 mb-0">Tell us about your business in <?php echo htmlspecialchars($city_name); ?> — we will share a tailored SEO and digital marketing plan with clear next steps.</p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="p-4 border border-secondary rounded bg-glass">
+                        <?php
+                        $form_service = 'Digital Marketing';
+                        $form_city = $city_name;
+                        $form_instance = 'city-hub';
+                        include __DIR__ . '/includes/partials/contact-form-inline.php';
+                        ?>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

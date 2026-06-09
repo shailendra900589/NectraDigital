@@ -79,11 +79,6 @@ class Keyword extends BaseModel
         return [implode(' AND ', $where), $types, $params];
     }
 
-    public static function countAll(): int
-    {
-        return self::count();
-    }
-
     public static function find(int $id): ?array
     {
         return self::fetchOne("SELECT * FROM ge_keywords WHERE id = ? LIMIT 1", 'i', [$id]);

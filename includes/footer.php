@@ -192,9 +192,13 @@ $footer_cities = array_slice(get_cities_data(), 0, 8, true);
 </style>
 <?php
 $nectraChatbotEnabled = false;
-if (file_exists(__DIR__ . '/growth/bootstrap.php')) {
-    require_once __DIR__ . '/growth/bootstrap.php';
-    $nectraChatbotEnabled = ge_setting('chatbot_enabled', '0') === '1';
+try {
+    if (is_file(__DIR__ . '/db.local.php') && file_exists(__DIR__ . '/growth/bootstrap.php')) {
+        require_once __DIR__ . '/growth/bootstrap.php';
+        $nectraChatbotEnabled = ge_setting('chatbot_enabled', '0') === '1';
+    }
+} catch (\Throwable $e) {
+    $nectraChatbotEnabled = false;
 }
 ?>
 <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/floating-contact.css?v=3">

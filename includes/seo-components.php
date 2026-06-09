@@ -294,20 +294,31 @@ function ge_service_city_landing_url(string $service_slug, string $city_slug, ?s
         require_once __DIR__ . '/growth/helpers.php';
     }
 
+    static $prefixByService = [];
+    static $publishedByService = [];
+
     if ($url_prefix === null) {
-        $url_prefix = ge_static_service_url_prefix($service_slug);
-        if (file_exists(__DIR__ . '/growth/bootstrap.php')) {
-            require_once __DIR__ . '/growth/bootstrap.php';
-            if (ge_is_ready()) {
-                $geService = \Growth\Models\Service::findBySlug($service_slug);
-                if ($geService) {
-                    $url_prefix = $geService['url_prefix'];
-                    $published = \Growth\Models\LandingPage::citySlugMapByService((int)$geService['id']);
-                    if (isset($published[$city_slug])) {
-                        return '/' . $published[$city_slug];
+        if (!isset($prefixByService[$service_slug])) {
+            $prefixByService[$service_slug] = ge_static_service_url_prefix($service_slug);
+            try {
+                if (is_file(__DIR__ . '/db.local.php') && file_exists(__DIR__ . '/growth/bootstrap.php')) {
+                    require_once __DIR__ . '/growth/bootstrap.php';
+                    if (function_exists('ge_is_ready') && ge_is_ready()) {
+                        $geService = \Growth\Models\Service::findBySlug($service_slug);
+                        if ($geService) {
+                            $prefixByService[$service_slug] = $geService['url_prefix'];
+                            $publishedByService[$service_slug] = \Growth\Models\LandingPage::citySlugMapByService((int)$geService['id']);
+                        }
                     }
                 }
+            } catch (\Throwable $e) {
+                // Static slug fallback below
             }
+        }
+
+        $url_prefix = $prefixByService[$service_slug];
+        if (!empty($publishedByService[$service_slug][$city_slug])) {
+            return '/' . $publishedByService[$service_slug][$city_slug];
         }
     }
 
