@@ -24,6 +24,16 @@ if ($serviceCityCtx) {
 if (ge_is_ready()) {
     $page = LandingPage::findBySlug($slug);
     if ($page) {
+        $industryId = (int)($page['industry_id'] ?? 0);
+        $pageType = $page['page_type'] ?? 'service_city';
+        if ($industryId === 0 && $pageType !== 'service_city_industry') {
+            $retryCtx = ge_resolve_service_city_page($slug);
+            if ($retryCtx) {
+                extract($retryCtx, EXTR_SKIP);
+                require __DIR__ . '/includes/service-template.php';
+                exit;
+            }
+        }
         require __DIR__ . '/landing.php';
         exit;
     }

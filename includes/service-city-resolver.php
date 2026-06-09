@@ -5,6 +5,53 @@
 require_once __DIR__ . '/seo-data.php';
 require_once __DIR__ . '/text-utils.php';
 require_once __DIR__ . '/growth/helpers.php';
+require_once __DIR__ . '/service-content.php';
+
+function ge_city_from_slug(string $citySlug): ?array
+{
+    $cities = get_cities_data();
+    if (isset($cities[$citySlug])) {
+        return $cities[$citySlug];
+    }
+
+    if (is_file(__DIR__ . '/db.local.php') && file_exists(__DIR__ . '/growth/bootstrap.php')) {
+        require_once __DIR__ . '/growth/bootstrap.php';
+        if (function_exists('ge_is_ready') && ge_is_ready()) {
+            $row = \Growth\Models\City::findBySlug($citySlug);
+            if ($row) {
+                return [
+                    'name' => $row['name'],
+                    'state' => $row['state'] ?? '',
+                    'is_hq' => !empty($row['is_hq']),
+                    'city_description' => $row['city_description'] ?? '',
+                ];
+            }
+        }
+    }
+
+    return null;
+}
+
+function ge_service_base_data(string $serviceSlug, ?array $geServiceRecord = null): ?array
+{
+    $services = get_services_data();
+    if (isset($services[$serviceSlug])) {
+        return $services[$serviceSlug];
+    }
+
+    if ($geServiceRecord === null && is_file(__DIR__ . '/db.local.php') && file_exists(__DIR__ . '/growth/bootstrap.php')) {
+        require_once __DIR__ . '/growth/bootstrap.php';
+        if (function_exists('ge_is_ready') && ge_is_ready()) {
+            $geServiceRecord = \Growth\Models\Service::findBySlug($serviceSlug);
+        }
+    }
+
+    if ($geServiceRecord) {
+        return ge_minimal_service_from_record($geServiceRecord);
+    }
+
+    return null;
+}
 
 function ge_service_slug_from_url_prefix(string $prefix): ?string
 {
@@ -40,16 +87,16 @@ function ge_parse_service_city_slug(string $slug): ?array
 
     $serviceSlug = ge_service_slug_from_url_prefix($m[1]);
     $citySlug = $m[2];
-    $cities = get_cities_data();
+    $city = ge_city_from_slug($citySlug);
 
-    if (!$serviceSlug || !isset($cities[$citySlug])) {
+    if (!$serviceSlug || !$city) {
         return null;
     }
 
     return [
         'service_slug' => $serviceSlug,
         'city_slug' => $citySlug,
-        'city' => $cities[$citySlug],
+        'city' => $city,
         'landing_page' => null,
     ];
 }
@@ -114,14 +161,15 @@ function ge_resolve_service_city_page(string $slug): ?array
     $serviceSlug = null;
     $citySlug = null;
     $city = null;
+    $geServiceRecord = null;
 
     if (is_file(__DIR__ . '/db.local.php') && file_exists(__DIR__ . '/growth/bootstrap.php')) {
         require_once __DIR__ . '/growth/bootstrap.php';
         if (function_exists('ge_is_ready') && ge_is_ready()) {
             $landing = \Growth\Models\LandingPage::findBySlug($slug);
             if ($landing) {
-                $geService = \Growth\Models\Service::find((int)$landing['service_id']);
-                $serviceSlug = $geService['slug'] ?? ge_service_slug_from_url_prefix($landing['url_prefix'] ?? '');
+                $geServiceRecord = \Growth\Models\Service::find((int)$landing['service_id']);
+                $serviceSlug = $geServiceRecord['slug'] ?? ge_service_slug_from_url_prefix($landing['url_prefix'] ?? '');
                 $citySlug = $landing['city_slug'] ?? null;
                 if (!$citySlug && !empty($landing['city_name'])) {
                     foreach (get_cities_data() as $cs => $c) {
@@ -129,6 +177,12 @@ function ge_resolve_service_city_page(string $slug): ?array
                             $citySlug = $cs;
                             break;
                         }
+                    }
+                }
+                if (!$citySlug && !empty($landing['city_id'])) {
+                    $cityRow = \Growth\Models\City::find((int)$landing['city_id']);
+                    if ($cityRow) {
+                        $citySlug = $cityRow['slug'];
                     }
                 }
             }
@@ -154,21 +208,28 @@ function ge_resolve_service_city_page(string $slug): ?array
         return null;
     }
 
-    $services = get_services_data();
-    if (!isset($services[$serviceSlug])) {
+    if (!$geServiceRecord && is_file(__DIR__ . '/db.local.php') && file_exists(__DIR__ . '/growth/bootstrap.php')) {
+        if (!function_exists('ge_is_ready')) {
+            require_once __DIR__ . '/growth/bootstrap.php';
+        }
+        if (function_exists('ge_is_ready') && ge_is_ready()) {
+            $geServiceRecord = \Growth\Models\Service::findBySlug($serviceSlug);
+        }
+    }
+
+    $serviceBase = ge_service_base_data($serviceSlug, $geServiceRecord);
+    if (!$serviceBase) {
         return null;
     }
 
     if (!$city) {
-        $cities = get_cities_data();
-        if (!isset($cities[$citySlug])) {
+        $city = ge_city_from_slug($citySlug);
+        if (!$city) {
             return null;
         }
-        $city = $cities[$citySlug];
     }
 
-    require_once __DIR__ . '/service-content.php';
-    $service = get_service_extended($serviceSlug, $services[$serviceSlug]);
+    $service = get_service_extended($serviceSlug, $serviceBase);
     $cityName = $city['name'];
     $cityState = $city['state'] ?? '';
     $silo = $service['silo'] ?? $service['h1'];

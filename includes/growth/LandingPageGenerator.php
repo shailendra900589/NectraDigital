@@ -236,6 +236,26 @@ class LandingPageGenerator
         return self::generateBulk($serviceIds, $cityIds, $industryIds, $regenerate);
     }
 
+    /** Generate only missing service × city pages (skips existing). */
+    public static function generateMissing(bool $includeIndustries = false): array
+    {
+        return self::generateFullMatrix($includeIndustries, false);
+    }
+
+    /** Auto-generate all city pages for one service (e.g. after admin create). */
+    public static function generateForService(int $serviceId, bool $regenerate = false): array
+    {
+        $cityIds = array_column(City::all(true), 'id');
+        return self::generateBulk([$serviceId], $cityIds, [0], $regenerate);
+    }
+
+    /** Auto-generate all service pages for one city (e.g. after admin create). */
+    public static function generateForCity(int $cityId, bool $regenerate = false): array
+    {
+        $serviceIds = array_column(Service::all(true), 'id');
+        return self::generateBulk($serviceIds, [$cityId], [0], $regenerate);
+    }
+
     public static function queueBatch(array $serviceIds, array $cityIds, array $industryIds, int $jobId = 0): int
     {
         if (!ge_table_exists('ge_generation_queue')) {

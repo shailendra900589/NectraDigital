@@ -67,6 +67,21 @@ output_faq_schema($city_faqs);
             <div class="row g-4">
                 <?php
                 $all_services = get_services_data();
+                if (is_file(__DIR__ . '/includes/db.local.php') && file_exists(__DIR__ . '/includes/growth/bootstrap.php')) {
+                    try {
+                        require_once __DIR__ . '/includes/growth/bootstrap.php';
+                        if (function_exists('ge_is_ready') && ge_is_ready()) {
+                            require_once __DIR__ . '/includes/service-content.php';
+                            foreach (\Growth\Models\Service::all(true) as $dbSvc) {
+                                if (!isset($all_services[$dbSvc['slug']])) {
+                                    $all_services[$dbSvc['slug']] = ge_minimal_service_from_record($dbSvc);
+                                }
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                        // static catalog only
+                    }
+                }
                 foreach ($all_services as $slug => $s):
                     $serviceHref = ge_service_city_landing_url($slug, $city_slug);
                 ?>

@@ -2,6 +2,7 @@
 /**
  * Extended service page content — merged with get_services_data()
  */
+require_once __DIR__ . '/growth/helpers.php';
 
 function get_service_extended(string $slug, array $service): array {
     $defaults = service_content_defaults($slug, $service);
@@ -260,5 +261,28 @@ function service_content_overrides(): array {
                 ['icon' => 'fa-exchange-alt', 'title' => 'Platform Migration', 'desc' => 'Zero-downtime migrations with SEO preservation.'],
             ],
         ],
+    ];
+}
+
+/**
+ * Build minimal service array for admin/DB-only services not in seo-data.php.
+ */
+function ge_minimal_service_from_record(array $record): array
+{
+    $name = trim($record['name'] ?? 'Digital Service');
+    $slug = $record['slug'] ?? ge_slugify($name);
+    $faqs = ge_json_decode($record['faq_template'] ?? '[]');
+
+    return [
+        'silo' => $name,
+        'h1' => 'Best ' . $name,
+        'title' => 'Best ' . $name . ' | Nectra Digital',
+        'meta_desc' => trim($record['meta_description_template'] ?? '') ?: ('Professional ' . $name . ' by Nectra Digital — expert delivery and measurable ROI.'),
+        'intro' => 'Expert ' . strtolower($name) . ' with data-driven strategy, transparent reporting, and proven results for growing businesses.',
+        'icon' => 'fa-rocket',
+        'keywords' => $record['keywords_template'] ?? '',
+        'features' => [],
+        'faqs' => is_array($faqs) ? $faqs : [],
+        'slug' => $slug,
     ];
 }

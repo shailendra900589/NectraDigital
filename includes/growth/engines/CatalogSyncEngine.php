@@ -6,17 +6,26 @@ use Growth\Models\Service;
 
 class CatalogSyncEngine
 {
-    public static function syncAll(): array
+    public static function syncAll(bool $autoGeneratePages = false): array
     {
         if (!ge_is_ready()) {
             return ['services' => 0, 'cities' => 0, 'errors' => ['Growth tables not ready']];
         }
 
-        return [
+        $result = [
             'services' => self::syncServices(),
             'cities' => self::syncCities(),
             'errors' => [],
         ];
+
+        if ($autoGeneratePages) {
+            require_once __DIR__ . '/../LandingPageGenerator.php';
+            $gen = \Growth\LandingPageGenerator::generateMissing();
+            $result['pages_created'] = max(0, ($gen['processed'] ?? 0) - ($gen['skipped'] ?? 0));
+            $result['pages_skipped'] = (int)($gen['skipped'] ?? 0);
+        }
+
+        return $result;
     }
 
     public static function syncServices(): int

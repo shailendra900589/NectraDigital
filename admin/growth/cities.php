@@ -2,6 +2,8 @@
 require_once __DIR__ . '/init.php';
 
 use Growth\Models\City;
+use Growth\Models\Service;
+use Growth\LandingPageGenerator;
 
 $action = $_GET['action'] ?? 'list';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -23,8 +25,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         City::update($id, $data);
         ge_admin_flash('success', 'City updated.');
     } else {
-        City::create($data);
-        ge_admin_flash('success', 'City created.');
+        $newId = City::create($data);
+        if (($data['status'] ?? 'active') === 'active' && ge_is_ready() && Service::count(true) > 0) {
+            set_time_limit(600);
+            $gen = LandingPageGenerator::generateForCity($newId, false);
+            $created = max(0, ($gen['processed'] ?? 0) - ($gen['skipped'] ?? 0));
+            ge_admin_flash('success', "City created. Auto-generated {$created} complete service landing pages.");
+        } else {
+            ge_admin_flash('success', 'City created.');
+        }
     }
     header('Location: cities.php');
     exit;
@@ -40,13 +49,14 @@ if ($action === 'delete' && $id) {
 if ($action === 'import' && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['bulk_cities'])) {
     $lines = explode("\n", $_POST['bulk_cities']);
     $imported = 0;
+    $newCityIds = [];
     foreach ($lines as $line) {
         $line = trim($line);
         if (!$line) continue;
         $parts = array_map('trim', explode(',', $line));
         $name = $parts[0] ?? '';
         if (!$name) continue;
-        City::create([
+        $newCityIds[] = City::create([
             'name' => $name,
             'slug' => ge_slugify($name),
             'state' => $parts[1] ?? '',
@@ -57,7 +67,17 @@ if ($action === 'import' && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_PO
         ]);
         $imported++;
     }
-    ge_admin_flash('success', "Imported {$imported} cities.");
+    if ($imported > 0 && ge_is_ready() && Service::count(true) > 0) {
+        set_time_limit(900);
+        $totalCreated = 0;
+        foreach ($newCityIds as $cid) {
+            $gen = LandingPageGenerator::generateForCity((int)$cid, false);
+            $totalCreated += max(0, ($gen['processed'] ?? 0) - ($gen['skipped'] ?? 0));
+        }
+        ge_admin_flash('success', "Imported {$imported} cities. Auto-generated {$totalCreated} landing pages.");
+    } else {
+        ge_admin_flash('success', "Imported {$imported} cities.");
+    }
     header('Location: cities.php');
     exit;
 }

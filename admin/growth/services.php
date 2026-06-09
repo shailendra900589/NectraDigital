@@ -21,8 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (($action === 'sync_catalog') || !empty($_POST['sync_catalog'])) {
-        $sync = CatalogSyncEngine::syncAll();
-        ge_admin_flash('success', "Synced {$sync['services']} services and {$sync['cities']} cities from website catalog.");
+        set_time_limit(600);
+        $sync = CatalogSyncEngine::syncAll(true);
+        $created = (int)($sync['pages_created'] ?? 0);
+        $msg = "Synced {$sync['services']} services and {$sync['cities']} cities from website catalog.";
+        if ($created > 0) {
+            $msg .= " Auto-generated {$created} new landing pages.";
+        }
+        ge_admin_flash('success', $msg);
         header('Location: services.php');
         exit;
     }
@@ -81,8 +87,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         Service::update($id, $data);
         ge_admin_flash('success', 'Service updated.');
     } else {
-        Service::create($data);
-        ge_admin_flash('success', 'Service created.');
+        $newId = Service::create($data);
+        if (($data['status'] ?? 'active') === 'active') {
+            set_time_limit(600);
+            $gen = LandingPageGenerator::generateForService($newId, false);
+            $created = max(0, ($gen['processed'] ?? 0) - ($gen['skipped'] ?? 0));
+            ge_admin_flash('success', "Service created. Auto-generated {$created} complete city landing pages.");
+        } else {
+            ge_admin_flash('success', 'Service created.');
+        }
     }
     header('Location: services.php');
     exit;
@@ -140,7 +153,7 @@ if ($action === 'add' || ($action === 'edit' && $item)):
                 </div>
                 <button type="button" class="btn btn-sm btn-outline-secondary mt-1" onclick="addFaqRow()">+ Add FAQ</button>
             </div>
-            <div class="col-12"><button type="submit" class="btn btn-ge-primary">Save Service</button><a href="services.php" class="btn btn-outline-secondary ms-2">Cancel</a></div>
+            <div class="col-12"><button type="submit" class="btn btn-ge-primary">Save Service</button><a href="services.php" class="btn btn-outline-secondary ms-2">Cancel</a><?php if ($action === 'add'): ?><p class="text-muted small mt-2 mb-0"><i class="fas fa-magic me-1"></i> Saving an active service auto-generates complete SEO landing pages for all cities.</p><?php endif; ?></div>
         </div>
     </form>
 </div>

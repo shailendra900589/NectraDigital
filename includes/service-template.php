@@ -11,16 +11,34 @@ if (!isset($service_slug)) {
     exit;
 }
 
-$services = get_services_data();
-if (!isset($services[$service_slug])) {
-    header('Location: /404.php');
-    exit;
-}
-
-$service = get_service_extended($service_slug, $services[$service_slug]);
 $is_city_page = !empty($is_city_page);
 
+if (empty($service) || !is_array($service) || !isset($service['process'])) {
+    $services = get_services_data();
+    $serviceBase = $services[$service_slug] ?? null;
+
+    if ($serviceBase === null) {
+        if (is_file(__DIR__ . '/db.local.php') && file_exists(__DIR__ . '/growth/bootstrap.php')) {
+            require_once __DIR__ . '/growth/bootstrap.php';
+            if (function_exists('ge_is_ready') && ge_is_ready()) {
+                $dbService = \Growth\Models\Service::findBySlug($service_slug);
+                if ($dbService) {
+                    $serviceBase = ge_minimal_service_from_record($dbService);
+                }
+            }
+        }
+    }
+
+    if ($serviceBase === null) {
+        header('Location: /404.php');
+        exit;
+    }
+
+    $service = get_service_extended($service_slug, $serviceBase);
+}
+
 if ($is_city_page) {
+    $services = get_services_data();
     $service['h1'] = $localized_h1 ?? $service['h1'];
     $service['intro'] = $localized_intro ?? $service['intro'];
     $page_title = $page_title ?? $service['title'];
@@ -33,10 +51,11 @@ if ($is_city_page) {
     $city_quick_answer = $quick_answer ?? $service['intro'];
     $form_service = ($service['silo'] ?? $service['h1']) . ' — ' . ($city_name ?? '');
     $form_city = $city_name ?? '';
+    $parentServiceLabel = $services[$service_slug]['h1'] ?? ($service['silo'] ?? $service['h1']);
     $breadcrumbs = [
         ['name' => 'Home', 'url' => SITE_URL . '/'],
         ['name' => 'Services', 'url' => SITE_URL . '/services'],
-        ['name' => $services[$service_slug]['h1'] ?? $service['silo'], 'url' => SITE_URL . '/' . $service_slug],
+        ['name' => $parentServiceLabel, 'url' => SITE_URL . '/' . $service_slug],
         ['name' => $city_name ?? 'Location', 'url' => SITE_URL . ge_service_city_landing_url($service_slug, $city_slug ?? '')],
     ];
 } else {
