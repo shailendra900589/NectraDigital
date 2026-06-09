@@ -35,6 +35,7 @@ $nectra_current_meta = $nectra_langs[$nectra_current] ?? $nectra_langs['en'];
                         data-lang="<?php echo htmlspecialchars($code); ?>"
                         aria-selected="<?php echo $code === $nectra_current ? 'true' : 'false'; ?>">
                     <span class="nectra-lang-flag" aria-hidden="true"><?php echo $meta['flag']; ?></span>
+                    <span class="nectra-lang-code notranslate"><?php echo htmlspecialchars($meta['code'] ?? strtoupper(substr($code, 0, 2))); ?></span>
                     <span class="nectra-lang-names">
                         <span class="nectra-lang-native"><?php echo htmlspecialchars($meta['native']); ?></span>
                         <span class="nectra-lang-label"><?php echo htmlspecialchars($meta['label']); ?></span>

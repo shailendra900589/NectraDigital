@@ -10,26 +10,26 @@ define('NECTRA_I18N_LOADED', true);
 function nectra_supported_languages(): array
 {
     return [
-        'en'    => ['label' => 'English',   'native' => 'English',    'flag' => '🇬🇧', 'hreflang' => 'en-IN'],
-        'hi'    => ['label' => 'Hindi',     'native' => 'हिन्दी',      'flag' => '🇮🇳', 'hreflang' => 'hi-IN'],
-        'bn'    => ['label' => 'Bengali',   'native' => 'বাংলা',       'flag' => '🇮🇳', 'hreflang' => 'bn-IN'],
-        'ta'    => ['label' => 'Tamil',     'native' => 'தமிழ்',       'flag' => '🇮🇳', 'hreflang' => 'ta-IN'],
-        'te'    => ['label' => 'Telugu',    'native' => 'తెలుగు',      'flag' => '🇮🇳', 'hreflang' => 'te-IN'],
-        'mr'    => ['label' => 'Marathi',   'native' => 'मराठी',       'flag' => '🇮🇳', 'hreflang' => 'mr-IN'],
-        'gu'    => ['label' => 'Gujarati',  'native' => 'ગુજરાતી',     'flag' => '🇮🇳', 'hreflang' => 'gu-IN'],
-        'kn'    => ['label' => 'Kannada',   'native' => 'ಕನ್ನಡ',       'flag' => '🇮🇳', 'hreflang' => 'kn-IN'],
-        'ml'    => ['label' => 'Malayalam', 'native' => 'മലയാളം',      'flag' => '🇮🇳', 'hreflang' => 'ml-IN'],
-        'pa'    => ['label' => 'Punjabi',   'native' => 'ਪੰਜਾਬੀ',      'flag' => '🇮🇳', 'hreflang' => 'pa-IN'],
-        'or'    => ['label' => 'Odia',      'native' => 'ଓଡ଼ିଆ',       'flag' => '🇮🇳', 'hreflang' => 'or-IN'],
-        'as'    => ['label' => 'Assamese',  'native' => 'অসমীয়া',     'flag' => '🇮🇳', 'hreflang' => 'as-IN'],
-        'ur'    => ['label' => 'Urdu',      'native' => 'اردو',        'flag' => '🇮🇳', 'hreflang' => 'ur-IN'],
-        'ar'    => ['label' => 'Arabic',    'native' => 'العربية',     'flag' => '🇸🇦', 'hreflang' => 'ar'],
-        'fr'    => ['label' => 'French',    'native' => 'Français',   'flag' => '🇫🇷', 'hreflang' => 'fr'],
-        'de'    => ['label' => 'German',    'native' => 'Deutsch',    'flag' => '🇩🇪', 'hreflang' => 'de'],
-        'es'    => ['label' => 'Spanish',   'native' => 'Español',    'flag' => '🇪🇸', 'hreflang' => 'es'],
-        'zh-CN' => ['label' => 'Chinese',   'native' => '中文',        'flag' => '🇨🇳', 'hreflang' => 'zh-CN'],
-        'ja'    => ['label' => 'Japanese',  'native' => '日本語',      'flag' => '🇯🇵', 'hreflang' => 'ja'],
-        'ko'    => ['label' => 'Korean',    'native' => '한국어',       'flag' => '🇰🇷', 'hreflang' => 'ko'],
+        'en'    => ['label' => 'English',   'native' => 'English',    'flag' => '🇬🇧', 'code' => 'GB', 'hreflang' => 'en-IN'],
+        'hi'    => ['label' => 'Hindi',     'native' => 'हिन्दी',      'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'hi-IN'],
+        'bn'    => ['label' => 'Bengali',   'native' => 'বাংলা',       'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'bn-IN'],
+        'ta'    => ['label' => 'Tamil',     'native' => 'தமிழ்',       'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'ta-IN'],
+        'te'    => ['label' => 'Telugu',    'native' => 'తెలుగు',      'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'te-IN'],
+        'mr'    => ['label' => 'Marathi',   'native' => 'मराठी',       'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'mr-IN'],
+        'gu'    => ['label' => 'Gujarati',  'native' => 'ગુજરાતી',     'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'gu-IN'],
+        'kn'    => ['label' => 'Kannada',   'native' => 'ಕನ್ನಡ',       'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'kn-IN'],
+        'ml'    => ['label' => 'Malayalam', 'native' => 'മലയാളം',      'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'ml-IN'],
+        'pa'    => ['label' => 'Punjabi',   'native' => 'ਪੰਜਾਬੀ',      'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'pa-IN'],
+        'or'    => ['label' => 'Odia',      'native' => 'ଓଡ଼ିଆ',       'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'or-IN'],
+        'as'    => ['label' => 'Assamese',  'native' => 'অসমীয়া',     'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'as-IN'],
+        'ur'    => ['label' => 'Urdu',      'native' => 'اردو',        'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'ur-IN', 'rtl' => true],
+        'ar'    => ['label' => 'Arabic',    'native' => 'العربية',     'flag' => '🇸🇦', 'code' => 'SA', 'hreflang' => 'ar', 'rtl' => true],
+        'fr'    => ['label' => 'French',    'native' => 'Français',   'flag' => '🇫🇷', 'code' => 'FR', 'hreflang' => 'fr'],
+        'de'    => ['label' => 'German',    'native' => 'Deutsch',    'flag' => '🇩🇪', 'code' => 'DE', 'hreflang' => 'de'],
+        'es'    => ['label' => 'Spanish',   'native' => 'Español',    'flag' => '🇪🇸', 'code' => 'ES', 'hreflang' => 'es'],
+        'zh-CN' => ['label' => 'Chinese',   'native' => '中文',        'flag' => '🇨🇳', 'code' => 'CN', 'hreflang' => 'zh-CN'],
+        'ja'    => ['label' => 'Japanese',  'native' => '日本語',      'flag' => '🇯🇵', 'code' => 'JP', 'hreflang' => 'ja'],
+        'ko'    => ['label' => 'Korean',    'native' => '한국어',       'flag' => '🇰🇷', 'code' => 'KR', 'hreflang' => 'ko'],
     ];
 }
 
@@ -38,13 +38,60 @@ function nectra_translate_language_codes(): string
     return implode(',', array_keys(nectra_supported_languages()));
 }
 
+function nectra_is_rtl_lang(string $lang): bool
+{
+    $supported = nectra_supported_languages();
+    return !empty($supported[$lang]['rtl']);
+}
+
+/** Apply ?lang= from URL to cookies before HTML output (full-page Google Translate). */
+function nectra_handle_lang_request(): void
+{
+    if (php_sapi_name() === 'cli' || headers_sent()) {
+        return;
+    }
+
+    $supported = nectra_supported_languages();
+    $lang = isset($_GET['lang']) ? trim((string)$_GET['lang']) : '';
+
+    if ($lang === '' || !isset($supported[$lang])) {
+        return;
+    }
+
+    $expires = time() + 365 * 86400;
+    $cookieOpts = [
+        'expires'  => $expires,
+        'path'     => '/',
+        'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+        'httponly' => false,
+        'samesite' => 'Lax',
+    ];
+
+    setcookie('nectra_lang', $lang, $cookieOpts);
+    $_COOKIE['nectra_lang'] = $lang;
+
+    if ($lang === 'en') {
+        setcookie('googtrans', '', ['expires' => time() - 3600, 'path' => '/']);
+        unset($_COOKIE['googtrans']);
+    } else {
+        setcookie('googtrans', '/en/' . $lang, $cookieOpts);
+        $_COOKIE['googtrans'] = '/en/' . $lang;
+    }
+}
+
 function nectra_get_user_lang(): string
 {
     $supported = nectra_supported_languages();
+
+    if (!empty($_GET['lang']) && isset($supported[$_GET['lang']])) {
+        return (string)$_GET['lang'];
+    }
+
     $cookie = $_COOKIE['nectra_lang'] ?? '';
     if (isset($supported[$cookie])) {
         return $cookie;
     }
+
     if (!empty($_COOKIE['googtrans'])) {
         $parts = explode('/', trim($_COOKIE['googtrans'], '/'));
         $code = end($parts);
@@ -52,13 +99,73 @@ function nectra_get_user_lang(): string
             return $code;
         }
     }
+
     return 'en';
 }
 
 function nectra_html_lang(): string
 {
     $lang = nectra_get_user_lang();
-    return $lang === 'zh-CN' ? 'zh-Hans' : str_replace('_', '-', explode('-', $lang)[0]);
+    if ($lang === 'zh-CN') {
+        return 'zh-Hans';
+    }
+    return str_replace('_', '-', explode('-', $lang)[0]);
+}
+
+function nectra_html_dir(): string
+{
+    return nectra_is_rtl_lang(nectra_get_user_lang()) ? 'rtl' : 'ltr';
+}
+
+/** Build localized URL (?lang=) for hreflang / IndexNow / sitemap. */
+function nectra_lang_url(string $baseUrl, string $langCode): string
+{
+    $baseUrl = rtrim($baseUrl, '/');
+    if ($langCode === 'en') {
+        return $baseUrl;
+    }
+    $parts = parse_url($baseUrl);
+    $path = $parts['path'] ?? '';
+    $query = [];
+    if (!empty($parts['query'])) {
+        parse_str($parts['query'], $query);
+    }
+    $query['lang'] = $langCode;
+    $qs = http_build_query($query);
+    $scheme = $parts['scheme'] ?? 'https';
+    $host = $parts['host'] ?? '';
+    $port = isset($parts['port']) ? ':' . $parts['port'] : '';
+    return $scheme . '://' . $host . $port . $path . '?' . $qs;
+}
+
+function nectra_language_url_variants(string $url): array
+{
+    if (nectra_skip_i18n_url($url)) {
+        return [$url];
+    }
+
+    $urls = [];
+    foreach (nectra_supported_languages() as $code => $meta) {
+        $urls[] = nectra_lang_url($url, $code);
+    }
+    return array_values(array_unique($urls));
+}
+
+function nectra_expand_urls_for_languages(array $urls): array
+{
+    $expanded = [];
+    foreach ($urls as $url) {
+        $expanded = array_merge($expanded, nectra_language_url_variants($url));
+    }
+    return array_values(array_unique($expanded));
+}
+
+function nectra_skip_i18n_url(string $url): bool
+{
+    return (bool)preg_match(
+        '#/(api/|admin/|assets/|cron/|database/|tools/.*\.(xml|txt|json)|rss\.xml|atom\.xml|discover-feed\.xml|news-sitemap\.xml|sitemap\.xml|llms\.txt)#i',
+        $url
+    );
 }
 
 function nectra_translate_api_enabled(): bool
@@ -86,7 +193,7 @@ function nectra_translate_text($text, string $target, string $source = 'en')
     if (!nectra_translate_api_enabled()) {
         return null;
     }
-    if ($target === $source || $target === 'en' && $source === 'en') {
+    if ($target === $source || ($target === 'en' && $source === 'en')) {
         return $text;
     }
 
@@ -171,26 +278,29 @@ function nectra_output_hreflang_tags(string $canonicalUrl): void
 {
     $supported = nectra_supported_languages();
     $base = rtrim($canonicalUrl, '/');
+
     echo '<link rel="alternate" hreflang="x-default" href="' . htmlspecialchars($base) . '" />' . "\n";
-    echo '<link rel="alternate" hreflang="en-IN" href="' . htmlspecialchars($base) . '" />' . "\n";
+
     foreach ($supported as $code => $meta) {
-        if ($code === 'en') {
-            continue;
-        }
         $hl = $meta['hreflang'] ?? $code;
-        echo '<link rel="alternate" hreflang="' . htmlspecialchars($hl) . '" href="' . htmlspecialchars($base) . '?lang=' . htmlspecialchars($code) . '" />' . "\n";
+        $href = nectra_lang_url($base, $code);
+        echo '<link rel="alternate" hreflang="' . htmlspecialchars($hl) . '" href="' . htmlspecialchars($href) . '" />' . "\n";
     }
 }
 
 function nectra_i18n_config_js(): array
 {
+    $lang = nectra_get_user_lang();
     return [
-        'cookieName'   => 'nectra_lang',
-        'defaultLang'  => 'en',
-        'currentLang'  => nectra_get_user_lang(),
-        'apiUrl'       => (defined('SITE_URL') ? SITE_URL : '') . '/api/translate',
-        'apiEnabled'   => nectra_translate_api_enabled(),
-        'languages'    => nectra_supported_languages(),
-        'includedCodes'=> nectra_translate_language_codes(),
+        'cookieName'    => 'nectra_lang',
+        'defaultLang'   => 'en',
+        'currentLang'   => $lang,
+        'googtrans'     => $lang !== 'en' ? '/en/' . $lang : '',
+        'apiUrl'        => (defined('SITE_URL') ? SITE_URL : '') . '/api/translate',
+        'apiEnabled'    => nectra_translate_api_enabled(),
+        'languages'     => nectra_supported_languages(),
+        'includedCodes' => nectra_translate_language_codes(),
     ];
 }
+
+nectra_handle_lang_request();

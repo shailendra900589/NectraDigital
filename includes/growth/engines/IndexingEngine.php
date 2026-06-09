@@ -75,6 +75,8 @@ class IndexingEngine
     /** Submit one or many URLs via IndexNow to all enabled endpoints. */
     public static function submitIndexNow(array $urls): array
     {
+        require_once __DIR__ . '/../../i18n.php';
+        $urls = nectra_expand_urls_for_languages($urls);
         $urls = array_values(array_unique(array_filter($urls)));
         if (empty($urls)) {
             return ['ok' => false, 'message' => 'No URLs provided', 'engines' => []];
@@ -82,35 +84,55 @@ class IndexingEngine
 
         $key = self::apiKey();
         $host = self::host();
-        $payload = json_encode([
-            'host' => $host,
-            'key' => $key,
-            'keyLocation' => self::keyFileUrl(),
-            'urlList' => array_slice($urls, 0, 10000),
-        ]);
-
         $results = [];
-        foreach (self::INDEXNOW_ENDPOINTS as $name => $endpoint) {
-            if (!self::isEngineEnabled($name)) {
-                $results[$name] = ['skipped' => true];
-                continue;
-            }
-            $results[$name] = self::httpPost($endpoint, $payload, ['Content-Type: application/json; charset=utf-8']);
-        }
-
-        // DuckDuckGo participates in IndexNow via Bing — log separately for dashboard clarity
-        if (self::isEngineEnabled('duckduckgo')) {
-            $results['duckduckgo'] = $results['bing'] ?? ['note' => 'Uses IndexNow via Bing network'];
-        }
-
         $ok = false;
-        foreach ($results as $r) {
-            if (!empty($r['ok'])) {
+        $submitted = 0;
+        $batches = 0;
+
+        foreach (array_chunk($urls, 10000) as $chunk) {
+            $payload = json_encode([
+                'host' => $host,
+                'key' => $key,
+                'keyLocation' => self::keyFileUrl(),
+                'urlList' => $chunk,
+            ]);
+
+            $batchResults = [];
+            foreach (self::INDEXNOW_ENDPOINTS as $name => $endpoint) {
+                if (!self::isEngineEnabled($name)) {
+                    $batchResults[$name] = ['skipped' => true];
+                    continue;
+                }
+                $batchResults[$name] = self::httpPost($endpoint, $payload, ['Content-Type: application/json; charset=utf-8']);
+            }
+
+            if (self::isEngineEnabled('duckduckgo')) {
+                $batchResults['duckduckgo'] = $batchResults['bing'] ?? ['note' => 'Uses IndexNow via Bing network'];
+            }
+
+            $batchOk = false;
+            foreach ($batchResults as $r) {
+                if (!empty($r['ok'])) {
+                    $batchOk = true;
+                }
+            }
+
+            if ($batchOk) {
+                $submitted += count($chunk);
                 $ok = true;
             }
+
+            $results = $batchResults;
+            $batches++;
         }
 
-        return ['ok' => $ok, 'urls' => count($urls), 'engines' => $results];
+        return [
+            'ok' => $ok,
+            'urls' => count($urls),
+            'urls_submitted' => $submitted,
+            'batches' => $batches,
+            'engines' => $results,
+        ];
     }
 
     /** Ping sitemap to Google and Bing webmaster endpoints. */
@@ -232,6 +254,8 @@ class IndexingEngine
         }
 
         $urls = array_values(array_unique(array_filter($urls)));
+        require_once __DIR__ . '/../../i18n.php';
+        $expandedTotal = count(nectra_expand_urls_for_languages($urls));
         if (empty($urls)) {
             return ['ok' => false, 'message' => 'No URLs to submit', 'urls_total' => 0];
         }
@@ -240,11 +264,11 @@ class IndexingEngine
         $batchCount = 0;
         $lastBatch = ['ok' => false];
 
-        foreach (array_chunk($urls, 10000) as $chunk) {
+        foreach (array_chunk($urls, 500) as $chunk) {
             $lastBatch = self::submitIndexNow($chunk);
             $batchCount++;
             if (!empty($lastBatch['ok'])) {
-                $submitted += count($chunk);
+                $submitted += (int)($lastBatch['urls_submitted'] ?? count($chunk));
             }
         }
 
@@ -256,11 +280,12 @@ class IndexingEngine
 
         return [
             'ok' => $submitted > 0,
-            'urls_total' => count($urls),
+            'urls_total' => $expandedTotal,
             'urls_submitted' => $submitted,
             'batches' => $batchCount,
             'indexnow' => $lastBatch,
             'sitemap' => $sitemap,
+            'i18n' => true,
         ];
     }
 
@@ -323,10 +348,13 @@ class IndexingEngine
             : "status='published'";
         $res = $db->query("SELECT id, slug FROM ge_landing_pages WHERE {$where} ORDER BY id ASC LIMIT " . (int)$limit);
         $queued = 0;
+        require_once __DIR__ . '/../../i18n.php';
         if ($res) {
             while ($row = $res->fetch_assoc()) {
-                if (IndexingQueue::enqueueUnique(SITE_URL . '/' . $row['slug'], (int)$row['id'])) {
-                    $queued++;
+                foreach (nectra_language_url_variants(SITE_URL . '/' . $row['slug']) as $variant) {
+                    if (IndexingQueue::enqueueUnique($variant, (int)$row['id'])) {
+                        $queued++;
+                    }
                 }
             }
         }
@@ -347,10 +375,13 @@ class IndexingEngine
 
         $base = rtrim(SITE_URL, '/');
         require_once __DIR__ . '/../../seo-data.php';
+        require_once __DIR__ . '/../../i18n.php';
         $hubsQueued = 0;
         foreach (array_keys(get_cities_data()) as $citySlug) {
-            if (IndexingQueue::enqueueUnique($base . '/digital-agency-' . $citySlug, 0)) {
-                $hubsQueued++;
+            foreach (nectra_language_url_variants($base . '/digital-agency-' . $citySlug) as $variant) {
+                if (IndexingQueue::enqueueUnique($variant, 0)) {
+                    $hubsQueued++;
+                }
             }
         }
 

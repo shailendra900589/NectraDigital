@@ -60,6 +60,9 @@ class DiscoveryEngine
         if (ge_setting('auto_index_queue', '1') !== '1') {
             return;
         }
-        IndexingQueue::enqueue($url, $landingPageId);
+        require_once __DIR__ . '/../../i18n.php';
+        foreach (nectra_language_url_variants($url) as $variant) {
+            IndexingQueue::enqueue($variant, $landingPageId);
+        }
     }
 }

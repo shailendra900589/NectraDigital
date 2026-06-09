@@ -6,7 +6,6 @@
     var DEFAULT = cfg.defaultLang || 'en';
     var languages = cfg.languages || {};
     var widgetReady = false;
-    var pendingLang = null;
 
     function getCookie(name) {
         var match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)'));
@@ -26,24 +25,39 @@
     }
 
     function getSavedLang() {
+        var params = new URLSearchParams(location.search);
+        var fromUrl = params.get('lang');
+        if (fromUrl && languages[fromUrl]) return fromUrl;
+
         try {
             var stored = localStorage.getItem(COOKIE);
             if (stored && languages[stored]) return stored;
         } catch (e) {}
+
         var fromCookie = getCookie(COOKIE);
         if (fromCookie && languages[fromCookie]) return fromCookie;
+
         var goog = getCookie('googtrans');
         if (goog) {
             var parts = goog.split('/').filter(Boolean);
             var code = parts[parts.length - 1];
             if (languages[code]) return code;
         }
-        return DEFAULT;
+
+        return cfg.currentLang || DEFAULT;
     }
 
     function saveLang(code) {
         setCookie(COOKIE, code, 365);
         try { localStorage.setItem(COOKIE, code); } catch (e) {}
+    }
+
+    function setGoogtransCookie(code) {
+        if (code === DEFAULT) {
+            clearCookie('googtrans');
+            return;
+        }
+        setCookie('googtrans', '/en/' + code, 365);
     }
 
     function showToast(msg) {
@@ -60,6 +74,41 @@
         el._timer = setTimeout(function () { el.classList.remove('is-visible'); }, 2600);
     }
 
+    function buildLangUrl(code) {
+        var url = new URL(location.href);
+        if (code === DEFAULT) {
+            url.searchParams.delete('lang');
+        } else {
+            url.searchParams.set('lang', code);
+        }
+        return url.pathname + url.search + url.hash;
+    }
+
+    function navigateToLanguage(code, fromUser) {
+        if (!languages[code]) code = DEFAULT;
+
+        saveLang(code);
+        setGoogtransCookie(code);
+
+        if (fromUser) {
+            var native = (languages[code] && languages[code].native) || code;
+            showToast(code === DEFAULT ? 'English' : native);
+        }
+
+        var target = buildLangUrl(code);
+        if (location.pathname + location.search + location.hash !== target) {
+            location.href = target;
+            return;
+        }
+
+        if (code === DEFAULT) {
+            location.reload();
+            return;
+        }
+
+        ensureFullPageTranslation(code, 0);
+    }
+
     function getTranslateSelect() {
         return document.querySelector('select.goog-te-combo');
     }
@@ -67,44 +116,43 @@
     function triggerWidget(langCode) {
         var select = getTranslateSelect();
         if (!select) return false;
-        if (langCode === DEFAULT) {
-            clearCookie('googtrans');
-            saveLang(DEFAULT);
-            location.reload();
-            return true;
+        if (langCode === DEFAULT) return false;
+        if (select.value !== langCode) {
+            select.value = langCode;
         }
-        select.value = langCode;
         select.dispatchEvent(new Event('change'));
-        setCookie('googtrans', '/en/' + langCode, 365);
-        saveLang(langCode);
         return true;
     }
 
-    function applyLanguage(langCode, fromUser) {
-        if (!languages[langCode]) langCode = DEFAULT;
-
-        if (langCode === DEFAULT) {
-            if (getCookie('googtrans')) {
-                clearCookie('googtrans');
-                saveLang(DEFAULT);
-                location.reload();
-            }
-            updateActiveUI(langCode);
-            return;
-        }
-
-        if (!widgetReady) {
-            pendingLang = langCode;
-            return;
-        }
+    function ensureFullPageTranslation(langCode, attempt) {
+        if (langCode === DEFAULT) return;
 
         if (triggerWidget(langCode)) {
-            updateActiveUI(langCode);
-            if (fromUser) {
-                var native = (languages[langCode] && languages[langCode].native) || langCode;
-                showToast('Language: ' + native);
-            }
+            document.documentElement.classList.add('nectra-translated');
+            document.body.classList.add('nectra-translated', 'nectra-lang-' + langCode);
+            observeDynamicContent(langCode);
+            return;
         }
+
+        if (attempt < 30) {
+            setTimeout(function () { ensureFullPageTranslation(langCode, attempt + 1); }, 200);
+        }
+    }
+
+    var observerStarted = false;
+    function observeDynamicContent(langCode) {
+        if (observerStarted || langCode === DEFAULT) return;
+        observerStarted = true;
+
+        var debounce;
+        var observer = new MutationObserver(function () {
+            clearTimeout(debounce);
+            debounce = setTimeout(function () {
+                triggerWidget(langCode);
+            }, 400);
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
     function updateActiveUI(code) {
@@ -180,13 +228,14 @@
             search.addEventListener('input', function () {
                 filterLanguages(search.value);
             });
+            search.addEventListener('click', function (e) { e.stopPropagation(); });
         }
 
         root.querySelectorAll('.nectra-lang-option').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var code = btn.getAttribute('data-lang');
                 closeMenus();
-                applyLanguage(code, true);
+                navigateToLanguage(code, true);
             });
         });
     }
@@ -200,7 +249,8 @@
 
         var floatBtn = document.getElementById('nectraLangFloatBtn');
         if (floatBtn) {
-            floatBtn.addEventListener('click', function () {
+            floatBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
                 var navSwitcher = document.getElementById('nectraLangSwitcher');
                 if (navSwitcher) toggleMenu(navSwitcher);
             });
@@ -213,6 +263,7 @@
         if (!window.google || !google.translate || !google.translate.TranslateElement) {
             return;
         }
+
         new google.translate.TranslateElement({
             pageLanguage: 'en',
             includedLanguages: cfg.includedCodes || 'en,hi',
@@ -224,18 +275,14 @@
         widgetReady = true;
 
         var saved = getSavedLang();
-        if (pendingLang) {
-            applyLanguage(pendingLang, false);
-            pendingLang = null;
-        } else if (saved && saved !== DEFAULT && !getCookie('googtrans')) {
-            applyLanguage(saved, false);
-        } else {
-            updateActiveUI(saved);
+        if (saved && saved !== DEFAULT) {
+            ensureFullPageTranslation(saved, 0);
         }
+        updateActiveUI(saved);
     };
 
     window.NectraTranslate = {
-        setLanguage: function (code) { applyLanguage(code, true); },
+        setLanguage: function (code) { navigateToLanguage(code, true); },
         getLanguage: getSavedLang,
         translateViaApi: function (text, target) {
             if (!cfg.apiEnabled || !cfg.apiUrl) {
@@ -249,21 +296,13 @@
         }
     };
 
+    if (cfg.googtrans && cfg.currentLang && cfg.currentLang !== DEFAULT) {
+        setGoogtransCookie(cfg.currentLang);
+    }
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initSwitchers);
     } else {
         initSwitchers();
-    }
-
-    var params = new URLSearchParams(location.search);
-    var langParam = params.get('lang');
-    if (langParam && languages[langParam]) {
-        saveLang(langParam);
-        if (langParam !== DEFAULT) {
-            pendingLang = langParam;
-        }
-        params.delete('lang');
-        var clean = location.pathname + (params.toString() ? '?' + params.toString() : '');
-        history.replaceState(null, '', clean);
     }
 })();

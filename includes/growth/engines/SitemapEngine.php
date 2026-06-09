@@ -7,9 +7,11 @@ class SitemapEngine
 {
     public static function generateXml(): string
     {
+        require_once __DIR__ . '/../../i18n.php';
+
         $base = SITE_URL;
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' . "\n";
 
         $static = [
             '' => '1.0', 'services' => '0.9', 'about' => '0.8', 'contact' => '0.8',
@@ -60,6 +62,15 @@ class SitemapEngine
 
     private static function urlEntry(string $loc, string $lastmod, string $freq, string $priority): string
     {
-        return "  <url><loc>" . htmlspecialchars($loc) . "</loc><lastmod>{$lastmod}</lastmod><changefreq>{$freq}</changefreq><priority>{$priority}</priority></url>\n";
+        $entry = "  <url><loc>" . htmlspecialchars($loc) . "</loc><lastmod>{$lastmod}</lastmod><changefreq>{$freq}</changefreq><priority>{$priority}</priority>";
+        if (function_exists('nectra_supported_languages')) {
+            foreach (nectra_supported_languages() as $code => $meta) {
+                $href = nectra_lang_url($loc, $code);
+                $hl = htmlspecialchars($meta['hreflang'] ?? $code);
+                $entry .= '<xhtml:link rel="alternate" hreflang="' . $hl . '" href="' . htmlspecialchars($href) . '"/>';
+            }
+            $entry .= '<xhtml:link rel="alternate" hreflang="x-default" href="' . htmlspecialchars($loc) . '"/>';
+        }
+        return $entry . "</url>\n";
     }
 }

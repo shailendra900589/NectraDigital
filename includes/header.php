@@ -7,6 +7,8 @@ require_once __DIR__ . '/i18n.php';
 
 global $page_title, $page_desc, $page_img, $page_keys, $noindex, $og_type, $page_schema, $canonical_url;
 
+$nectra_lang = nectra_get_user_lang();
+
 $request_uri = strtok($_SERVER["REQUEST_URI"] ?? '/', '?');
 $clean_uri = str_replace('.php', '', $request_uri); 
 if (!empty($canonical_url)) {
@@ -14,6 +16,8 @@ if (!empty($canonical_url)) {
 } else {
     $final_url = trim(SITE_URL . $clean_uri, '/'); 
 }
+
+$canonical_href = nectra_lang_url($final_url, $nectra_lang);
 
 $default_title = "Best SEO & Digital Marketing in India | Nectra Digital";
 $default_desc  = "Best SEO company in India — search engine optimization, AI automation, digital marketing & software development. 200+ projects. Free audit.";
@@ -44,14 +48,14 @@ $meta_keys = (!empty($page_keys)) ? $page_keys : "SEO Company India, Best SEO Co
 $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo htmlspecialchars(nectra_html_lang()); ?>">
+<html lang="<?php echo htmlspecialchars(nectra_html_lang()); ?>" dir="<?php echo nectra_html_dir(); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title><?php echo nectra_display_text($meta_title); ?></title>
     <meta name="description" content="<?php echo nectra_display_text($meta_desc); ?>">
-    <link rel="canonical" href="<?php echo htmlspecialchars($final_url); ?>">
+    <link rel="canonical" href="<?php echo htmlspecialchars($canonical_href); ?>">
     <?php nectra_output_hreflang_tags($final_url); ?>
     <meta name="keywords" content="<?php echo htmlspecialchars($meta_keys); ?>">
     <meta name="author" content="<?php echo FOUNDER_NAME; ?>">
@@ -84,14 +88,20 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css">
-    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/i18n.css?v=1">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/i18n.css?v=2">
     <script>window.NectraI18n = <?php echo json_encode(nectra_i18n_config_js(), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP); ?>;</script>
+    <?php if ($nectra_lang !== 'en'): ?>
+    <script>
+    (function(l){document.cookie='googtrans='+encodeURIComponent('/en/'+l)+';path=/;max-age=31536000;SameSite=Lax';document.cookie='nectra_lang='+encodeURIComponent(l)+';path=/;max-age=31536000;SameSite=Lax';})(<?php echo json_encode($nectra_lang); ?>);
+    </script>
+    <?php endif; ?>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     
     <meta property="og:site_name" content="<?php echo $site_name_safe; ?>" />
     <meta property="og:type" content="<?php echo $meta_og_type; ?>" />
     <meta property="og:title" content="<?php echo nectra_display_text($meta_title); ?>" />
     <meta property="og:description" content="<?php echo nectra_display_text($meta_desc); ?>" />
-    <meta property="og:url" content="<?php echo htmlspecialchars($final_url); ?>" />
+    <meta property="og:url" content="<?php echo htmlspecialchars($canonical_href); ?>" />
     <meta property="og:image" content="<?php echo htmlspecialchars($meta_img); ?>" />
     <meta property="og:image:alt" content="<?php echo $site_name_safe; ?> - SEO & Digital Marketing Agency India" />
     <meta property="og:locale" content="en_IN" />
@@ -137,7 +147,7 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     </script>
     <?php endif; ?>
 </head>
-<body>
+<body<?php echo $nectra_lang !== 'en' ? ' class="nectra-translated nectra-lang-' . htmlspecialchars($nectra_lang) . '"' : ''; ?>>
 
 <div id="particles-js"></div>
 
