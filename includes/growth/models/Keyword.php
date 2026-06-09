@@ -34,8 +34,9 @@ class Keyword extends BaseModel
 
         $r = ge_conn()->query("SHOW COLUMNS FROM ge_keywords LIKE 'industry_id'");
         if ($r && $r->num_rows > 0) {
+            // industry_id is NOT NULL DEFAULT 0 — do not use NULLIF (0 must stay 0, not NULL)
             $sql = "INSERT INTO ge_keywords (keyword, keyword_type, service_id, city_id, industry_id, landing_page_id, is_auto_generated, status)
-                    VALUES (?, ?, NULLIF(?, 0), NULLIF(?, 0), NULLIF(?, 0), NULLIF(?, 0), ?, ?)";
+                    VALUES (?, ?, NULLIF(?, 0), NULLIF(?, 0), ?, NULLIF(?, 0), ?, ?)";
             self::execute($sql, 'ssiiiiis', [
                 $data['keyword'],
                 $data['keyword_type'] ?? 'primary',
