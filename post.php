@@ -194,7 +194,7 @@ function get_ad($placement, $conn)
     }
 
     $placement = $conn->real_escape_string($placement);
-    $sql = "SELECT * FROM ads WHERE placement='$placement' AND status='active' ORDER BY RAND() LIMIT 1";
+    $sql = "SELECT * FROM ads WHERE placement='$placement' AND (status='active' OR status IS NULL OR status='') ORDER BY RAND() LIMIT 1";
     $res = $conn->query($sql);
     if ($res && $res->num_rows > 0) {
         render_ad_unit($res->fetch_assoc(), 'banner');
@@ -203,32 +203,105 @@ function get_ad($placement, $conn)
     return false;
 }
 
-function render_sidebar_ads($conn, int $limit = 50): int
+function get_active_ads(mysqli $conn, array $placements, int $limit, array $excludeIds = []): array
+{
+    if ($limit <= 0) {
+        return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($placements), '?'));
+    $types = str_repeat('s', count($placements));
+    $params = $placements;
+
+    $excludeSql = '';
+    if (!empty($excludeIds)) {
+        $excludeIds = array_map('intval', $excludeIds);
+        $excludeSql = ' AND id NOT IN (' . implode(',', $excludeIds) . ')';
+    }
+
+    $sql = "SELECT * FROM ads
+            WHERE (status = 'active' OR status IS NULL OR status = '')
+            AND placement IN ($placeholders)
+            $excludeSql
+            ORDER BY id DESC
+            LIMIT " . (int)$limit;
+
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        return [];
+    }
+
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    $ads = [];
+    while ($row = $res->fetch_assoc()) {
+        $ads[] = $row;
+    }
+    return $ads;
+}
+
+function build_sidebar_ad_slots(mysqli $conn, int $target = 10, int $minimum = 7): array
+{
+    $target = max($minimum, min(10, $target));
+    $minimum = max(1, min($minimum, $target));
+
+    $ads = get_active_ads($conn, ['sidebar'], $target);
+    $usedIds = array_column($ads, 'id');
+
+    if (count($ads) < $target) {
+        $more = get_active_ads($conn, ['header', 'content'], $target - count($ads), $usedIds);
+        foreach ($more as $ad) {
+            $ads[] = $ad;
+            $usedIds[] = $ad['id'];
+        }
+    }
+
+    if (count($ads) < $target) {
+        $more = get_active_ads($conn, ['sidebar', 'header', 'content'], $target - count($ads), $usedIds);
+        foreach ($more as $ad) {
+            $ads[] = $ad;
+            $usedIds[] = $ad['id'];
+        }
+    }
+
+    if (count($ads) > 0 && count($ads) < $minimum) {
+        $pool = $ads;
+        $i = 0;
+        while (count($ads) < $minimum) {
+            $ads[] = $pool[$i % count($pool)];
+            $i++;
+        }
+    }
+
+    return array_slice($ads, 0, $target);
+}
+
+function render_sidebar_ads($conn, int $target = 10): int
 {
     $check = $conn->query("SHOW TABLES LIKE 'ads'");
     if (!$check || $check->num_rows === 0) {
         return 0;
     }
 
-    $limit = max(1, min(50, $limit));
-    $sql = "SELECT * FROM ads WHERE placement='sidebar' AND status='active' ORDER BY id DESC LIMIT " . (int)$limit;
-    $res = $conn->query($sql);
-    if (!$res || $res->num_rows === 0) {
+    $ads = build_sidebar_ad_slots($conn, $target, 7);
+    if (empty($ads)) {
         return 0;
     }
 
     echo '<div class="sidebar-ad-stack">';
-    while ($ad = $res->fetch_assoc()) {
+    foreach ($ads as $ad) {
         render_ad_unit($ad, 'sidebar');
     }
     echo '</div>';
 
-    return $res->num_rows;
+    return count($ads);
 }
 
 $check_tables = $conn->query("SHOW TABLES LIKE 'ads'");
 if($check_tables && $check_tables->num_rows > 0) {
-    $check_sidebar = $conn->query("SELECT id FROM ads WHERE placement='sidebar' AND status='active'");
+    $check_sidebar = $conn->query("SELECT id FROM ads WHERE (status='active' OR status IS NULL OR status='')");
     $has_sidebar = ($check_sidebar && $check_sidebar->num_rows > 0);
 } else {
     $has_sidebar = false;
@@ -302,6 +375,19 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
         transform: scale(1.02);
     }
     .sidebar-ad-stack { display: flex; flex-direction: column; gap: 1.25rem; width: 100%; }
+    .sidebar-ad-panel {
+        max-height: calc(100vh - 140px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 242, 255, 0.35) transparent;
+    }
+    .sidebar-ad-panel::-webkit-scrollbar { width: 5px; }
+    .sidebar-ad-panel::-webkit-scrollbar-thumb {
+        background: rgba(0, 242, 255, 0.35);
+        border-radius: 4px;
+    }
     .sidebar-ad-card { position: relative; background: rgba(12, 12, 12, 0.95) !important; }
     .sidebar-ad-badge {
         position: absolute; top: 8px; left: 8px; z-index: 2;
@@ -463,10 +549,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
 
                 <?php if($has_sidebar): ?>
                 <div class="col-lg-4 mt-5 mt-lg-0 ps-lg-5">
-                    <div class="sticky-top" style="top: 120px;">
+                    <div class="sidebar-ad-panel sticky-top" style="top: 120px;">
                         <div class="mb-4">
                             <h6 class="text-white-50 text-uppercase small mb-3 border-bottom border-secondary pb-2 text-center">Sponsored Intel</h6>
-                            <?php render_sidebar_ads($conn); ?>
+                            <?php render_sidebar_ads($conn, 10); ?>
                         </div>
                     </div>
                 </div>

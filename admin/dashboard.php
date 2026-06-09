@@ -294,7 +294,7 @@ if (isset($_POST['update_hire_status'])) {
             }
 
             if (!isset($upload) || isset($upload['success'])) {
-                $conn->query("INSERT INTO ads (title, type, placement, image_path, ad_code, link) VALUES ('$title', '$type', '$placement', '$img_path', '$code', '$link')");
+                $conn->query("INSERT INTO ads (title, type, placement, image_path, ad_code, link, status) VALUES ('$title', '$type', '$placement', '$img_path', '$code', '$link', 'active')");
                 echo "<div class='alert alert-success'>Ad Campaign Launched!</div>";
             }
         }
@@ -303,7 +303,7 @@ if (isset($_POST['update_hire_status'])) {
         
         echo "<div class='card p-4 mb-4'>
             <h5>Create New Ad Unit</h5>
-            <p class='text-muted small mb-3'>Tip: Create multiple ads with placement <strong>Sidebar</strong> — all active sidebar ads appear as stacked cards on blog posts.</p>
+            <p class='text-muted small mb-3'>Tip: Sidebar shows up to <strong>10 ad cards</strong> on blog posts (sidebar ads first, then header/content ads if needed). Set placement <strong>Sidebar</strong> for priority.</p>
             <form method='POST' enctype='multipart/form-data'>
                 <div class='row g-3'>
                     <div class='col-md-4'><input type='text' name='title' class='form-control' placeholder='Ad Name' required></div>
