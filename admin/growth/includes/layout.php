@@ -46,7 +46,7 @@ function ge_admin_layout_start(string $title, string $activePage = ''): void {
     <title><?php echo ge_admin_page_title($title); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/growth-admin.css?v=2">
+    <link rel="stylesheet" href="../../assets/css/growth-admin.css?v=3">
     <?php require_once __DIR__ . '/../../../includes/ckeditor.php'; nectra_ckeditor_styles(); ?>
 </head>
 <body class="ge-admin">

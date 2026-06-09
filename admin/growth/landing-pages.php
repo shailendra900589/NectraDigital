@@ -69,11 +69,11 @@ ge_admin_layout_start('Landing Pages', 'landing');
 </div>
 
 <div class="ge-card">
-    <div class="table-responsive"><table class="table ge-table table-sm"><thead><tr><th>Service</th><th>City</th><th>URL</th><th>Title</th><th>Index</th><th>Generated</th><th></th></tr></thead><tbody>
+    <div class="table-responsive"><table class="table ge-table table-sm table-hover align-middle mb-0"><thead><tr><th>Service</th><th>City</th><th>URL</th><th>Title</th><th>Index</th><th>Generated</th><th></th></tr></thead><tbody>
     <?php foreach ($result['data'] as $lp): ?>
     <tr>
-        <td class="small"><a href="?service_id=<?php echo (int)($lp['service_id'] ?? 0); ?>" class="text-white-50 text-decoration-none"><?php echo htmlspecialchars($lp['service_name'] ?? '—'); ?></a></td>
-        <td class="small text-white-50"><?php echo htmlspecialchars($lp['city_name'] ?? '—'); ?></td>
+        <td class="small"><a href="?service_id=<?php echo (int)($lp['service_id'] ?? 0); ?>" class="ge-cell-link text-decoration-none"><?php echo htmlspecialchars($lp['service_name'] ?? '—'); ?></a></td>
+        <td class="small ge-cell-muted"><?php echo htmlspecialchars($lp['city_name'] ?? '—'); ?></td>
         <td><a href="<?php echo SITE_URL . '/' . $lp['slug']; ?>" target="_blank" class="text-info"><code><?php echo htmlspecialchars($lp['slug']); ?></code></a></td>
         <td class="small"><?php echo htmlspecialchars(mb_substr($lp['meta_title'] ?? '', 0, 60)); ?></td>
         <td><span class="ge-badge ge-badge-<?php echo $lp['index_status']==='indexed'?'indexed':'pending'; ?>"><?php echo $lp['index_status']; ?></span></td>

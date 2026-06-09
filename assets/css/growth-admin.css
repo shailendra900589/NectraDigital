@@ -60,14 +60,23 @@
 .ge-table {
     color: var(--ge-text);
     --bs-table-bg: transparent;
+    --bs-table-striped-bg: transparent;
+    --bs-table-active-bg: var(--ge-accent-dim);
+    --bs-table-hover-bg: var(--ge-accent-dim);
     --bs-table-color: var(--ge-text);
     --bs-table-border-color: var(--ge-border);
-    --bs-table-hover-bg: var(--ge-accent-dim);
+    background-color: transparent !important;
 }
-.ge-table thead th { border-color: var(--ge-border); color: var(--ge-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; white-space: nowrap; }
-.ge-table td { border-color: var(--ge-border); vertical-align: middle; padding: 0.55rem 0.75rem; font-size: 0.875rem; }
-.ge-table > :not(caption) > * > * { background-color: transparent; box-shadow: none; }
-.ge-table tbody tr:hover td { background-color: var(--ge-accent-dim); }
+.ge-table thead th { border-color: var(--ge-border); color: var(--ge-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; white-space: nowrap; background-color: transparent !important; }
+.ge-table td { border-color: var(--ge-border); vertical-align: middle; padding: 0.55rem 0.75rem; font-size: 0.875rem; color: var(--ge-text) !important; background-color: transparent !important; }
+.ge-table > :not(caption) > * > * { background-color: transparent !important; box-shadow: none; color: var(--ge-text); }
+.ge-table tbody tr:hover td { background-color: var(--ge-accent-dim) !important; }
+.ge-table .text-white-50 { color: var(--ge-muted) !important; }
+.ge-table .text-muted { color: var(--ge-muted) !important; }
+.ge-table code { color: var(--ge-accent); background: var(--ge-surface-2); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.8rem; }
+.ge-cell-link { color: var(--ge-text); font-weight: 500; }
+.ge-cell-link:hover { color: var(--ge-accent); }
+.ge-cell-muted { color: var(--ge-muted); }
 .ge-pagination-wrap {
     margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--ge-border);
     display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;

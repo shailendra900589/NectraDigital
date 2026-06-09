@@ -120,8 +120,8 @@ ge_admin_layout_start('Keyword Manager', 'keywords');
                                 <?php if (!empty($k['is_auto_generated'])): ?><span class="ge-badge ge-badge-pending ms-1">auto</span><?php endif; ?>
                             </td>
                             <td><span class="badge bg-dark border border-secondary ge-type-badge text-white-50"><?php echo htmlspecialchars($k['keyword_type']); ?></span></td>
-                            <td class="text-white-50 small"><?php echo htmlspecialchars($k['service_name'] ?? '—'); ?></td>
-                            <td class="text-white-50 small"><?php echo htmlspecialchars($k['city_name'] ?? '—'); ?></td>
+                            <td class="ge-cell-muted small"><?php echo htmlspecialchars($k['service_name'] ?? '—'); ?></td>
+                            <td class="ge-cell-muted small"><?php echo htmlspecialchars($k['city_name'] ?? '—'); ?></td>
                             <td class="text-end">
                                 <?php
                                 $delQuery = array_merge($filters, ['page' => $page, 'delete' => $k['id']]);
