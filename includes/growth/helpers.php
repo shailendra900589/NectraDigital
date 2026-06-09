@@ -53,8 +53,10 @@ function ge_format_population(int $pop): string {
     return (string)$pop;
 }
 
-function ge_pick_variant(array $variants, int $seed): string {
-    if (empty($variants)) return '';
+function ge_pick_variant(array $variants, int $seed): mixed {
+    if (empty($variants)) {
+        return '';
+    }
     return $variants[$seed % count($variants)];
 }
 

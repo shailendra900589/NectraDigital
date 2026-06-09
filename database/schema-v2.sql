@@ -279,7 +279,12 @@ INSERT IGNORE INTO ge_authors (name, slug, title, bio, is_founder, linkedin, sta
  1, 'https://www.linkedin.com/in/ravindra-kumar-chauhan', 'active');
 
 -- Unique key: allow same service+city with different industries (industry_id=0 = city-only)
-ALTER TABLE ge_landing_pages DROP INDEX uk_ge_lp_service_city;
-ALTER TABLE ge_landing_pages ADD UNIQUE KEY uk_ge_lp_combo (service_id, city_id, industry_id);
+-- Safe drop: index may already be replaced on re-run
+SET @idx := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'ge_landing_pages' AND INDEX_NAME = 'uk_ge_lp_service_city');
+SET @s := IF(@idx > 0, 'ALTER TABLE ge_landing_pages DROP INDEX uk_ge_lp_service_city', 'SELECT 1');
+PREPARE stmt FROM @s; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+SET @idx2 := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'ge_landing_pages' AND INDEX_NAME = 'uk_ge_lp_combo');
+SET @s2 := IF(@idx2 = 0, 'ALTER TABLE ge_landing_pages ADD UNIQUE KEY uk_ge_lp_combo (service_id, city_id, industry_id)', 'SELECT 1');
+PREPARE stmt2 FROM @s2; EXECUTE stmt2; DEALLOCATE PREPARE stmt2;
 
 SET FOREIGN_KEY_CHECKS = 1;

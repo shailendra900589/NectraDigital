@@ -28,6 +28,21 @@ if ($conn->connect_error) {
 
 echo "DB connected OK\n\n";
 
+function ge_migration_skip_error(string $err): bool
+{
+    $needles = [
+        'Duplicate', 'already exists', "Can't DROP", 'check that it exists',
+        'Unknown column', 'Duplicate column', 'Duplicate key name',
+        'Multiple primary key', 'Duplicate entry',
+    ];
+    foreach ($needles as $needle) {
+        if (stripos($err, $needle) !== false) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function run_sql_file(mysqli $conn, string $path): array {
     if (!file_exists($path)) {
         return ['ok' => 0, 'fail' => 0, 'msg' => "Missing: $path\n"];
@@ -40,14 +55,25 @@ function run_sql_file(mysqli $conn, string $path): array {
     $out = "=== " . basename($path) . " ===\n";
     foreach ($statements as $statement) {
         if (strlen($statement) < 5) continue;
-        if ($conn->query($statement)) {
-            $ok++;
-            if (preg_match('/CREATE TABLE.*?(\w+)/i', $statement, $m)) {
-                $out .= "OK: Table {$m[1]}\n";
+        try {
+            if ($conn->query($statement)) {
+                $ok++;
+                if (preg_match('/CREATE TABLE.*?(\w+)/i', $statement, $m)) {
+                    $out .= "OK: Table {$m[1]}\n";
+                }
+            } else {
+                $err = $conn->error;
+                if (ge_migration_skip_error($err)) {
+                    $ok++;
+                    $out .= "SKIP: " . substr($statement, 0, 50) . "... ($err)\n";
+                } else {
+                    $fail++;
+                    $out .= "FAIL: $err\n  " . substr($statement, 0, 80) . "...\n";
+                }
             }
-        } else {
-            $err = $conn->error;
-            if (stripos($err, 'Duplicate') !== false || stripos($err, 'already exists') !== false) {
+        } catch (mysqli_sql_exception $e) {
+            $err = $e->getMessage();
+            if (ge_migration_skip_error($err)) {
                 $ok++;
                 $out .= "SKIP: " . substr($statement, 0, 50) . "... ($err)\n";
             } else {
