@@ -7,4 +7,9 @@ if (!defined('SITE_URL')) {
 // if (!defined('NECTRA_FB_PIXEL_ID')) {
 //     define('NECTRA_FB_PIXEL_ID', 'YOUR_PIXEL_ID');
 // }
+// Google Cloud Translation API key (Cloud Console → Translation API → Credentials)
+// Enables /api/translate for dynamic text + server-side cache. Site-wide UI uses Google Translate widget without key.
+// if (!defined('GOOGLE_TRANSLATE_API_KEY')) {
+//     define('GOOGLE_TRANSLATE_API_KEY', 'YOUR_GOOGLE_CLOUD_API_KEY');
+// }
 // DNS (Hostinger/cPanel): add SPF TXT record, e.g. v=spf1 include:_spf.google.com ~all

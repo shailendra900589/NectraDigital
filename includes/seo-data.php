@@ -57,7 +57,7 @@ function get_organization_schema() {
             'contactType' => 'customer support',
             'telephone' => '+917678387759',
             'email' => 'contact@nectradigital.com',
-            'availableLanguage' => ['English', 'Hindi']
+            'availableLanguage' => ['English', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Marathi', 'Gujarati', 'Kannada', 'Malayalam', 'Punjabi', 'Urdu', 'Arabic', 'French', 'German', 'Spanish', 'Chinese', 'Japanese', 'Korean']
         ],
         'sameAs' => [
             'https://www.facebook.com/nectradigital',

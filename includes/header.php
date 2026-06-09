@@ -3,6 +3,7 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/text-utils.php';
 require_once __DIR__ . '/seo-data.php';
 require_once __DIR__ . '/growth/helpers.php';
+require_once __DIR__ . '/i18n.php';
 
 global $page_title, $page_desc, $page_img, $page_keys, $noindex, $og_type, $page_schema, $canonical_url;
 
@@ -43,7 +44,7 @@ $meta_keys = (!empty($page_keys)) ? $page_keys : "SEO Company India, Best SEO Co
 $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo htmlspecialchars(nectra_html_lang()); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,6 +52,7 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <title><?php echo nectra_display_text($meta_title); ?></title>
     <meta name="description" content="<?php echo nectra_display_text($meta_desc); ?>">
     <link rel="canonical" href="<?php echo htmlspecialchars($final_url); ?>">
+    <?php nectra_output_hreflang_tags($final_url); ?>
     <meta name="keywords" content="<?php echo htmlspecialchars($meta_keys); ?>">
     <meta name="author" content="<?php echo FOUNDER_NAME; ?>">
     <meta name="robots" content="<?php echo !empty($noindex) ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'; ?>">
@@ -82,6 +84,8 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/i18n.css?v=1">
+    <script>window.NectraI18n = <?php echo json_encode(nectra_i18n_config_js(), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP); ?>;</script>
     
     <meta property="og:site_name" content="<?php echo $site_name_safe; ?>" />
     <meta property="og:type" content="<?php echo $meta_og_type; ?>" />
@@ -91,6 +95,9 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <meta property="og:image" content="<?php echo htmlspecialchars($meta_img); ?>" />
     <meta property="og:image:alt" content="<?php echo $site_name_safe; ?> - SEO & Digital Marketing Agency India" />
     <meta property="og:locale" content="en_IN" />
+    <meta property="og:locale:alternate" content="hi_IN" />
+    <meta property="og:locale:alternate" content="bn_IN" />
+    <meta property="og:locale:alternate" content="ta_IN" />
     <?php if (defined('NECTRA_FACEBOOK_URL')): ?>
     <meta property="article:publisher" content="<?php echo NECTRA_FACEBOOK_URL; ?>" />
     <?php endif; ?>
@@ -136,7 +143,7 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
 
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="/" aria-label="Nectra Digital Home">
+        <a class="navbar-brand d-flex align-items-center notranslate" href="/" aria-label="Nectra Digital Home">
             <span class="text-white fw-bold">NECTRA</span><span class="text-neon">DIGITAL</span>
         </a>
         
@@ -163,6 +170,9 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
                 <li class="nav-item"><a class="nav-link" href="/hire-experts"><b>Hire Experts</b></a></li>
                 <li class="nav-item"><a class="nav-link" href="/insights">Intel</a></li>
                 <li class="nav-item"><a class="nav-link" href="/careers">Careers</a></li>
+                <li class="nav-item">
+                    <?php include __DIR__ . '/language-switcher.php'; ?>
+                </li>
                 <li class="nav-item ms-lg-3">
                     <a href="/contact" class="btn btn-nectra btn-sm">FREE AUDIT <i class="fas fa-bolt"></i></a>
                 </li>

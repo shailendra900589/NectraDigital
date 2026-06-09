@@ -139,6 +139,13 @@ try {
 }
 ?>
 <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/floating-contact.css?v=4">
+<div class="nectra-lang-float notranslate">
+    <button type="button" id="nectraLangFloatBtn" class="nectra-lang-float-btn" aria-label="Change language">
+        <i class="fas fa-globe" aria-hidden="true"></i>
+    </button>
+</div>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
+<script src="<?php echo SITE_URL; ?>/assets/js/i18n.js?v=1" defer></script>
 <?php if ($nectraChatbotEnabled): ?>
 <script>window.NECTRA_CHATBOT = { apiUrl: '<?php echo SITE_URL; ?>/api/chatbot' };</script>
 <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/growth-chatbot.css?v=4">

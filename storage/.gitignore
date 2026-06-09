@@ -1,0 +1,2 @@
+storage/cache/translations/*
+!storage/cache/translations/.gitkeep

@@ -1,0 +1,243 @@
+/* Google Translate widget — hide default UI, use custom switcher */
+.goog-te-banner-frame,
+.skiptranslate iframe,
+#goog-gt-tt,
+.goog-te-balloon-frame {
+    display: none !important;
+}
+
+body {
+    top: 0 !important;
+    position: static !important;
+}
+
+.nectra-gtranslate-host,
+.goog-te-gadget,
+.goog-te-gadget-simple {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Custom language switcher */
+.nectra-lang-switcher {
+    position: relative;
+    z-index: 1050;
+}
+
+.nectra-lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(0, 229, 255, 0.08);
+    color: #e8f8ff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+}
+
+.nectra-lang-toggle:hover,
+.nectra-lang-switcher.is-open .nectra-lang-toggle {
+    border-color: var(--nectra-neon, #00e5ff);
+    background: rgba(0, 229, 255, 0.15);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
+.nectra-lang-toggle .fa-globe {
+    color: var(--nectra-neon, #00e5ff);
+}
+
+.nectra-lang-chevron {
+    font-size: 0.65rem;
+    opacity: 0.7;
+    transition: transform 0.2s;
+}
+
+.nectra-lang-switcher.is-open .nectra-lang-chevron {
+    transform: rotate(180deg);
+}
+
+.nectra-lang-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    width: min(280px, 88vw);
+    max-height: 360px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(0, 229, 255, 0.25);
+    border-radius: 12px;
+    background: rgba(8, 10, 14, 0.98);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+.nectra-lang-menu[hidden] {
+    display: none !important;
+}
+
+.nectra-lang-search-wrap {
+    padding: 0.65rem 0.75rem 0.35rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nectra-lang-search {
+    width: 100%;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 0.85rem;
+}
+
+.nectra-lang-search:focus {
+    outline: none;
+    border-color: var(--nectra-neon, #00e5ff);
+}
+
+.nectra-lang-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem;
+    overflow-y: auto;
+    max-height: 290px;
+}
+
+.nectra-lang-option {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    padding: 0.55rem 0.65rem;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #dce8ef;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.nectra-lang-option:hover,
+.nectra-lang-option.is-active {
+    background: rgba(0, 229, 255, 0.12);
+}
+
+.nectra-lang-flag {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.nectra-lang-names {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.nectra-lang-native {
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.nectra-lang-label {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.nectra-lang-check {
+    color: var(--nectra-neon, #00e5ff);
+    font-size: 0.75rem;
+}
+
+.nectra-lang-list li.is-hidden {
+    display: none;
+}
+
+/* Navbar placement */
+.navbar-nav .nectra-lang-switcher {
+    margin: 0.35rem 0;
+}
+
+@media (min-width: 992px) {
+    .navbar-nav .nectra-lang-switcher {
+        margin-right: 0.5rem;
+    }
+}
+
+/* Mobile floating language button */
+.nectra-lang-float {
+    position: fixed;
+    left: 16px;
+    bottom: 90px;
+    z-index: 1040;
+    display: none;
+}
+
+@media (max-width: 991.98px) {
+    .nectra-lang-float {
+        display: block;
+    }
+
+    .navbar-nav .nectra-lang-switcher {
+        width: 100%;
+        margin: 0.5rem 0 0.75rem;
+    }
+
+    .nectra-lang-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .nectra-lang-menu {
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
+}
+
+.nectra-lang-float-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 229, 255, 0.45);
+    background: rgba(5, 5, 5, 0.92);
+    color: var(--nectra-neon, #00e5ff);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.nectra-lang-float-btn:hover {
+    background: rgba(0, 229, 255, 0.15);
+}
+
+.nectra-lang-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    z-index: 2000;
+    padding: 0.65rem 1.1rem;
+    border-radius: 999px;
+    background: rgba(8, 12, 18, 0.95);
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    color: #e8f8ff;
+    font-size: 0.85rem;
+    opacity: 0;
+    transition: transform 0.3s, opacity 0.3s;
+    pointer-events: none;
+}
+
+.nectra-lang-toast.is-visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
