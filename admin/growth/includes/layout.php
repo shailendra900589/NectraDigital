@@ -46,7 +46,7 @@ function ge_admin_layout_start(string $title, string $activePage = ''): void {
     <title><?php echo ge_admin_page_title($title); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/growth-admin.css">
+    <link rel="stylesheet" href="../../assets/css/growth-admin.css?v=2">
     <?php require_once __DIR__ . '/../../../includes/ckeditor.php'; nectra_ckeditor_styles(); ?>
 </head>
 <body class="ge-admin">
@@ -92,6 +92,87 @@ function ge_admin_layout_start(string $title, string $activePage = ''): void {
             </div>
             <?php endif; ?>
 <?php
+}
+
+/** Page numbers with ellipsis for large result sets. */
+function ge_pagination_range(int $current, int $totalPages, int $adjacent = 2): array
+{
+    if ($totalPages <= 1) {
+        return [];
+    }
+    if ($totalPages <= 7) {
+        return range(1, $totalPages);
+    }
+
+    $pages = [1];
+    $left = max(2, $current - $adjacent);
+    $right = min($totalPages - 1, $current + $adjacent);
+
+    if ($left > 2) {
+        $pages[] = 0;
+    }
+    for ($i = $left; $i <= $right; $i++) {
+        $pages[] = $i;
+    }
+    if ($right < $totalPages - 1) {
+        $pages[] = 0;
+    }
+    $pages[] = $totalPages;
+
+    return $pages;
+}
+
+/**
+ * Render compact admin pagination (prev / 1 … 5 6 7 … 39 / next).
+ *
+ * @param array{page:int,pages:int,total:int,per_page:int} $pg from ge_paginate()
+ * @param array<string,mixed> $queryParams preserved in links (page key excluded)
+ */
+function ge_admin_pagination(array $pg, array $queryParams = []): void
+{
+    $current = (int)($pg['page'] ?? 1);
+    $totalPages = (int)($pg['pages'] ?? 1);
+    $total = (int)($pg['total'] ?? 0);
+
+    if ($totalPages <= 1) {
+        return;
+    }
+
+    unset($queryParams['page']);
+    $buildUrl = static function (int $p) use ($queryParams): string {
+        $params = array_merge($queryParams, ['page' => $p]);
+        return '?' . http_build_query($params);
+    };
+
+    $from = ($current - 1) * (int)($pg['per_page'] ?? 50) + 1;
+    $to = min($total, $current * (int)($pg['per_page'] ?? 50));
+    ?>
+    <div class="ge-pagination-wrap">
+        <div class="ge-pagination-meta text-muted small">
+            Showing <?php echo number_format($from); ?>–<?php echo number_format($to); ?> of <?php echo number_format($total); ?>
+            · Page <?php echo $current; ?> / <?php echo $totalPages; ?>
+        </div>
+        <nav aria-label="Pagination">
+            <ul class="pagination pagination-sm ge-pagination mb-0">
+                <li class="page-item <?php echo $current <= 1 ? 'disabled' : ''; ?>">
+                    <a class="page-link" href="<?php echo $current <= 1 ? '#' : htmlspecialchars($buildUrl($current - 1)); ?>" aria-label="Previous">&laquo;</a>
+                </li>
+                <?php foreach (ge_pagination_range($current, $totalPages) as $p): ?>
+                    <?php if ($p === 0): ?>
+                <li class="page-item disabled"><span class="page-link ge-page-ellipsis">…</span></li>
+                    <?php else: ?>
+                <li class="page-item <?php echo $p === $current ? 'active' : ''; ?>">
+                    <a class="page-link" href="<?php echo htmlspecialchars($buildUrl($p)); ?>"><?php echo $p; ?></a>
+                </li>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <li class="page-item <?php echo $current >= $totalPages ? 'disabled' : ''; ?>">
+                    <a class="page-link" href="<?php echo $current >= $totalPages ? '#' : htmlspecialchars($buildUrl($current + 1)); ?>" aria-label="Next">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <?php
 }
 
 function ge_admin_layout_end(): void {

@@ -48,7 +48,7 @@
     position: sticky; top: 0; z-index: 50;
 }
 .ge-page-title { font-size: 1.35rem; font-weight: 700; margin: 0; }
-.ge-content { padding: 2rem; }
+.ge-content { padding: 2rem; max-width: 100%; overflow-x: hidden; }
 .ge-stat-card {
     background: var(--ge-surface); border: 1px solid var(--ge-border); border-radius: 12px;
     padding: 1.5rem; transition: transform 0.2s, box-shadow 0.2s;
@@ -56,10 +56,36 @@
 .ge-stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
 .ge-stat-value { font-size: 2rem; font-weight: 800; color: var(--ge-accent); line-height: 1; }
 .ge-stat-label { font-size: 0.8rem; color: var(--ge-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; }
-.ge-card { background: var(--ge-surface); border: 1px solid var(--ge-border); border-radius: 12px; padding: 1.5rem; }
-.ge-table { color: var(--ge-text); }
-.ge-table thead th { border-color: var(--ge-border); color: var(--ge-muted); font-size: 0.75rem; text-transform: uppercase; }
-.ge-table td { border-color: var(--ge-border); vertical-align: middle; }
+.ge-card { background: var(--ge-surface); border: 1px solid var(--ge-border); border-radius: 12px; padding: 1.5rem; overflow: hidden; }
+.ge-table {
+    color: var(--ge-text);
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--ge-text);
+    --bs-table-border-color: var(--ge-border);
+    --bs-table-hover-bg: var(--ge-accent-dim);
+}
+.ge-table thead th { border-color: var(--ge-border); color: var(--ge-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; white-space: nowrap; }
+.ge-table td { border-color: var(--ge-border); vertical-align: middle; padding: 0.55rem 0.75rem; font-size: 0.875rem; }
+.ge-table > :not(caption) > * > * { background-color: transparent; box-shadow: none; }
+.ge-table tbody tr:hover td { background-color: var(--ge-accent-dim); }
+.ge-pagination-wrap {
+    margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--ge-border);
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;
+    max-width: 100%;
+}
+.ge-pagination-meta { flex: 1 1 auto; min-width: 140px; }
+.ge-pagination { flex-wrap: wrap; gap: 0.25rem; justify-content: flex-end; max-width: 100%; margin: 0; }
+.ge-pagination .page-link {
+    background: var(--ge-surface-2); border-color: var(--ge-border); color: var(--ge-text);
+    min-width: 2.1rem; text-align: center; padding: 0.35rem 0.55rem; border-radius: 6px;
+}
+.ge-pagination .page-link:hover { background: var(--ge-accent-dim); border-color: var(--ge-accent); color: var(--ge-accent); }
+.ge-pagination .page-item.active .page-link { background: var(--ge-accent); border-color: var(--ge-accent); color: #000; font-weight: 600; }
+.ge-pagination .page-item.disabled .page-link { background: var(--ge-surface); color: var(--ge-muted); opacity: 0.65; }
+.ge-page-ellipsis { pointer-events: none; }
+.ge-keyword-cell { max-width: 300px; word-break: break-word; line-height: 1.35; }
+.ge-filter-bar .form-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ge-muted); margin-bottom: 0.25rem; }
+.ge-type-badge { font-size: 0.68rem; text-transform: capitalize; }
 .form-control, .form-select, .form-control:focus, .form-select:focus {
     background: var(--ge-surface-2); border-color: var(--ge-border); color: var(--ge-text);
 }

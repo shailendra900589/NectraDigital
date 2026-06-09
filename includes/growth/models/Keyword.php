@@ -14,10 +14,74 @@ class Keyword extends BaseModel
         );
     }
 
-    public static function count(): int
+    public static function count(array $filters = []): int
     {
-        $row = self::fetchOne("SELECT COUNT(*) AS c FROM ge_keywords");
+        [$whereSql, $types, $params] = self::filterClause($filters);
+        $row = self::fetchOne("SELECT COUNT(*) AS c FROM ge_keywords k WHERE {$whereSql}", $types, $params);
         return (int)($row['c'] ?? 0);
+    }
+
+    public static function paginated(int $page = 1, int $perPage = 50, array $filters = []): array
+    {
+        [$whereSql, $types, $params] = self::filterClause($filters);
+        $total = self::count($filters);
+        $pg = ge_paginate($total, $page, $perPage);
+
+        $types .= 'ii';
+        $params[] = $pg['per_page'];
+        $params[] = $pg['offset'];
+
+        $data = self::fetchAll(
+            "SELECT k.*, s.name AS service_name, c.name AS city_name FROM ge_keywords k
+             LEFT JOIN ge_services s ON s.id = k.service_id
+             LEFT JOIN ge_cities c ON c.id = k.city_id
+             WHERE {$whereSql}
+             ORDER BY k.id DESC LIMIT ? OFFSET ?",
+            $types,
+            $params
+        );
+
+        return ['data' => $data, 'pagination' => $pg];
+    }
+
+    private static function filterClause(array $filters): array
+    {
+        $where = ['1=1'];
+        $types = '';
+        $params = [];
+
+        if (!empty($filters['service_id'])) {
+            $where[] = 'k.service_id = ?';
+            $types .= 'i';
+            $params[] = (int)$filters['service_id'];
+        }
+        if (!empty($filters['city_id'])) {
+            $where[] = 'k.city_id = ?';
+            $types .= 'i';
+            $params[] = (int)$filters['city_id'];
+        }
+        if (!empty($filters['keyword_type'])) {
+            $where[] = 'k.keyword_type = ?';
+            $types .= 's';
+            $params[] = $filters['keyword_type'];
+        }
+        if (!empty($filters['q'])) {
+            $where[] = 'k.keyword LIKE ?';
+            $types .= 's';
+            $params[] = '%' . $filters['q'] . '%';
+        }
+        if (isset($filters['auto']) && $filters['auto'] !== '') {
+            $where[] = 'k.is_auto_generated = ?';
+            $types .= 'i';
+            $params[] = (int)$filters['auto'];
+        }
+
+        return [implode(' AND ', $where), $types, $params];
+    }
+
+    public static function countAll(): int
+    {
+        return self::count();
     }
 
     public static function find(int $id): ?array

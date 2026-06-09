@@ -83,7 +83,7 @@ ge_admin_layout_start('Landing Pages', 'landing');
     <?php endforeach; ?>
     <?php if (empty($result['data'])): ?><tr><td colspan="7" class="text-center text-muted py-4">No landing pages yet. <a href="services.php">Sync services</a> then <a href="generate.php">generate pages</a>.</td></tr><?php endif; ?>
     </tbody></table></div>
-    <?php $pg = $result['pagination']; if ($pg['pages'] > 1): ?><nav class="mt-3"><ul class="pagination pagination-sm justify-content-center"><?php for ($i=1;$i<=$pg['pages'];$i++): ?><li class="page-item <?php echo $i===$pg['page']?'active':''; ?>"><a class="page-link" href="?page=<?php echo $i; ?>&<?php echo http_build_query($filters); ?>"><?php echo $i; ?></a></li><?php endfor; ?></ul></nav><?php endif; ?>
+    <?php ge_admin_pagination($result['pagination'], $filters); ?>
 </div>
 
 <?php ge_admin_layout_end(); ?>
