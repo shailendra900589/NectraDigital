@@ -5,23 +5,58 @@
     var COOKIE = cfg.cookieName || 'nectra_lang';
     var DEFAULT = cfg.defaultLang || 'en';
     var languages = cfg.languages || {};
-    var widgetReady = false;
+    var cookieDomain = cfg.cookieDomain || '';
+
+    function googleCodeFor(langCode) {
+        var meta = languages[langCode];
+        return (meta && meta.google) ? meta.google : langCode;
+    }
 
     function getCookie(name) {
         var match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)'));
         return match ? decodeURIComponent(match[1]) : '';
     }
 
-    function setCookie(name, value, days) {
+    function setRawCookie(name, value, days, domain) {
         var maxAge = days ? '; max-age=' + (days * 86400) : '';
-        document.cookie = name + '=' + encodeURIComponent(value) + '; path=/' + maxAge + '; SameSite=Lax';
+        var dom = domain ? '; domain=' + domain : '';
+        document.cookie = name + '=' + encodeURIComponent(value) + '; path=/' + maxAge + dom + '; SameSite=Lax';
     }
 
-    function clearCookie(name) {
-        var host = location.hostname.replace(/^www\./, '');
-        document.cookie = name + '=; path=/; max-age=0';
-        document.cookie = name + '=; path=/; domain=.' + host + '; max-age=0';
-        document.cookie = name + '=; path=/; domain=.' + location.hostname + '; max-age=0';
+    function clearAllTranslationCookies() {
+        var root = location.hostname.replace(/^www\./, '');
+        var domains = ['', '.' + root, location.hostname, cookieDomain].filter(Boolean);
+        var uniqueDomains = domains.filter(function (d, i) { return domains.indexOf(d) === i; });
+
+        ['googtrans', COOKIE].forEach(function (name) {
+            uniqueDomains.forEach(function (dom) {
+                var domPart = dom ? '; domain=' + dom : '';
+                document.cookie = name + '=; path=/' + domPart + '; max-age=0';
+            });
+        });
+    }
+
+    function setGoogtransCookie(langCode) {
+        if (langCode === DEFAULT) {
+            clearAllTranslationCookies();
+            return;
+        }
+        var gCode = googleCodeFor(langCode);
+        var val = '/en/' + gCode;
+        setRawCookie('googtrans', val, 365, '');
+        if (cookieDomain) {
+            setRawCookie('googtrans', val, 365, cookieDomain);
+        }
+        var root = location.hostname.replace(/^www\./, '');
+        setRawCookie('googtrans', val, 365, '.' + root);
+    }
+
+    function saveLang(code) {
+        setRawCookie(COOKIE, code, 365, '');
+        if (cookieDomain) {
+            setRawCookie(COOKIE, code, 365, cookieDomain);
+        }
+        try { localStorage.setItem(COOKIE, code); } catch (e) {}
     }
 
     function getSavedLang() {
@@ -40,24 +75,15 @@
         var goog = getCookie('googtrans');
         if (goog) {
             var parts = goog.split('/').filter(Boolean);
-            var code = parts[parts.length - 1];
-            if (languages[code]) return code;
+            var gCode = parts[parts.length - 1];
+            for (var key in languages) {
+                if (languages.hasOwnProperty(key) && googleCodeFor(key) === gCode) {
+                    return key;
+                }
+            }
         }
 
         return cfg.currentLang || DEFAULT;
-    }
-
-    function saveLang(code) {
-        setCookie(COOKIE, code, 365);
-        try { localStorage.setItem(COOKIE, code); } catch (e) {}
-    }
-
-    function setGoogtransCookie(code) {
-        if (code === DEFAULT) {
-            clearCookie('googtrans');
-            return;
-        }
-        setCookie('googtrans', '/en/' + code, 365);
     }
 
     function showToast(msg) {
@@ -87,26 +113,23 @@
     function navigateToLanguage(code, fromUser) {
         if (!languages[code]) code = DEFAULT;
 
+        clearAllTranslationCookies();
         saveLang(code);
+
+        if (code === DEFAULT) {
+            if (fromUser) showToast('English');
+            location.assign(buildLangUrl(DEFAULT));
+            return;
+        }
+
         setGoogtransCookie(code);
 
         if (fromUser) {
             var native = (languages[code] && languages[code].native) || code;
-            showToast(code === DEFAULT ? 'English' : native);
+            showToast(native);
         }
 
-        var target = buildLangUrl(code);
-        if (location.pathname + location.search + location.hash !== target) {
-            location.href = target;
-            return;
-        }
-
-        if (code === DEFAULT) {
-            location.reload();
-            return;
-        }
-
-        ensureFullPageTranslation(code, 0);
+        location.assign(buildLangUrl(code));
     }
 
     function getTranslateSelect() {
@@ -114,28 +137,32 @@
     }
 
     function triggerWidget(langCode) {
+        var gCode = googleCodeFor(langCode);
         var select = getTranslateSelect();
         if (!select) return false;
-        if (langCode === DEFAULT) return false;
-        if (select.value !== langCode) {
-            select.value = langCode;
+
+        for (var i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === gCode) {
+                select.selectedIndex = i;
+                select.dispatchEvent(new Event('change'));
+                document.documentElement.classList.add('nectra-translated');
+                document.body.classList.add('nectra-translated', 'nectra-lang-' + langCode);
+                return true;
+            }
         }
-        select.dispatchEvent(new Event('change'));
-        return true;
+        return false;
     }
 
     function ensureFullPageTranslation(langCode, attempt) {
         if (langCode === DEFAULT) return;
 
         if (triggerWidget(langCode)) {
-            document.documentElement.classList.add('nectra-translated');
-            document.body.classList.add('nectra-translated', 'nectra-lang-' + langCode);
             observeDynamicContent(langCode);
             return;
         }
 
-        if (attempt < 30) {
-            setTimeout(function () { ensureFullPageTranslation(langCode, attempt + 1); }, 200);
+        if (attempt < 40) {
+            setTimeout(function () { ensureFullPageTranslation(langCode, attempt + 1); }, 150);
         }
     }
 
@@ -147,11 +174,8 @@
         var debounce;
         var observer = new MutationObserver(function () {
             clearTimeout(debounce);
-            debounce = setTimeout(function () {
-                triggerWidget(langCode);
-            }, 400);
+            debounce = setTimeout(function () { triggerWidget(langCode); }, 500);
         });
-
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
@@ -225,27 +249,21 @@
         }
 
         if (search) {
-            search.addEventListener('input', function () {
-                filterLanguages(search.value);
-            });
+            search.addEventListener('input', function () { filterLanguages(search.value); });
             search.addEventListener('click', function (e) { e.stopPropagation(); });
         }
 
         root.querySelectorAll('.nectra-lang-option').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                var code = btn.getAttribute('data-lang');
                 closeMenus();
-                navigateToLanguage(code, true);
+                navigateToLanguage(btn.getAttribute('data-lang'), true);
             });
         });
     }
 
     function initSwitchers() {
         document.querySelectorAll('.nectra-lang-switcher').forEach(bindSwitcher);
-
-        document.addEventListener('click', function () {
-            closeMenus();
-        });
+        document.addEventListener('click', closeMenus);
 
         var floatBtn = document.getElementById('nectraLangFloatBtn');
         if (floatBtn) {
@@ -266,13 +284,11 @@
 
         new google.translate.TranslateElement({
             pageLanguage: 'en',
-            includedLanguages: cfg.includedCodes || 'en,hi',
+            includedLanguages: cfg.includedCodes,
             autoDisplay: false,
             multilanguagePage: true,
             layout: google.translate.TranslateElement.InlineLayout.SIMPLE
         }, 'google_translate_element');
-
-        widgetReady = true;
 
         var saved = getSavedLang();
         if (saved && saved !== DEFAULT) {

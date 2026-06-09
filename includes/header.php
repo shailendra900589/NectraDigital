@@ -88,11 +88,19 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css">
-    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/i18n.css?v=2">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/i18n.css?v=3">
     <script>window.NectraI18n = <?php echo json_encode(nectra_i18n_config_js(), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP); ?>;</script>
-    <?php if ($nectra_lang !== 'en'): ?>
+    <?php if ($nectra_lang !== 'en'):
+        $nectra_gcode = nectra_google_lang_code($nectra_lang);
+        $nectra_cdom = nectra_cookie_domain();
+    ?>
     <script>
-    (function(l){document.cookie='googtrans='+encodeURIComponent('/en/'+l)+';path=/;max-age=31536000;SameSite=Lax';document.cookie='nectra_lang='+encodeURIComponent(l)+';path=/;max-age=31536000;SameSite=Lax';})(<?php echo json_encode($nectra_lang); ?>);
+    (function(g,d){
+        var v='/en/'+g;
+        document.cookie='googtrans='+v+';path=/;max-age=31536000;SameSite=Lax';
+        document.cookie='googtrans='+v+';path=/;domain='+d+';max-age=31536000;SameSite=Lax';
+        document.cookie='nectra_lang='+encodeURIComponent(<?php echo json_encode($nectra_lang); ?>)+';path=/;max-age=31536000;SameSite=Lax';
+    })(<?php echo json_encode($nectra_gcode); ?>, <?php echo json_encode($nectra_cdom); ?>);
     </script>
     <?php endif; ?>
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>

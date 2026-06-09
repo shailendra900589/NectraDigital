@@ -33,6 +33,8 @@ $idxKey = ge_setting('indexnow_api_key', '');
 if ($idxKey === '' && class_exists(\Growth\Engines\IndexingEngine::class)) {
     $idxKey = \Growth\Engines\IndexingEngine::apiKey();
 }
+$cronToken = ge_ensure_cron_token();
+$cronUrls = ge_cron_urls();
 
 ge_admin_layout();
 ge_admin_layout_start('Settings', 'settings');
@@ -50,7 +52,13 @@ ge_admin_layout_start('Settings', 'settings');
 
             <div class="col-12"><hr><h2 class="h6">Auto Indexing — Search Engines</h2></div>
             <div class="col-md-6"><label class="form-label">IndexNow API Key</label><input type="text" name="indexnow_api_key" class="form-control" value="<?php echo htmlspecialchars($idxKey); ?>"><small class="text-muted">Key file auto-created at /<?php echo htmlspecialchars($idxKey); ?>.txt</small></div>
-            <div class="col-md-6"><label class="form-label">Cron Token (for web cron)</label><input type="text" name="cron_token" class="form-control" value="<?php echo htmlspecialchars(ge_setting('cron_token', '')); ?>" placeholder="random-secret-token"></div>
+            <div class="col-md-6"><label class="form-label">Cron Token (auto-generated)</label><input type="text" name="cron_token" class="form-control" value="<?php echo htmlspecialchars($cronToken); ?>" readonly></div>
+            <div class="col-12">
+                <small class="text-muted d-block mb-1">Web cron URLs (copy into Hostinger cron jobs):</small>
+                <code class="d-block small mb-1"><?php echo htmlspecialchars($cronUrls['i18n_index']); ?></code>
+                <code class="d-block small mb-1"><?php echo htmlspecialchars($cronUrls['indexing']); ?></code>
+                <code class="d-block small"><?php echo htmlspecialchars($cronUrls['discovery']); ?></code>
+            </div>
 
             <?php
             $engines = [

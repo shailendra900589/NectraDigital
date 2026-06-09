@@ -10,38 +10,89 @@ define('NECTRA_I18N_LOADED', true);
 function nectra_supported_languages(): array
 {
     return [
-        'en'    => ['label' => 'English',   'native' => 'English',    'flag' => '🇬🇧', 'code' => 'GB', 'hreflang' => 'en-IN'],
-        'hi'    => ['label' => 'Hindi',     'native' => 'हिन्दी',      'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'hi-IN'],
-        'bn'    => ['label' => 'Bengali',   'native' => 'বাংলা',       'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'bn-IN'],
-        'ta'    => ['label' => 'Tamil',     'native' => 'தமிழ்',       'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'ta-IN'],
-        'te'    => ['label' => 'Telugu',    'native' => 'తెలుగు',      'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'te-IN'],
-        'mr'    => ['label' => 'Marathi',   'native' => 'मराठी',       'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'mr-IN'],
-        'gu'    => ['label' => 'Gujarati',  'native' => 'ગુજરાતી',     'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'gu-IN'],
-        'kn'    => ['label' => 'Kannada',   'native' => 'ಕನ್ನಡ',       'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'kn-IN'],
-        'ml'    => ['label' => 'Malayalam', 'native' => 'മലയാളം',      'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'ml-IN'],
-        'pa'    => ['label' => 'Punjabi',   'native' => 'ਪੰਜਾਬੀ',      'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'pa-IN'],
-        'or'    => ['label' => 'Odia',      'native' => 'ଓଡ଼ିଆ',       'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'or-IN'],
-        'as'    => ['label' => 'Assamese',  'native' => 'অসমীয়া',     'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'as-IN'],
-        'ur'    => ['label' => 'Urdu',      'native' => 'اردو',        'flag' => '🇮🇳', 'code' => 'IN', 'hreflang' => 'ur-IN', 'rtl' => true],
-        'ar'    => ['label' => 'Arabic',    'native' => 'العربية',     'flag' => '🇸🇦', 'code' => 'SA', 'hreflang' => 'ar', 'rtl' => true],
-        'fr'    => ['label' => 'French',    'native' => 'Français',   'flag' => '🇫🇷', 'code' => 'FR', 'hreflang' => 'fr'],
-        'de'    => ['label' => 'German',    'native' => 'Deutsch',    'flag' => '🇩🇪', 'code' => 'DE', 'hreflang' => 'de'],
-        'es'    => ['label' => 'Spanish',   'native' => 'Español',    'flag' => '🇪🇸', 'code' => 'ES', 'hreflang' => 'es'],
-        'zh-CN' => ['label' => 'Chinese',   'native' => '中文',        'flag' => '🇨🇳', 'code' => 'CN', 'hreflang' => 'zh-CN'],
-        'ja'    => ['label' => 'Japanese',  'native' => '日本語',      'flag' => '🇯🇵', 'code' => 'JP', 'hreflang' => 'ja'],
-        'ko'    => ['label' => 'Korean',    'native' => '한국어',       'flag' => '🇰🇷', 'code' => 'KR', 'hreflang' => 'ko'],
+        'en'    => ['label' => 'English',   'native' => 'English',    'flag' => '🇬🇧', 'code' => 'GB', 'google' => 'en',    'hreflang' => 'en-IN'],
+        'hi'    => ['label' => 'Hindi',     'native' => 'हिन्दी',      'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'hi',    'hreflang' => 'hi-IN'],
+        'bn'    => ['label' => 'Bengali',   'native' => 'বাংলা',       'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'bn',    'hreflang' => 'bn-IN'],
+        'ta'    => ['label' => 'Tamil',     'native' => 'தமிழ்',       'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'ta',    'hreflang' => 'ta-IN'],
+        'te'    => ['label' => 'Telugu',    'native' => 'తెలుగు',      'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'te',    'hreflang' => 'te-IN'],
+        'mr'    => ['label' => 'Marathi',   'native' => 'मराठी',       'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'mr',    'hreflang' => 'mr-IN'],
+        'gu'    => ['label' => 'Gujarati',  'native' => 'ગુજરાતી',     'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'gu',    'hreflang' => 'gu-IN'],
+        'kn'    => ['label' => 'Kannada',   'native' => 'ಕನ್ನಡ',       'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'kn',    'hreflang' => 'kn-IN'],
+        'ml'    => ['label' => 'Malayalam', 'native' => 'മലയാളം',      'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'ml',    'hreflang' => 'ml-IN'],
+        'pa'    => ['label' => 'Punjabi',   'native' => 'ਪੰਜਾਬੀ',      'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'pa',    'hreflang' => 'pa-IN'],
+        'or'    => ['label' => 'Odia',      'native' => 'ଓଡ଼ିଆ',       'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'or',    'hreflang' => 'or-IN'],
+        'as'    => ['label' => 'Assamese',  'native' => 'অসমীয়া',     'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'as',    'hreflang' => 'as-IN'],
+        'ur'    => ['label' => 'Urdu',      'native' => 'اردو',        'flag' => '🇮🇳', 'code' => 'IN', 'google' => 'ur',    'hreflang' => 'ur-IN', 'rtl' => true],
+        'ar'    => ['label' => 'Arabic',    'native' => 'العربية',     'flag' => '🇸🇦', 'code' => 'SA', 'google' => 'ar',    'hreflang' => 'ar', 'rtl' => true],
+        'fr'    => ['label' => 'French',    'native' => 'Français',   'flag' => '🇫🇷', 'code' => 'FR', 'google' => 'fr',    'hreflang' => 'fr'],
+        'de'    => ['label' => 'German',    'native' => 'Deutsch',    'flag' => '🇩🇪', 'code' => 'DE', 'google' => 'de',    'hreflang' => 'de'],
+        'es'    => ['label' => 'Spanish',   'native' => 'Español',    'flag' => '🇪🇸', 'code' => 'ES', 'google' => 'es',    'hreflang' => 'es'],
+        'zh-CN' => ['label' => 'Chinese',   'native' => '中文',        'flag' => '🇨🇳', 'code' => 'CN', 'google' => 'zh-CN', 'hreflang' => 'zh-CN'],
+        'ja'    => ['label' => 'Japanese',  'native' => '日本語',      'flag' => '🇯🇵', 'code' => 'JP', 'google' => 'ja',    'hreflang' => 'ja'],
+        'ko'    => ['label' => 'Korean',    'native' => '한국어',       'flag' => '🇰🇷', 'code' => 'KR', 'google' => 'ko',    'hreflang' => 'ko'],
     ];
+}
+
+function nectra_google_lang_code(string $lang): string
+{
+    $supported = nectra_supported_languages();
+    if (!isset($supported[$lang])) {
+        return $lang;
+    }
+    return $supported[$lang]['google'] ?? $lang;
+}
+
+function nectra_lang_from_google_code(string $googleCode): string
+{
+    foreach (nectra_supported_languages() as $code => $meta) {
+        if (($meta['google'] ?? $code) === $googleCode) {
+            return $code;
+        }
+    }
+    return isset(nectra_supported_languages()[$googleCode]) ? $googleCode : 'en';
+}
+
+function nectra_cookie_domain(): string
+{
+    $host = parse_url(defined('SITE_URL') ? SITE_URL : '', PHP_URL_HOST);
+    if (!$host) {
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    }
+    $root = preg_replace('/^www\./i', '', $host);
+    return '.' . $root;
+}
+
+function nectra_google_language_codes(): string
+{
+    $codes = [];
+    foreach (nectra_supported_languages() as $meta) {
+        $codes[] = $meta['google'] ?? 'en';
+    }
+    return implode(',', array_unique($codes));
 }
 
 function nectra_translate_language_codes(): string
 {
-    return implode(',', array_keys(nectra_supported_languages()));
+    return nectra_google_language_codes();
 }
 
 function nectra_is_rtl_lang(string $lang): bool
 {
     $supported = nectra_supported_languages();
     return !empty($supported[$lang]['rtl']);
+}
+
+/** Clear Google Translate cookies (all domain variants). */
+function nectra_clear_googtrans_cookies(): void
+{
+    if (php_sapi_name() === 'cli' || headers_sent()) {
+        return;
+    }
+    $past = time() - 3600;
+    $domain = nectra_cookie_domain();
+    setcookie('googtrans', '', ['expires' => $past, 'path' => '/']);
+    setcookie('googtrans', '', ['expires' => $past, 'path' => '/', 'domain' => $domain]);
+    unset($_COOKIE['googtrans']);
 }
 
 /** Apply ?lang= from URL to cookies before HTML output (full-page Google Translate). */
@@ -58,11 +109,15 @@ function nectra_handle_lang_request(): void
         return;
     }
 
+    nectra_clear_googtrans_cookies();
+
     $expires = time() + 365 * 86400;
+    $domain = nectra_cookie_domain();
+    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
     $cookieOpts = [
         'expires'  => $expires,
         'path'     => '/',
-        'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+        'secure'   => $secure,
         'httponly' => false,
         'samesite' => 'Lax',
     ];
@@ -71,12 +126,15 @@ function nectra_handle_lang_request(): void
     $_COOKIE['nectra_lang'] = $lang;
 
     if ($lang === 'en') {
-        setcookie('googtrans', '', ['expires' => time() - 3600, 'path' => '/']);
-        unset($_COOKIE['googtrans']);
-    } else {
-        setcookie('googtrans', '/en/' . $lang, $cookieOpts);
-        $_COOKIE['googtrans'] = '/en/' . $lang;
+        nectra_clear_googtrans_cookies();
+        return;
     }
+
+    $googleCode = nectra_google_lang_code($lang);
+    $googVal = '/en/' . $googleCode;
+    setcookie('googtrans', $googVal, $cookieOpts);
+    setcookie('googtrans', $googVal, array_merge($cookieOpts, ['domain' => $domain]));
+    $_COOKIE['googtrans'] = $googVal;
 }
 
 function nectra_get_user_lang(): string
@@ -95,8 +153,9 @@ function nectra_get_user_lang(): string
     if (!empty($_COOKIE['googtrans'])) {
         $parts = explode('/', trim($_COOKIE['googtrans'], '/'));
         $code = end($parts);
-        if (isset($supported[$code])) {
-            return $code;
+        $mapped = nectra_lang_from_google_code((string)$code);
+        if (isset($supported[$mapped])) {
+            return $mapped;
         }
     }
 
@@ -291,15 +350,18 @@ function nectra_output_hreflang_tags(string $canonicalUrl): void
 function nectra_i18n_config_js(): array
 {
     $lang = nectra_get_user_lang();
+    $googleCode = nectra_google_lang_code($lang);
     return [
         'cookieName'    => 'nectra_lang',
         'defaultLang'   => 'en',
         'currentLang'   => $lang,
-        'googtrans'     => $lang !== 'en' ? '/en/' . $lang : '',
+        'currentGoogle' => $googleCode,
+        'googtrans'     => $lang !== 'en' ? '/en/' . $googleCode : '',
+        'cookieDomain'  => nectra_cookie_domain(),
         'apiUrl'        => (defined('SITE_URL') ? SITE_URL : '') . '/api/translate',
         'apiEnabled'    => nectra_translate_api_enabled(),
         'languages'     => nectra_supported_languages(),
-        'includedCodes' => nectra_translate_language_codes(),
+        'includedCodes' => nectra_google_language_codes(),
     ];
 }
 

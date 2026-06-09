@@ -144,7 +144,7 @@ try {
         <i class="fas fa-globe" aria-hidden="true"></i>
     </button>
 </div>
-<script src="<?php echo SITE_URL; ?>/assets/js/i18n.js?v=2" defer></script>
+<script src="<?php echo SITE_URL; ?>/assets/js/i18n.js?v=3" defer></script>
 <?php if ($nectraChatbotEnabled): ?>
 <script>window.NECTRA_CHATBOT = { apiUrl: '<?php echo SITE_URL; ?>/api/chatbot' };</script>
 <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/growth-chatbot.css?v=4">

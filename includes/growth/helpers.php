@@ -292,3 +292,56 @@ function ge_paginate(int $total, int $page, int $per_page = 25): array {
     $offset = ($page - 1) * $per_page;
     return ['page' => $page, 'per_page' => $per_page, 'total' => $total, 'pages' => $pages, 'offset' => $offset];
 }
+
+/** Auto-generate and persist cron token if missing. */
+function ge_ensure_cron_token(): string
+{
+    if (!function_exists('ge_table_exists') || !ge_table_exists('ge_settings')) {
+        return '';
+    }
+    $token = trim((string)ge_setting('cron_token', ''));
+    if ($token !== '') {
+        return $token;
+    }
+    $token = bin2hex(random_bytes(20));
+    $db = ge_conn();
+    $stmt = $db->prepare("INSERT INTO ge_settings (setting_key, setting_value) VALUES ('cron_token', ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+    if ($stmt) {
+        $stmt->bind_param('s', $token);
+        $stmt->execute();
+    }
+    return $token;
+}
+
+/** Protect web cron endpoints; CLI always allowed. */
+function ge_cron_auth_or_exit(): void
+{
+    if (php_sapi_name() === 'cli') {
+        return;
+    }
+    $token = ge_ensure_cron_token();
+    $provided = (string)($_GET['token'] ?? '');
+    if ($token === '' || !hash_equals($token, $provided)) {
+        http_response_code(403);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'success' => false,
+            'error'   => 'Invalid or missing cron token.',
+            'hint'    => 'Open Admin → Growth → Settings to copy your auto-generated cron token.',
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
+function ge_cron_urls(): array
+{
+    $base = rtrim(defined('SITE_URL') ? SITE_URL : '', '/');
+    $token = ge_ensure_cron_token();
+    $q = $token !== '' ? ('?token=' . urlencode($token)) : '';
+    return [
+        'indexing'   => $base . '/cron/process-indexing.php' . $q,
+        'i18n_index' => $base . '/cron/i18n-indexnow.php' . $q,
+        'discovery'  => $base . '/cron/publish-discovery.php' . $q,
+        'token'      => $token,
+    ];
+}
