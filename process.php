@@ -14,8 +14,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = clean_input($_POST['name']);
     $email = clean_input($_POST['email']);
     $service = clean_input($_POST['service']);
-    $budget = clean_input($_POST['budget']);
+    $budget = clean_input($_POST['budget'] ?? '');
+    $phone = clean_input($_POST['phone'] ?? '');
+    $city = clean_input($_POST['city'] ?? '');
     $message = clean_input($_POST['message']);
+    if ($phone !== '') {
+        $message = "Phone: {$phone}\n" . $message;
+    }
+    if ($city !== '') {
+        $message = "City: {$city}\n" . $message;
+        if (stripos($service, $city) === false) {
+            $service = trim($service . ' — ' . $city);
+        }
+    }
     $ip = $_SERVER['REMOTE_ADDR'];
 
     // 3. SPAM DETECTION LOGIC

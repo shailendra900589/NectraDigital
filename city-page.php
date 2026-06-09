@@ -66,18 +66,15 @@ output_faq_schema($city_faqs);
             <h2 class="text-white h3 mb-4 text-center">Digital Services in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h2>
             <div class="row g-4">
                 <?php
-                $featured = ['seo-services', 'local-seo-services', 'digital-marketing-services', 'ai-automation-services', 'web-development-services', 'ppc-management'];
                 $all_services = get_services_data();
-                foreach ($featured as $slug):
-                    if (!isset($all_services[$slug])) continue;
-                    $s = $all_services[$slug];
+                foreach ($all_services as $slug => $s):
                     $serviceHref = ge_service_city_landing_url($slug, $city_slug);
                 ?>
                 <div class="col-md-6 col-lg-4">
                     <a href="<?php echo htmlspecialchars($serviceHref); ?>" class="text-decoration-none">
                         <div class="p-4 border border-secondary rounded bg-glass h-100 hover-effect">
                             <i class="fas <?php echo $s['icon']; ?> text-neon fa-2x mb-3"></i>
-                            <h3 class="text-white h6"><?php echo htmlspecialchars($s['h1']); ?></h3>
+                            <h3 class="text-white h6"><?php echo htmlspecialchars(($s['silo'] ?? $s['h1']) . ' in ' . $city_name); ?></h3>
                             <p class="text-white-50 small mb-0"><?php echo htmlspecialchars(mb_substr($s['intro'], 0, 120)); ?>...</p>
                         </div>
                     </a>

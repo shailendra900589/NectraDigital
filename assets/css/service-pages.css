@@ -157,6 +157,14 @@
     box-shadow: 0 0 20px rgba(0,229,255,0.05);
 }
 
+.svc-inline-form-wrap .form-control:focus {
+    border-color: #00E5FF;
+    box-shadow: 0 0 0 0.15rem rgba(0,229,255,0.15);
+}
+.svc-inline-form-wrap textarea.form-control {
+    min-height: 80px;
+}
+
 @media (max-width: 768px) {
     .svc-hero { min-height: auto; }
     .svc-stat-val { font-size: 1.2rem; }

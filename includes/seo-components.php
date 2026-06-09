@@ -318,7 +318,7 @@ function ge_service_city_landing_url(string $service_slug, string $city_slug, ?s
     return '/' . ge_slugify($url_prefix . '-company-in-' . $city_slug);
 }
 
-function render_service_city_links(string $service_slug, array $service): void
+function render_service_city_links(string $service_slug, array $service, ?string $current_city_slug = null): void
 {
     if (!function_exists('ge_static_service_url_prefix')) {
         require_once __DIR__ . '/growth/helpers.php';
@@ -363,11 +363,12 @@ function render_service_city_links(string $service_slug, array $service): void
 
     foreach ($cities as $citySlug => $city) {
         $slug = $buildSlug($citySlug);
-        $href = '/' . $slug;
-        $title = $label . ' in ' . $city['name'];
+        $href = '/' . ltrim($slug, '/');
+        $isCurrent = ($current_city_slug !== null && $citySlug === $current_city_slug);
+        $cardClass = 'd-block p-2 border rounded text-decoration-none hover-effect text-center h-100 ' . ($isCurrent ? 'border-neon bg-glass' : 'border-secondary');
         echo '<div class="col-6 col-md-4 col-lg-3 col-xl-2">';
-        echo '<a href="' . htmlspecialchars($href) . '" class="d-block p-2 border border-secondary rounded text-decoration-none hover-effect text-center h-100">';
-        echo '<span class="text-white small fw-semibold d-block">' . htmlspecialchars($city['name']) . '</span>';
+        echo '<a href="' . htmlspecialchars($href) . '" class="' . $cardClass . '"' . ($isCurrent ? ' aria-current="page"' : '') . '>';
+        echo '<span class="' . ($isCurrent ? 'text-neon' : 'text-white') . ' small fw-semibold d-block">' . htmlspecialchars($city['name']) . '</span>';
         echo '<span class="text-white-50" style="font-size:0.7rem;">' . htmlspecialchars($city['state']) . '</span>';
         echo '</a></div>';
     }

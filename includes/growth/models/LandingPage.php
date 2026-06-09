@@ -15,8 +15,8 @@ class LandingPage extends BaseModel
         $join = self::industryJoin();
         $cols = ge_table_exists('ge_industries') ? ", ind.name AS industry_name, ind.slug AS industry_slug" : ", NULL AS industry_name, NULL AS industry_slug";
         return self::fetchOne(
-            "SELECT lp.*, s.name AS service_name, s.url_prefix, s.service_image, s.schema_type,
-                    c.name AS city_name, c.state, c.country, c.population, c.latitude, c.longitude, c.city_description
+            "             SELECT lp.*, s.name AS service_name, s.slug AS service_slug_ge, s.url_prefix, s.service_image, s.schema_type,
+                    c.name AS city_name, c.slug AS city_slug, c.state, c.country, c.population, c.latitude, c.longitude, c.city_description
                     {$cols}
              FROM ge_landing_pages lp
              INNER JOIN ge_services s ON s.id = lp.service_id
