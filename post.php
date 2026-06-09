@@ -143,31 +143,87 @@ $header_html = str_replace('<head>', "<head>\n" . $meta_charset . "\n" . $base_t
 echo $header_html;
 
 // 6. AD ENGINE
-function get_ad($placement, $conn) {
-    $check = $conn->query("SHOW TABLES LIKE 'ads'");
-    if($check && $check->num_rows > 0) {
-        $sql = "SELECT * FROM ads WHERE placement='$placement' AND status='active' ORDER BY RAND() LIMIT 1";
-        $res = $conn->query($sql);
-        if($res && $res->num_rows > 0) {
-            $ad = $res->fetch_assoc();
-            echo '<div class="ad-container my-5 position-relative p-3 border border-secondary rounded" 
-                       style="background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(5px); z-index: 5; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">';
-            echo '<span class="position-absolute top-0 start-0 badge bg-secondary" style="font-size:10px; opacity:0.8;">SPONSORED</span>';
-            
-            if($ad['type'] == 'image') {
-                $ad_img = $ad['image_path'];
-                if(strpos($ad_img, 'http') === false) $ad_img = SITE_URL . '/' . ltrim($ad_img, '/');
-                echo '<a href="'.$ad['link'].'" target="_blank" style="display:block; margin-top:15px;">
-                        <img src="'.$ad_img.'" class="img-fluid rounded" alt="Ad">
-                      </a>';
-            } else {
-                echo '<div style="margin-top:15px; color:#fff;">' . $ad['ad_code'] . '</div>'; 
-            }
-            echo '</div>';
-            return true;
+function render_ad_unit(array $ad, string $variant = 'banner'): void
+{
+    $isSidebar = ($variant === 'sidebar');
+
+    if ($isSidebar) {
+        echo '<div class="sidebar-ad-card border border-secondary rounded overflow-hidden bg-dark hover-neon-border" style="transition:0.3s;">';
+        echo '<span class="badge bg-secondary sidebar-ad-badge">SPONSORED</span>';
+    } else {
+        echo '<div class="ad-container my-5 position-relative p-3 border border-secondary rounded" style="background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(5px); z-index: 5; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">';
+        echo '<span class="position-absolute top-0 start-0 badge bg-secondary" style="font-size:10px; opacity:0.8;">SPONSORED</span>';
+    }
+
+    if ($ad['type'] === 'image') {
+        $ad_img = $ad['image_path'] ?? '';
+        if ($ad_img && strpos($ad_img, 'http') === false) {
+            $ad_img = SITE_URL . '/' . ltrim($ad_img, '/');
         }
+        $link = htmlspecialchars($ad['link'] ?? '#', ENT_QUOTES, 'UTF-8');
+        $title = htmlspecialchars(html_entity_decode($ad['title'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'), ENT_QUOTES, 'UTF-8');
+
+        if ($ad_img) {
+            if ($isSidebar) {
+                echo '<a href="' . $link . '" target="_blank" rel="noopener sponsored" class="sidebar-ad-link d-block text-decoration-none">';
+                echo '<div class="sidebar-ad-img-wrap"><img src="' . htmlspecialchars($ad_img) . '" alt="' . $title . '" class="sidebar-ad-img"></div>';
+                if ($title !== '') {
+                    echo '<div class="sidebar-ad-caption px-3 py-2 border-top border-secondary"><span class="text-white small fw-semibold d-block">' . $title . '</span></div>';
+                }
+                echo '</a>';
+            } else {
+                echo '<a href="' . $link . '" target="_blank" rel="noopener sponsored" style="display:block; margin-top:15px;">';
+                echo '<img src="' . htmlspecialchars($ad_img) . '" class="img-fluid rounded" alt="' . $title . '">';
+                echo '</a>';
+            }
+        }
+    } else {
+        $codeWrapClass = $isSidebar ? 'sidebar-ad-code p-3' : 'mt-3';
+        $codeStyle = $isSidebar ? '' : ' style="margin-top:15px; color:#fff;"';
+        echo '<div class="' . $codeWrapClass . '"' . $codeStyle . '>' . ($ad['ad_code'] ?? '') . '</div>';
+    }
+
+    echo '</div>';
+}
+
+function get_ad($placement, $conn)
+{
+    $check = $conn->query("SHOW TABLES LIKE 'ads'");
+    if (!$check || $check->num_rows === 0) {
+        return false;
+    }
+
+    $placement = $conn->real_escape_string($placement);
+    $sql = "SELECT * FROM ads WHERE placement='$placement' AND status='active' ORDER BY RAND() LIMIT 1";
+    $res = $conn->query($sql);
+    if ($res && $res->num_rows > 0) {
+        render_ad_unit($res->fetch_assoc(), 'banner');
+        return true;
     }
     return false;
+}
+
+function render_sidebar_ads($conn, int $limit = 50): int
+{
+    $check = $conn->query("SHOW TABLES LIKE 'ads'");
+    if (!$check || $check->num_rows === 0) {
+        return 0;
+    }
+
+    $limit = max(1, min(50, $limit));
+    $sql = "SELECT * FROM ads WHERE placement='sidebar' AND status='active' ORDER BY id DESC LIMIT " . (int)$limit;
+    $res = $conn->query($sql);
+    if (!$res || $res->num_rows === 0) {
+        return 0;
+    }
+
+    echo '<div class="sidebar-ad-stack">';
+    while ($ad = $res->fetch_assoc()) {
+        render_ad_unit($ad, 'sidebar');
+    }
+    echo '</div>';
+
+    return $res->num_rows;
 }
 
 $check_tables = $conn->query("SHOW TABLES LIKE 'ads'");
@@ -222,10 +278,57 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
     .card-img-top-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
     .hover-neon-border:hover img { transform: scale(1.05); }
     .recent-intel-section { width: 100%; background: rgba(0, 0, 0, 0.35); }
-    .recent-intel-section .card-img-top-wrapper { height: 180px; }
-    @media (min-width: 992px) {
-        .recent-intel-section .card-img-top-wrapper { height: 200px; }
+    .recent-intel-section .card-img-top-wrapper {
+        height: auto;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        position: relative;
+        background: #0a0a0a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
+    .recent-intel-section .card-img-top-wrapper img {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        object-fit: contain;
+        object-position: center center;
+        border: none !important;
+        border-radius: 0 !important;
+        background: #0a0a0a;
+    }
+    .recent-intel-section .hover-neon-border:hover img {
+        transform: scale(1.02);
+    }
+    .sidebar-ad-stack { display: flex; flex-direction: column; gap: 1.25rem; width: 100%; }
+    .sidebar-ad-card { position: relative; background: rgba(12, 12, 12, 0.95) !important; }
+    .sidebar-ad-badge {
+        position: absolute; top: 8px; left: 8px; z-index: 2;
+        font-size: 10px; opacity: 0.9; letter-spacing: 0.05em;
+    }
+    .sidebar-ad-img-wrap {
+        aspect-ratio: 4 / 3;
+        background: #0a0a0a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        margin-top: 0;
+    }
+    .sidebar-ad-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+        border: none !important;
+        border-radius: 0 !important;
+        background: #0a0a0a;
+    }
+    .sidebar-ad-caption { background: rgba(20, 20, 20, 0.9); }
+    .sidebar-ad-code { color: #fff; font-size: 0.875rem; overflow: hidden; }
+    .sidebar-ad-card.hover-neon-border:hover { border-color: #00f2ff !important; box-shadow: 0 0 15px rgba(0, 242, 255, 0.15); }
 </style>
 
 <main>
@@ -361,9 +464,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                 <?php if($has_sidebar): ?>
                 <div class="col-lg-4 mt-5 mt-lg-0 ps-lg-5">
                     <div class="sticky-top" style="top: 120px;">
-                        <div class="mb-4 text-center">
-                            <h6 class="text-white-50 text-uppercase small mb-3 border-bottom border-secondary pb-2">Sponsored Intel</h6>
-                            <?php get_ad('sidebar', $conn); ?>
+                        <div class="mb-4">
+                            <h6 class="text-white-50 text-uppercase small mb-3 border-bottom border-secondary pb-2 text-center">Sponsored Intel</h6>
+                            <?php render_sidebar_ads($conn); ?>
                         </div>
                     </div>
                 </div>
@@ -402,7 +505,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                             <div class="col-lg-4 col-md-6">
                                 <div class="card h-100 border-secondary bg-transparent overflow-hidden hover-neon-border" style="transition:0.3s;">
                                     <div class="card-img-top-wrapper">
-                                        <img src="' . htmlspecialchars($img) . '" class="img-fluid w-100 h-100 object-fit-cover" alt="' . $rel_title . '" style="border:none; border-radius:0;">
+                                        <img src="' . htmlspecialchars($img) . '" class="recent-intel-img" alt="' . $rel_title . '">
                                     </div>
                                     <div class="card-body d-flex flex-column justify-content-center" style="background: rgba(20,20,20,0.6);">
                                         <h5 class="card-title text-white mb-0 h6" style="line-height: 1.5; font-weight: 600;">
