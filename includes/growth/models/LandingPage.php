@@ -122,7 +122,7 @@ class LandingPage extends BaseModel
         if ($hasV2) {
             $sql = "INSERT INTO ge_landing_pages (service_id, city_id, industry_id, page_type, slug, url_path, meta_title, meta_description, h1, h2, h3, content, quick_answer, key_takeaways, summary, expert_insight, faq_json, schema_json, keywords_json, paa_json, voice_answer, internal_links_json, cta_json, content_hash, status)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            self::execute($sql, 'iiisssssssssssssssssssss', [
+            self::execute($sql, 'iiissssssssssssssssssssss', [
                 (int)$data['service_id'], (int)$data['city_id'], $industryId,
                 $data['page_type'] ?? ($industryId > 0 ? 'service_city_industry' : 'service_city'),
                 $data['slug'], $data['url_path'], $data['meta_title'], $data['meta_description'],
@@ -135,7 +135,7 @@ class LandingPage extends BaseModel
         } else {
             $sql = "INSERT INTO ge_landing_pages (service_id, city_id, slug, url_path, meta_title, meta_description, h1, h2, content, quick_answer, key_takeaways, summary, expert_insight, faq_json, schema_json, keywords_json, paa_json, voice_answer, internal_links_json, content_hash, status)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            self::execute($sql, 'iissssssssssssssssssss', [
+            self::execute($sql, 'iisssssssssssssssssss', [
                 (int)$data['service_id'], (int)$data['city_id'], $data['slug'], $data['url_path'],
                 $data['meta_title'], $data['meta_description'], $data['h1'], $data['h2'],
                 $data['content'], $data['quick_answer'], $data['key_takeaways'], $data['summary'],
@@ -151,7 +151,7 @@ class LandingPage extends BaseModel
     {
         if (self::columnExists('industry_id')) {
             $sql = "UPDATE ge_landing_pages SET slug=?, url_path=?, meta_title=?, meta_description=?, h1=?, h2=?, h3=?, content=?, quick_answer=?, key_takeaways=?, summary=?, expert_insight=?, faq_json=?, schema_json=?, keywords_json=?, paa_json=?, voice_answer=?, internal_links_json=?, cta_json=?, content_hash=?, page_type=?, status=? WHERE id=?";
-            return self::execute($sql, 'sssssssssssssssssssssssi', [
+            return self::execute($sql, 'ssssssssssssssssssssssi', [
                 $data['slug'], $data['url_path'], $data['meta_title'], $data['meta_description'],
                 $data['h1'], $data['h2'], $data['h3'] ?? null, $data['content'], $data['quick_answer'],
                 $data['key_takeaways'], $data['summary'], $data['expert_insight'], $data['faq_json'],
@@ -162,7 +162,7 @@ class LandingPage extends BaseModel
         }
 
         $sql = "UPDATE ge_landing_pages SET slug=?, url_path=?, meta_title=?, meta_description=?, h1=?, h2=?, content=?, quick_answer=?, key_takeaways=?, summary=?, expert_insight=?, faq_json=?, schema_json=?, keywords_json=?, paa_json=?, voice_answer=?, internal_links_json=?, content_hash=?, status=? WHERE id=?";
-        return self::execute($sql, 'ssssssssssssssssssi', [
+        return self::execute($sql, 'sssssssssssssssssssi', [
             $data['slug'], $data['url_path'], $data['meta_title'], $data['meta_description'],
             $data['h1'], $data['h2'], $data['content'], $data['quick_answer'], $data['key_takeaways'],
             $data['summary'], $data['expert_insight'], $data['faq_json'], $data['schema_json'],
