@@ -2,16 +2,31 @@
 /**
  * Run database migrations (v1 + v2)
  * CLI: php database/migrate.php
- * Web: https://www.nectradigital.com/database/migrate.php
  */
 ini_set('display_errors', '1');
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/../includes/db.php';
+echo "Nectra Digital — Migration starting...\n";
 
 if (php_sapi_name() !== 'cli') {
     header('Content-Type: text/plain; charset=utf-8');
 }
+
+try {
+    require_once __DIR__ . '/../includes/db.php';
+} catch (Throwable $e) {
+    die("DB load failed: " . $e->getMessage() . "\n");
+}
+
+if (!isset($conn) || !($conn instanceof mysqli)) {
+    die("ERROR: \$conn not set. Create includes/db.local.php with Hostinger MySQL credentials.\n");
+}
+
+if ($conn->connect_error) {
+    die("Connection Failed: " . $conn->connect_error . "\n");
+}
+
+echo "DB connected OK\n\n";
 
 function run_sql_file(mysqli $conn, string $path): array {
     if (!file_exists($path)) {
@@ -44,9 +59,6 @@ function run_sql_file(mysqli $conn, string $path): array {
     $out .= "Done: $ok ok, $fail failed\n\n";
     return ['ok' => $ok, 'fail' => $fail, 'msg' => $out];
 }
-
-echo "Nectra Digital — Database Migration\n";
-echo "DB connected OK\n\n";
 
 $r1 = run_sql_file($conn, __DIR__ . '/schema.sql');
 $r2 = run_sql_file($conn, __DIR__ . '/schema-v2.sql');
