@@ -135,12 +135,15 @@ class FeedEngine
 
     private static function itemFromBlog(array $row): array
     {
+        if (!function_exists('nectra_decode_entities')) {
+            require_once __DIR__ . '/../../text-utils.php';
+        }
         $img = self::defaultImage();
         if (!empty($row['image'])) {
             $img = strpos($row['image'], 'http') === 0 ? $row['image'] : SITE_URL . '/assets/uploads/' . ltrim($row['image'], '/');
         }
         return [
-            'title' => $row['title'],
+            'title' => nectra_decode_entities($row['title'] ?? ''),
             'url' => SITE_URL . '/' . $row['slug'],
             'description' => mb_substr(strip_tags($row['content']), 0, 280) . '...',
             'category' => $row['category'] ?? 'Insights',

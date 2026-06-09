@@ -261,8 +261,8 @@ if (isset($_POST['update_hire_status'])) {
         while($row = $result->fetch_assoc()) {
             echo "<tr>
                     <td class='text-white-50 small'>".date('M d', strtotime($row['created_at']))."</td>
-                    <td class='fw-bold text-white'>{$row['title']}</td>
-                    <td><span class='badge bg-secondary'>{$row['category']}</span></td>
+                    <td class='fw-bold text-white'>" . nectra_display_text($row['title']) . "</td>
+                    <td><span class='badge bg-secondary'>" . nectra_display_text($row['category']) . "</span></td>
                     <td>
                         <a href='edit_post.php?id={$row['id']}' class='btn btn-sm btn-outline-warning me-2'><i class='fas fa-pen'></i></a>
                         <a href='?page=blog&delete_post={$row['id']}' class='btn btn-sm btn-outline-danger' onclick='return confirm(\"Purge this protocol?\")'><i class='fas fa-trash'></i></a>
@@ -320,7 +320,7 @@ if (isset($_POST['update_hire_status'])) {
         echo "<table class='table table-dark'><thead><tr><th>Preview</th><th>Name</th><th>Type</th><th>Placement</th><th>Action</th></tr></thead><tbody>";
         while($row = $res->fetch_assoc()){
             $preview = ($row['type'] == 'image' && !empty($row['image_path'])) ? "<img src='../{$row['image_path']}' width='50' height='50' class='ad-preview'>" : "<i class='fas fa-code fa-lg'></i>";
-            echo "<tr><td>$preview</td><td>{$row['title']}</td><td><span class='badge bg-secondary'>{$row['type']}</span></td><td><span class='badge bg-info'>{$row['placement']}</span></td><td><a href='?page=ads&del_ad={$row['id']}' class='text-danger' onclick='return confirm(\"Delete Ad?\")'>Delete</a></td></tr>";
+            echo "<tr><td>$preview</td><td>" . nectra_display_text($row['title']) . "</td><td><span class='badge bg-secondary'>{$row['type']}</span></td><td><span class='badge bg-info'>{$row['placement']}</span></td><td><a href='?page=ads&del_ad={$row['id']}' class='text-danger' onclick='return confirm(\"Delete Ad?\")'>Delete</a></td></tr>";
         }
         echo "</tbody></table>";
         echo "<script>function toggleAdType(val){if(val=='code'){document.querySelector('.ad-image-group').style.display='none';document.querySelector('.ad-code-group').style.display='block';}else{document.querySelector('.ad-image-group').style.display='block';document.querySelector('.ad-code-group').style.display='none';}}</script>";

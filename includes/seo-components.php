@@ -4,14 +4,18 @@
  */
 require_once __DIR__ . '/seo-data.php';
 
+if (!function_exists('nectra_display_text')) {
+    require_once __DIR__ . '/text-utils.php';
+}
+
 function render_breadcrumbs($items) {
     echo '<nav aria-label="breadcrumb" class="mb-4"><ol class="breadcrumb bg-transparent p-0 m-0 small">';
     foreach ($items as $i => $item) {
         $is_last = ($i === count($items) - 1);
         if ($is_last) {
-            echo '<li class="breadcrumb-item active text-neon" aria-current="page">' . htmlspecialchars($item['name']) . '</li>';
+            echo '<li class="breadcrumb-item active text-neon" aria-current="page">' . nectra_display_text($item['name']) . '</li>';
         } else {
-            echo '<li class="breadcrumb-item"><a href="' . htmlspecialchars($item['url']) . '" class="text-white-50 text-decoration-none">' . htmlspecialchars($item['name']) . '</a></li>';
+            echo '<li class="breadcrumb-item"><a href="' . htmlspecialchars($item['url']) . '" class="text-white-50 text-decoration-none">' . nectra_display_text($item['name']) . '</a></li>';
         }
     }
     echo '</ol></nav>';
@@ -168,7 +172,7 @@ function render_post_internal_links($conn, $post, $category) {
         $stmt->execute();
         $res = $stmt->get_result();
         while ($row = $res->fetch_assoc()) {
-            $links[] = ['url' => '/' . $row['slug'], 'title' => htmlspecialchars_decode($row['title'], ENT_QUOTES)];
+            $links[] = ['url' => '/' . $row['slug'], 'title' => nectra_decode_entities($row['title'])];
         }
     }
     
@@ -179,7 +183,7 @@ function render_post_internal_links($conn, $post, $category) {
     
     echo '<section class="py-4 mt-4 border-top border-secondary"><h3 class="text-white h6 mb-3"><i class="fas fa-link text-neon me-2"></i>Related Resources</h3><div class="row g-2">';
     foreach (array_slice($links, 0, 12) as $link) {
-        echo '<div class="col-md-6"><a href="' . $link['url'] . '" class="text-neon small text-decoration-none"><i class="fas fa-angle-right me-1"></i>' . htmlspecialchars($link['title']) . '</a></div>';
+        echo '<div class="col-md-6"><a href="' . $link['url'] . '" class="text-neon small text-decoration-none"><i class="fas fa-angle-right me-1"></i>' . nectra_display_text($link['title']) . '</a></div>';
     }
     echo '</div></section>';
 }

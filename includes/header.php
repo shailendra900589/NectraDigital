@@ -1,5 +1,6 @@
 <?php 
 require_once __DIR__ . '/config.php'; 
+require_once __DIR__ . '/text-utils.php';
 require_once __DIR__ . '/seo-data.php';
 
 global $page_title, $page_desc, $page_img, $page_keys, $noindex, $og_type, $page_schema;
@@ -42,8 +43,8 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title><?php echo htmlspecialchars($meta_title); ?></title>
-    <meta name="description" content="<?php echo htmlspecialchars($meta_desc); ?>">
+    <title><?php echo nectra_display_text($meta_title); ?></title>
+    <meta name="description" content="<?php echo nectra_display_text($meta_desc); ?>">
     <link rel="canonical" href="<?php echo htmlspecialchars($final_url); ?>">
     <meta name="keywords" content="<?php echo htmlspecialchars($meta_keys); ?>">
     <meta name="author" content="<?php echo FOUNDER_NAME; ?>">
@@ -76,8 +77,8 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     
     <meta property="og:site_name" content="<?php echo $site_name_safe; ?>" />
     <meta property="og:type" content="<?php echo $meta_og_type; ?>" />
-    <meta property="og:title" content="<?php echo htmlspecialchars($meta_title); ?>" />
-    <meta property="og:description" content="<?php echo htmlspecialchars($meta_desc); ?>" />
+    <meta property="og:title" content="<?php echo nectra_display_text($meta_title); ?>" />
+    <meta property="og:description" content="<?php echo nectra_display_text($meta_desc); ?>" />
     <meta property="og:url" content="<?php echo htmlspecialchars($final_url); ?>" />
     <meta property="og:image" content="<?php echo htmlspecialchars($meta_img); ?>" />
     <meta property="og:image:alt" content="<?php echo $site_name_safe; ?> - SEO & Digital Marketing Agency India" />
@@ -85,8 +86,8 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@nectradigital">
-    <meta name="twitter:title" content="<?php echo htmlspecialchars($meta_title); ?>">
-    <meta name="twitter:description" content="<?php echo htmlspecialchars($meta_desc); ?>">
+    <meta name="twitter:title" content="<?php echo nectra_display_text($meta_title); ?>">
+    <meta name="twitter:description" content="<?php echo nectra_display_text($meta_desc); ?>">
     <meta name="twitter:image" content="<?php echo htmlspecialchars($meta_img); ?>">
     <meta name="twitter:image:alt" content="<?php echo $site_name_safe; ?>">
 

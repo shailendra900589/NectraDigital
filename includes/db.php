@@ -4,6 +4,8 @@ if (isset($GLOBALS['nectra_db_conn']) && $GLOBALS['nectra_db_conn'] instanceof m
     return;
 }
 
+require_once __DIR__ . '/text-utils.php';
+
 $host = 'localhost';
 $user = '';
 $pass = '';
@@ -27,9 +29,7 @@ if ($conn->connect_error) {
 
 function clean_input($data) {
     global $conn;
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
+    $data = sanitize_db_text($data);
     return $conn->real_escape_string($data);
 }
 

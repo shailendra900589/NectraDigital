@@ -17,11 +17,11 @@ function upload_image($file) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $title = clean_input($_POST['title']);
-    $cat = clean_input($_POST['category']);
+    $title = sanitize_db_text($_POST['title']);
+    $cat = sanitize_db_text($_POST['category']);
     $content = $_POST['content'];
-    $input_slug = clean_input($_POST['slug']);
-    $meta_desc = clean_input($_POST['meta_description']);
+    $input_slug = sanitize_db_text($_POST['slug']);
+    $meta_desc = sanitize_db_text($_POST['meta_description']);
     $img_path = "";
     $scheduled_time = !empty($_POST['scheduled_time']) ? clean_input($_POST['scheduled_time']) : date('Y-m-d H:i:s');
     $raw_slug = !empty($input_slug) ? $input_slug : $title;

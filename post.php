@@ -14,9 +14,11 @@ if(isset($conn)) {
 if (!function_exists('clean_input')) {
     function clean_input($data) {
         global $conn;
-        $data = trim($data);
-        $data = stripslashes($data);
-        $data = htmlspecialchars($data);
+        if (function_exists('sanitize_db_text')) {
+            $data = sanitize_db_text($data);
+        } else {
+            $data = trim(stripslashes($data));
+        }
         return ($conn) ? $conn->real_escape_string($data) : $data;
     }
 }
@@ -43,17 +45,17 @@ if(isset($_GET['slug'])) {
 }
 
 // 4. *** ADVANCED MULTI-PHRASE SEO KEYWORD GENERATOR ***
-// FIX: Decode HTML entities so "&amp;" turns back into "&" and stops generating "amp" as a keyword!
-$decoded_title = htmlspecialchars_decode($post['title'], ENT_QUOTES);
-$decoded_category = htmlspecialchars_decode($post['category'], ENT_QUOTES);
+// FIX: Fully decode HTML entities (&amp; → &) including double-encoded titles
+$decoded_title = nectra_decode_entities($post['title']);
+$decoded_category = nectra_decode_entities($post['category']);
 
 $page_title = $decoded_title;
 
 // NEW: Check if manual meta description exists, else auto-generate
 if (!empty($post['meta_description'])) {
-    $page_desc = htmlspecialchars_decode(strip_tags($post['meta_description']), ENT_QUOTES);
+    $page_desc = nectra_decode_entities(strip_tags($post['meta_description']));
 } else {
-    $page_desc = htmlspecialchars_decode(mb_substr(strip_tags($post['content']), 0, 160), ENT_QUOTES) . "...";
+    $page_desc = nectra_decode_entities(mb_substr(strip_tags($post['content']), 0, 160)) . "...";
 }
 
 // Clean the title of special characters
@@ -154,7 +156,7 @@ function render_ad_unit(array $ad, string $variant = 'banner'): bool
             $ad_img = SITE_URL . '/' . ltrim($ad_img, '/');
         }
         $link = htmlspecialchars($ad['link'] ?? '#', ENT_QUOTES, 'UTF-8');
-        $title = htmlspecialchars(html_entity_decode($ad['title'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'), ENT_QUOTES, 'UTF-8');
+        $title = nectra_display_text($ad['title'] ?? '');
 
         if ($ad_img) {
             if ($isSidebar) {
@@ -464,10 +466,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
     <header class="post-hero-header text-center">
         <div class="container position-relative">
             <span class="badge border border-secondary text-white-50 mb-4 blog-post-category text-uppercase px-3 py-2">
-                <?php echo htmlspecialchars($decoded_category, ENT_QUOTES, 'UTF-8'); ?>
+                <?php echo nectra_display_text($decoded_category); ?>
             </span>
             <h1 class="blog-post-title">
-                <?php echo htmlspecialchars($decoded_title, ENT_QUOTES, 'UTF-8'); ?>
+                <?php echo nectra_display_text($decoded_title); ?>
             </h1>
             
             <div class="blog-post-meta d-flex justify-content-center gap-4 flex-wrap">
@@ -489,7 +491,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                     
                     <?php if(!empty($display_img)): ?>
                     <div class="mb-5 rounded overflow-hidden border border-secondary shadow-lg position-relative" style="z-index: 3;">
-                        <img src="<?php echo $display_img; ?>" alt="<?php echo $decoded_title; ?>" class="img-fluid w-100 d-block">
+                        <img src="<?php echo $display_img; ?>" alt="<?php echo nectra_display_text($decoded_title); ?>" class="img-fluid w-100 d-block">
                     </div>
                     <?php endif; ?>
 
@@ -616,11 +618,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
 
                     if ($result->num_rows > 0) {
                         while ($row = $result->fetch_assoc()) {
-                            $rel_title = $row['title'];
-                            for ($d = 0; $d < 4; $d++) {
-                                $rel_title = html_entity_decode($rel_title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                            }
-                            $rel_title = htmlspecialchars($rel_title, ENT_QUOTES, 'UTF-8');
+                            $rel_title = nectra_display_text($row['title']);
                             $img = $row['image'];
                             if (strpos($img, 'http') === false) {
                                 $img = SITE_URL . '/' . ltrim($img, '/');

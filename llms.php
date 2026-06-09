@@ -47,7 +47,7 @@ $sql = "SELECT title, slug FROM blog_posts ORDER BY created_at DESC";
 $result = $conn->query($sql);
 if($result && $result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
-        echo "- [" . $row['title'] . "](" . SITE_URL . "/" . $row['slug'] . ")\n";
+        echo "- [" . nectra_decode_entities($row['title']) . "](" . SITE_URL . "/" . $row['slug'] . ")\n";
     }
 } else {
     echo "- No posts yet.\n";

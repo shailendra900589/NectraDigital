@@ -19,11 +19,11 @@ function upload_image($file) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $title = clean_input($_POST['title']);
-    $cat = clean_input($_POST['category']);
+    $title = sanitize_db_text($_POST['title']);
+    $cat = sanitize_db_text($_POST['category']);
     $content = $_POST['content'];
-    $input_slug = clean_input($_POST['slug']);
-    $meta_desc = clean_input($_POST['meta_description']);
+    $input_slug = sanitize_db_text($_POST['slug']);
+    $meta_desc = sanitize_db_text($_POST['meta_description']);
     $img_path = $post['image'];
     $raw_slug = !empty($input_slug) ? $input_slug : $title;
     $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $raw_slug), '-'));
@@ -54,13 +54,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body class="admin-editor p-5">
     <div class="container">
-        <h3>Edit Intelligence: <span class="text-info"><?php echo htmlspecialchars($post['title']); ?></span></h3>
+        <h3>Edit Intelligence: <span class="text-info"><?php echo nectra_display_text($post['title']); ?></span></h3>
         <?php if(isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
         <form method="POST" class="mt-4" enctype="multipart/form-data">
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label>Title</label>
-                    <input type="text" name="title" id="post_title" value="<?php echo htmlspecialchars($post['title']); ?>" class="form-control bg-dark text-white" required>
+                    <input type="text" name="title" id="post_title" value="<?php echo nectra_display_text($post['title']); ?>" class="form-control bg-dark text-white" required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label>Custom URL Slug</label>
@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="col-md-4 mb-3">
                     <label>Category</label>
-                    <input type="text" name="category" value="<?php echo htmlspecialchars($post['category']); ?>" class="form-control bg-dark text-white" required>
+                    <input type="text" name="category" value="<?php echo nectra_display_text($post['category']); ?>" class="form-control bg-dark text-white" required>
                 </div>
                 <div class="col-md-8 mb-3">
                     <label>Current Image</label><br>
@@ -80,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="col-12 mb-3">
                     <label>SEO Meta Description (Max 160 chars)</label>
-                    <textarea name="meta_description" class="form-control bg-dark text-white" rows="2" maxlength="160"><?php echo isset($post['meta_description']) ? htmlspecialchars($post['meta_description']) : ''; ?></textarea>
+                    <textarea name="meta_description" class="form-control bg-dark text-white" rows="2" maxlength="160"><?php echo isset($post['meta_description']) ? nectra_display_text($post['meta_description']) : ''; ?></textarea>
                 </div>
                 <div class="col-12 mb-3">
                     <label>Content Protocol</label>

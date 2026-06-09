@@ -47,20 +47,22 @@ $result = $conn->query($sql);
                         $thumb_html = '';
                         if(!empty($row['image']) && file_exists($row['image'])) {
                             $thumb_html = '<div class="mb-4 rounded overflow-hidden border border-secondary" style="height: 200px;">
-                                <img src="'.$row['image'].'" class="w-100 h-100 object-fit-cover" alt="'.$row['title'].'">
+                                <img src="'.$row['image'].'" class="w-100 h-100 object-fit-cover" alt="'.nectra_display_text($row['title']).'">
                             </div>';
                         } else {
                             $thumb_html = '<div class="d-flex justify-content-between align-items-start mb-4">
                                 <div class="bg-dark border border-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                                     <i class="fas fa-bolt text-neon"></i>
                                 </div>
-                                <span class="text-white-50 x-small fw-bold text-uppercase" style="letter-spacing: 1px;">'.$row['category'].'</span>
+                                <span class="text-white-50 x-small fw-bold text-uppercase" style="letter-spacing: 1px;">'.nectra_display_text($row['category']).'</span>
                             </div>';
                         }
 
                         // ==========================================
                         // FIX: Added 'post/' so the link matches .htaccess
                         // ==========================================
+                        $post_title = nectra_display_text($row['title']);
+                        $post_category = nectra_display_text($row['category']);
                         $post_link = $row['slug'];
 
                         echo '
@@ -70,11 +72,11 @@ $result = $conn->query($sql);
                                     
                                     '.$thumb_html.'
                                     
-                                    '.((!empty($row['image'])) ? '<div class="mb-3"><span class="badge border border-secondary text-white-50">'.$row['category'].'</span></div>' : '').'
+                                    '.((!empty($row['image'])) ? '<div class="mb-3"><span class="badge border border-secondary text-white-50">'.$post_category.'</span></div>' : '').'
 
                                     <h3 class="h4 text-white mb-3">
                                         <a href="'.$post_link.'" class="text-white text-decoration-none stretched-link hover-neon">
-                                            '.$row['title'].'
+                                            '.$post_title.'
                                         </a>
                                     </h3>
                                     <p class="text-white-50 small mb-4">

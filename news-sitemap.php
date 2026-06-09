@@ -23,9 +23,9 @@ if (isset($conn) && $conn instanceof mysqli) {
             echo "        <news:language>en</news:language>\n";
             echo "      </news:publication>\n";
             echo "      <news:publication_date>{$pub_date}</news:publication_date>\n";
-            echo "      <news:title><![CDATA[{$row['title']}]]></news:title>\n";
+            echo "      <news:title><![CDATA[" . nectra_decode_entities($row['title']) . "]]></news:title>\n";
             if (!empty($row['category'])) {
-                echo "      <news:keywords><![CDATA[{$row['category']}, SEO, digital marketing, India]]></news:keywords>\n";
+                echo "      <news:keywords><![CDATA[" . nectra_decode_entities($row['category']) . ", SEO, digital marketing, India]]></news:keywords>\n";
             }
             echo "    </news:news>\n";
             echo "  </url>\n";
