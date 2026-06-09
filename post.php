@@ -371,6 +371,30 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
     html, body { margin: 0; padding: 0; width: 100%; min-height: 100vh; background-color: #050505 !important; color: #e0e0e0 !important; overflow-x: hidden; }
     #nectra-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
     .post-hero-header { position: relative; z-index: 2; padding-top: 100px; padding-bottom: 50px; background: transparent; border-bottom: 1px solid rgba(255,255,255,0.1); margin-top: 0; }
+    .post-hero-header .blog-post-title {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-size: clamp(1.85rem, 3.2vw, 2.65rem);
+        font-weight: 700;
+        line-height: 1.28;
+        letter-spacing: -0.025em;
+        max-width: 820px;
+        margin: 0 auto 1.25rem;
+        text-shadow: none;
+        color: #fff !important;
+        text-wrap: balance;
+    }
+    .post-hero-header .blog-post-category {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+    }
+    .post-hero-header .blog-post-meta {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.65);
+    }
+    .post-hero-header .blog-post-meta i { color: #00e5ff; opacity: 0.9; }
     main { position: relative; z-index: 2; }
     .blog-content { font-family: 'Inter', sans-serif; font-size: 1.15rem; line-height: 1.8; color: #d4d4d4; }
     h1, h2, h3, h4, h5 { color: #fff !important; font-weight: 700; margin-top: 2rem; }
@@ -439,14 +463,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
 <main>
     <header class="post-hero-header text-center">
         <div class="container position-relative">
-            <span class="badge border border-neon text-neon mb-4 text-uppercase tracking-widest px-3 py-2">
-                <?php echo $decoded_category; ?>
+            <span class="badge border border-secondary text-white-50 mb-4 blog-post-category text-uppercase px-3 py-2">
+                <?php echo htmlspecialchars($decoded_category, ENT_QUOTES, 'UTF-8'); ?>
             </span>
-            <h1 class="display-4 fw-bold text-white mb-4 mx-auto" style="max-width: 900px; text-shadow: 0 0 20px rgba(0,0,0,0.8);">
-                <?php echo $decoded_title; ?>
+            <h1 class="blog-post-title">
+                <?php echo htmlspecialchars($decoded_title, ENT_QUOTES, 'UTF-8'); ?>
             </h1>
             
-            <div class="text-white-50 small d-flex justify-content-center gap-4 flex-wrap">
+            <div class="blog-post-meta d-flex justify-content-center gap-4 flex-wrap">
                 <span><i class="far fa-user me-2 text-neon"></i> <?php echo FOUNDER_NAME; ?></span>
                 <span><i class="far fa-calendar me-2 text-neon"></i> <?php echo date('M j, Y', strtotime($post['created_at'])); ?></span>
                 <span><i class="far fa-clock me-2 text-neon"></i> <?php echo max(1, round(str_word_count(strip_tags($post['content'])) / 200)); ?> min read</span>
