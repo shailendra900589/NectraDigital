@@ -5,7 +5,7 @@ use Growth\Models\Tool;
 
 $tools = ge_table_exists('ge_tools') ? Tool::all(false) : [];
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Tools Manager', 'tools');
 ?>
 

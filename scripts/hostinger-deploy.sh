@@ -1,57 +1,38 @@
 #!/bin/bash
-# Safe Hostinger deploy — preserves db.local.php & config.local.php
-# Run from public_html:
+# Safe Hostinger deploy — run from public_html:
 #   bash scripts/hostinger-deploy.sh
-
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 echo "=== Nectra Digital — Safe Deploy ==="
-echo "Directory: $ROOT"
 
-# 1. Backup server-only secrets (never in git)
-for f in includes/db.local.php includes/config.local.php admin/reset_password.php; do
-  if [ -f "$f" ]; then
-    cp "$f" "/tmp/nectra-backup-$(basename $f)"
-    echo "Backed up: $f"
-  fi
+for f in includes/db.local.php includes/config.local.php; do
+  [ -f "$f" ] && cp "$f" "/tmp/nectra-$(basename $f).bak" && echo "Backed up $f"
 done
 
-# 2. Discard local edits on tracked files (fixes are already in GitHub main)
 git fetch origin main
+
+# Discard server-side edits on tracked files (fixes pull conflicts)
 git checkout origin/main -- includes/db.php includes/header.php includes/seo-components.php includes/config.php 2>/dev/null || true
 
-# 3. Pull latest
-git pull origin main
+git pull origin main || {
+  echo "Pull failed — hard reset to origin/main (secrets restored after)"
+  git reset --hard origin/main
+}
 
-# 4. Restore secrets
-for f in includes/db.local.php includes/config.local.php admin/reset_password.php; do
-  backup="/tmp/nectra-backup-$(basename $f)"
-  if [ -f "$backup" ]; then
-    cp "$backup" "$f"
-    echo "Restored: $f"
-  fi
+for f in includes/db.local.php includes/config.local.php; do
+  bak="/tmp/nectra-$(basename $f).bak"
+  [ -f "$bak" ] && cp "$bak" "$f" && echo "Restored $f"
 done
 
-# 5. Ensure db.local.php exists
-if [ ! -f includes/db.local.php ]; then
-  echo ""
-  echo "WARNING: includes/db.local.php missing!"
-  echo "Copy from example and add Hostinger MySQL credentials:"
-  echo "  cp includes/db.local.php.example includes/db.local.php"
-  echo "  nano includes/db.local.php"
-fi
-
-# 6. Verify key files
 echo ""
 echo "=== Verify ==="
-for f in admin/dashboard.php admin/includes/admin-growth.php cron/process-indexing.php includes/growth/engines/IndexingEngine.php; do
-  if [ -f "$f" ]; then echo "OK  $f"; else echo "MISSING  $f"; fi
+php -l includes/db.local.php 2>/dev/null || echo "WARN: fix includes/db.local.php syntax"
+php database/test-db.php 2>/dev/null || echo "WARN: DB test failed"
+for f in admin/growth/init.php admin/growth/generate.php admin/growth/settings.php cron/process-indexing.php; do
+  [ -f "$f" ] && php -l "$f" && echo "OK $f" || echo "MISSING $f"
 done
 
 echo ""
-echo "=== Done ==="
-echo "Admin: https://www.nectradigital.com/admin/dashboard.php?page=home"
-echo "Test:  php database/test-db.php"
-echo "Cron:  php cron/process-indexing.php"
+echo "Done. Test: /admin/growth/diag.php and /admin/dashboard.php?page=home"

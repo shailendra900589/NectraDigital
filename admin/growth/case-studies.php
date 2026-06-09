@@ -49,7 +49,7 @@ $item = $id ? CaseStudy::find($id) : null;
 $studies = ge_is_ready() ? CaseStudy::all() : [];
 $services = ge_is_ready() ? Service::all(true) : [];
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Case Studies', 'case-studies');
 
 if ($action === 'add' || ($action === 'edit' && $item)):

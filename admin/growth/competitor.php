@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['competitor_url'])) {
 
 $recent = CompetitorEngine::recent(15);
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Competitor Intelligence', 'competitor');
 ?>
 

@@ -65,7 +65,7 @@ if ($action === 'import' && $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_PO
 $item = $id ? City::find($id) : null;
 $cities = ge_is_ready() ? City::all() : [];
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('City Manager', 'cities');
 
 if ($action === 'add' || ($action === 'edit' && $item)):

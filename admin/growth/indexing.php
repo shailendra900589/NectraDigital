@@ -45,7 +45,7 @@ $queue = ge_is_ready() ? IndexingQueue::all(30) : [];
 $recentPages = ge_is_ready() ? LandingPage::paginated(1, 20, ['index_status' => 'pending']) : ['data'=>[]];
 $idxInfo = ['key' => IndexingEngine::apiKey(), 'key_url' => IndexingEngine::keyFileUrl()];
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Indexing Manager', 'indexing');
 ?>
 

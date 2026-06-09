@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ge_table_exists('ge_authors')) {
 $item = ($id && ge_table_exists('ge_authors')) ? Author::find($id) : null;
 $authors = ge_table_exists('ge_authors') ? Author::all() : [];
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Authors Manager (EEAT)', 'authors');
 
 if (!ge_table_exists('ge_authors')): ?>

@@ -13,7 +13,7 @@ if (ge_table_exists('ge_analytics_events')) {
     $recentRows = [];
 }
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Analytics', 'analytics');
 ?>
 

@@ -33,7 +33,7 @@ $keywords = ge_is_ready() ? Keyword::all($perPage, $pg['offset']) : [];
 $services = ge_is_ready() ? Service::all(true) : [];
 $cities = ge_is_ready() ? City::all(true) : [];
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Keyword Manager', 'keywords');
 ?>
 

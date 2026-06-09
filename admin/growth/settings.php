@@ -29,9 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$idxKey = ge_setting('indexnow_api_key', IndexingEngine::apiKey());
+$idxKey = ge_setting('indexnow_api_key', '');
+if ($idxKey === '' && class_exists(\Growth\Engines\IndexingEngine::class)) {
+    $idxKey = \Growth\Engines\IndexingEngine::apiKey();
+}
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Settings', 'settings');
 ?>
 

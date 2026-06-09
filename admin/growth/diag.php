@@ -24,7 +24,7 @@ try {
         echo "ge_services rows: $n\n";
     }
 
-    require_once __DIR__ . '/includes/layout.php';
+    ge_admin_layout();
     echo "OK layout.php\n";
 
     echo "\nAll checks passed.\n";

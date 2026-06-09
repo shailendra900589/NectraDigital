@@ -46,7 +46,7 @@ if ($id && ge_table_exists('ge_knowledge_base')) {
     foreach ($articles as $a) { if ((int)$a['id'] === $id) { $editItem = $a; break; } }
 }
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Knowledge Base', 'knowledge');
 ?>
 

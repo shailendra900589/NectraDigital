@@ -38,7 +38,7 @@ if ($action === 'delete' && $id && ge_table_exists('ge_industries')) {
 $item = ($id && ge_table_exists('ge_industries')) ? Industry::find($id) : null;
 $items = (ge_is_ready() && ge_table_exists('ge_industries')) ? Industry::all() : [];
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Industries Manager', 'industries');
 
 if (!ge_table_exists('ge_industries')): ?>

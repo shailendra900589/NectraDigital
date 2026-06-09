@@ -69,7 +69,7 @@ if ($action === 'delete' && $id) {
 $item = ($id && ge_admin_require_ready()) ? Service::find($id) : null;
 $services = ge_admin_require_ready() ? ge_admin_safe(fn() => Service::all(), []) : [];
 
-require_once __DIR__ . '/includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start($action === 'add' || $action === 'edit' ? 'Service Manager' : 'Services', 'services');
 
 if ($action === 'add' || ($action === 'edit' && $item)):

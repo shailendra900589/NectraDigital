@@ -68,7 +68,7 @@ $industries = (ge_is_ready() && ge_table_exists('ge_industries')) ? Industry::al
 $potentialCity = count($services) * count($cities);
 $potentialFull = $potentialCity * max(1, count($industries) + 1);
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Page Generator', 'generate');
 ?>
 

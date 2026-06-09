@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['lead_id']) && !empty
 $stats = ge_table_exists('ge_crm_leads') ? CrmLead::stats() : ['total' => 0, 'new' => 0, 'won' => 0];
 $leads = ge_table_exists('ge_crm_leads') ? CrmLead::all(200) : [];
 
-require_once 'includes/layout.php';
+ge_admin_layout();
 ge_admin_layout_start('Leads Manager', 'leads');
 ?>
 

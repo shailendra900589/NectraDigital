@@ -52,10 +52,15 @@ class IndexingEngine
         return $key;
     }
 
+    public static function siteRoot(): string
+    {
+        return dirname(__DIR__, 3);
+    }
+
     public static function ensureKeyFile(?string $key = null): bool
     {
         $key = $key ?: self::apiKey();
-        $path = dirname(__DIR__, 2) . '/' . $key . '.txt';
+        $path = self::siteRoot() . '/' . $key . '.txt';
         if (is_file($path)) {
             return true;
         }
