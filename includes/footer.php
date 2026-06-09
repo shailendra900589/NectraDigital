@@ -190,15 +190,17 @@ $footer_cities = array_slice(get_cities_data(), 0, 8, true);
 .transition { transition: all 0.3s ease; }
 .hover-effect:hover { transform: translateY(-3px); border-color: var(--nectra-neon) !important; transition: 0.3s; }
 </style>
-<script src="<?php echo SITE_URL; ?>/assets/js/floating-contact.js"></script>
 <?php
+$nectraChatbotEnabled = false;
 if (file_exists(__DIR__ . '/growth/bootstrap.php')) {
     require_once __DIR__ . '/growth/bootstrap.php';
-    if (ge_setting('chatbot_enabled', '0') === '1'): ?>
+    $nectraChatbotEnabled = ge_setting('chatbot_enabled', '0') === '1';
+}
+if ($nectraChatbotEnabled): ?>
+<script>window.NECTRA_CHATBOT_INTEGRATED = true;</script>
 <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/growth-chatbot.css">
 <script src="<?php echo SITE_URL; ?>/assets/js/growth-chatbot.js"></script>
-<?php endif;
-}
-?>
+<?php endif; ?>
+<script src="<?php echo SITE_URL; ?>/assets/js/floating-contact.js"></script>
 </body>
 </html>

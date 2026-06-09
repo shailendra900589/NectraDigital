@@ -1,20 +1,40 @@
 (function () {
+    const integrated = window.NECTRA_CHATBOT_INTEGRATED === true;
     const welcome = 'Hi! I am Nectra AI. How can I help you grow today? Ask about our services or leave your details for a free consultation.';
     const panel = document.createElement('div');
     panel.id = 'nectra-chatbot-panel';
     panel.innerHTML = `
-        <div class="ncb-header"><i class="fas fa-robot me-2"></i>Nectra AI Assistant</div>
+        <div class="ncb-header">
+            <span><i class="fas fa-robot me-2"></i>Nectra AI Assistant</span>
+            <button type="button" class="ncb-close" id="ncbClose" aria-label="Close chat">&times;</button>
+        </div>
         <div class="ncb-messages" id="ncbMessages"></div>
         <div class="ncb-input-row">
             <input type="text" id="ncbInput" placeholder="Ask or type your email...">
             <button type="button" id="ncbSend">Send</button>
         </div>`;
-    const toggle = document.createElement('button');
-    toggle.id = 'nectra-chatbot-toggle';
-    toggle.innerHTML = '<i class="fas fa-comment-dots"></i>';
-    toggle.setAttribute('aria-label', 'Open chat');
     document.body.appendChild(panel);
-    document.body.appendChild(toggle);
+
+    if (!integrated) {
+        const toggle = document.createElement('button');
+        toggle.id = 'nectra-chatbot-toggle';
+        toggle.innerHTML = '<i class="fas fa-comment-dots"></i>';
+        toggle.setAttribute('aria-label', 'Open chat');
+        document.body.appendChild(toggle);
+        toggle.addEventListener('click', () => panel.classList.toggle('open'));
+    } else {
+        window.openNectraChatbot = function () {
+            panel.classList.add('open');
+        };
+        window.closeNectraChatbot = function () {
+            panel.classList.remove('open');
+        };
+    }
+
+    const closeBtn = panel.querySelector('#ncbClose');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+    }
 
     const messages = panel.querySelector('#ncbMessages');
     let collectingLead = false;
@@ -29,8 +49,6 @@
     }
 
     addMsg(welcome, 'bot');
-
-    toggle.addEventListener('click', () => panel.classList.toggle('open'));
 
     function botReply(input) {
         const lower = input.toLowerCase();

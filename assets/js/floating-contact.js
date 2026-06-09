@@ -1,4 +1,8 @@
 document.addEventListener("DOMContentLoaded", function() {
+    if (document.querySelector('.nectra-floating-wrap')) {
+        return;
+    }
+
     // 1. INJECT CUSTOM CSS (With Tooltips & Animations)
     const style = document.createElement('style');
     style.innerHTML = `
@@ -119,7 +123,9 @@ document.addEventListener("DOMContentLoaded", function() {
         .item-whatsapp { background: #25D366; }
         .item-call     { background: #00f2ff; color: #000; }
         .item-mail     { background: #ea4335; }
+        .item-ai       { background: linear-gradient(135deg, #00e5ff, #0099b8); color: #000; border: none; cursor: pointer; }
         .item-call:hover { color: #000; }
+        .item-ai:hover { color: #000; }
     `;
     document.head.appendChild(style);
 
@@ -134,6 +140,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const emailAddress = "contact@nectradigital.com";
 
     // 3. CREATE HTML WITH ARIA ACCESSIBILITY TAGS (Good for Google)
+    const chatbotIntegrated = window.NECTRA_CHATBOT_INTEGRATED === true;
+    const aiMenuItem = chatbotIntegrated ? `
+            <button type="button" class="nectra-contact-item item-ai" id="nectraOpenChatbot" data-tooltip="AI Assistant" aria-label="Open AI Assistant" role="menuitem">
+                <i class="fas fa-robot"></i>
+            </button>` : '';
+
     const wrapper = document.createElement('div');
     wrapper.className = 'nectra-floating-wrap';
     wrapper.innerHTML = `
@@ -141,6 +153,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <i class="fas fa-comment-dots" id="nectraToggleIcon"></i>
         </button>
         <div class="nectra-contact-menu" id="nectraFloatingMenu" role="menu">
+            ${aiMenuItem}
             <a href="https://wa.me/${whatsappNumber}?text=${waMessage}" target="_blank" class="nectra-contact-item item-whatsapp track-click" data-network="whatsapp" data-tooltip="WhatsApp Us" aria-label="Contact on WhatsApp" role="menuitem">
                 <i class="fab fa-whatsapp"></i>
             </a>
@@ -158,6 +171,26 @@ document.addEventListener("DOMContentLoaded", function() {
     const toggleBtn = document.getElementById('nectraFloatingToggle');
     const menu = document.getElementById('nectraFloatingMenu');
     const icon = document.getElementById('nectraToggleIcon');
+
+    function closeContactMenu() {
+        menu.classList.remove('active');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-comment-dots');
+        icon.style.transform = 'scale(1) rotate(0deg)';
+    }
+
+    if (chatbotIntegrated) {
+        const aiBtn = document.getElementById('nectraOpenChatbot');
+        if (aiBtn) {
+            aiBtn.addEventListener('click', () => {
+                closeContactMenu();
+                if (typeof window.openNectraChatbot === 'function') {
+                    window.openNectraChatbot();
+                }
+            });
+        }
+    }
 
     toggleBtn.addEventListener('click', () => {
         const isActive = menu.classList.toggle('active');
