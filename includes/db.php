@@ -1,18 +1,22 @@
 <?php
-$host = "localhost";
-$user = "nectrogl_NectraDigital";
-$pass = "9Rahul@1432";
-$dbname = "nectrogl_NectraDigital";
+$host = 'localhost';
+$user = '';
+$pass = '';
+$dbname = '';
 
-// Production DB overrides only (Hostinger: copy db.local.php.example → db.local.php)
+// Production DB overrides (Hostinger: copy db.local.php.example → db.local.php)
 if (is_file(__DIR__ . '/db.local.php')) {
     require __DIR__ . '/db.local.php';
+}
+
+if ($user === '' || $dbname === '') {
+    die('Database not configured. Create includes/db.local.php with $host, $user, $pass, $dbname.');
 }
 
 $conn = new mysqli($host, $user, $pass, $dbname);
 
 if ($conn->connect_error) {
-    die("Connection Failed: " . $conn->connect_error);
+    die('Connection Failed: ' . $conn->connect_error);
 }
 
 function clean_input($data) {
@@ -24,7 +28,7 @@ function clean_input($data) {
 }
 
 function is_spam($text) {
-    $bad_words = array("<a href", "http", "https", "www", ".com", ".ru", "cryto", "forex");
+    $bad_words = array('<a href', 'http', 'https', 'www', '.com', '.ru', 'cryto', 'forex');
     foreach ($bad_words as $word) {
         if (stripos($text, $word) !== false) {
             return true;

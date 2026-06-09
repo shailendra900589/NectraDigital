@@ -1,6 +1,7 @@
 <?php
 /**
- * Hostinger / production DB credentials (copy to db.local.php — never commit db.local.php)
+ * Hostinger / production DB credentials — copy to db.local.php (never commit db.local.php)
+ * hPanel → Databases → MySQL Databases
  */
 $host = 'localhost';
 $user = 'u991240931_YOUR_DB_USER';
