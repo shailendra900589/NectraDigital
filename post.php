@@ -143,17 +143,10 @@ $header_html = str_replace('<head>', "<head>\n" . $meta_charset . "\n" . $base_t
 echo $header_html;
 
 // 6. AD ENGINE
-function render_ad_unit(array $ad, string $variant = 'banner'): void
+function render_ad_unit(array $ad, string $variant = 'banner'): bool
 {
     $isSidebar = ($variant === 'sidebar');
-
-    if ($isSidebar) {
-        echo '<div class="sidebar-ad-card border border-secondary rounded overflow-hidden bg-dark hover-neon-border" style="transition:0.3s;">';
-        echo '<span class="badge bg-secondary sidebar-ad-badge">SPONSORED</span>';
-    } else {
-        echo '<div class="ad-container my-5 position-relative p-3 border border-secondary rounded" style="background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(5px); z-index: 5; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">';
-        echo '<span class="position-absolute top-0 start-0 badge bg-secondary" style="font-size:10px; opacity:0.8;">SPONSORED</span>';
-    }
+    $html = '';
 
     if ($ad['type'] === 'image') {
         $ad_img = $ad['image_path'] ?? '';
@@ -165,25 +158,43 @@ function render_ad_unit(array $ad, string $variant = 'banner'): void
 
         if ($ad_img) {
             if ($isSidebar) {
-                echo '<a href="' . $link . '" target="_blank" rel="noopener sponsored" class="sidebar-ad-link d-block text-decoration-none">';
-                echo '<div class="sidebar-ad-img-wrap"><img src="' . htmlspecialchars($ad_img) . '" alt="' . $title . '" class="sidebar-ad-img"></div>';
+                $html .= '<a href="' . $link . '" target="_blank" rel="noopener sponsored" class="sidebar-ad-link d-block text-decoration-none">';
+                $html .= '<div class="sidebar-ad-img-wrap"><img src="' . htmlspecialchars($ad_img) . '" alt="' . $title . '" class="sidebar-ad-img" loading="lazy"></div>';
                 if ($title !== '') {
-                    echo '<div class="sidebar-ad-caption px-3 py-2 border-top border-secondary"><span class="text-white small fw-semibold d-block">' . $title . '</span></div>';
+                    $html .= '<div class="sidebar-ad-caption px-3 py-2 border-top border-secondary"><span class="text-white small fw-semibold d-block">' . $title . '</span></div>';
                 }
-                echo '</a>';
+                $html .= '</a>';
             } else {
-                echo '<a href="' . $link . '" target="_blank" rel="noopener sponsored" style="display:block; margin-top:15px;">';
-                echo '<img src="' . htmlspecialchars($ad_img) . '" class="img-fluid rounded" alt="' . $title . '">';
-                echo '</a>';
+                $html .= '<a href="' . $link . '" target="_blank" rel="noopener sponsored" style="display:block; margin-top:15px;">';
+                $html .= '<img src="' . htmlspecialchars($ad_img) . '" class="img-fluid rounded" alt="' . $title . '">';
+                $html .= '</a>';
             }
         }
-    } else {
-        $codeWrapClass = $isSidebar ? 'sidebar-ad-code p-3' : 'mt-3';
-        $codeStyle = $isSidebar ? '' : ' style="margin-top:15px; color:#fff;"';
-        echo '<div class="' . $codeWrapClass . '"' . $codeStyle . '>' . ($ad['ad_code'] ?? '') . '</div>';
+    } elseif (trim($ad['ad_code'] ?? '') !== '') {
+        if ($isSidebar) {
+            $html .= '<div class="sidebar-ad-code p-3">' . ($ad['ad_code'] ?? '') . '</div>';
+        } else {
+            $html .= '<div class="mt-3" style="margin-top:15px; color:#fff;">' . ($ad['ad_code'] ?? '') . '</div>';
+        }
     }
 
-    echo '</div>';
+    if ($html === '') {
+        return false;
+    }
+
+    if ($isSidebar) {
+        echo '<div class="sidebar-ad-card border border-secondary rounded overflow-hidden bg-dark hover-neon-border" style="transition:0.3s;">';
+        echo '<span class="badge bg-secondary sidebar-ad-badge">SPONSORED</span>';
+        echo $html;
+        echo '</div>';
+    } else {
+        echo '<div class="ad-container my-5 position-relative p-3 border border-secondary rounded" style="background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(5px); z-index: 5; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">';
+        echo '<span class="position-absolute top-0 start-0 badge bg-secondary" style="font-size:10px; opacity:0.8;">SPONSORED</span>';
+        echo $html;
+        echo '</div>';
+    }
+
+    return true;
 }
 
 function get_ad($placement, $conn)
@@ -291,12 +302,15 @@ function render_sidebar_ads($conn, int $target = 10): int
     }
 
     echo '<div class="sidebar-ad-stack">';
+    $rendered = 0;
     foreach ($ads as $ad) {
-        render_ad_unit($ad, 'sidebar');
+        if (render_ad_unit($ad, 'sidebar')) {
+            $rendered++;
+        }
     }
     echo '</div>';
 
-    return count($ads);
+    return $rendered;
 }
 
 $check_tables = $conn->query("SHOW TABLES LIKE 'ads'");
@@ -375,19 +389,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
         transform: scale(1.02);
     }
     .sidebar-ad-stack { display: flex; flex-direction: column; gap: 1.25rem; width: 100%; }
-    .sidebar-ad-panel {
-        max-height: calc(100vh - 140px);
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding-right: 4px;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(0, 242, 255, 0.35) transparent;
-    }
-    .sidebar-ad-panel::-webkit-scrollbar { width: 5px; }
-    .sidebar-ad-panel::-webkit-scrollbar-thumb {
-        background: rgba(0, 242, 255, 0.35);
-        border-radius: 4px;
-    }
+    .sidebar-ad-column { width: 100%; height: auto; overflow: visible; }
     .sidebar-ad-card { position: relative; background: rgba(12, 12, 12, 0.95) !important; }
     .sidebar-ad-badge {
         position: absolute; top: 8px; left: 8px; z-index: 2;
@@ -441,7 +443,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
         <div class="container">
             <div class="row justify-content-center"><div class="col-12"><?php get_ad('header', $conn); ?></div></div>
 
-            <div class="row justify-content-center mt-4">
+            <div class="row justify-content-center mt-4 align-items-start">
                 <div class="<?php echo $col_class; ?>">
                     
                     <?php if(!empty($display_img)): ?>
@@ -549,12 +551,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
 
                 <?php if($has_sidebar): ?>
                 <div class="col-lg-4 mt-5 mt-lg-0 ps-lg-5">
-                    <div class="sidebar-ad-panel sticky-top" style="top: 120px;">
-                        <div class="mb-4">
-                            <h6 class="text-white-50 text-uppercase small mb-3 border-bottom border-secondary pb-2 text-center">Sponsored Intel</h6>
-                            <?php render_sidebar_ads($conn, 10); ?>
-                        </div>
-                    </div>
+                    <aside class="sidebar-ad-column" aria-label="Sponsored content">
+                        <h6 class="text-white-50 text-uppercase small mb-3 border-bottom border-secondary pb-2 text-center">Sponsored Intel</h6>
+                        <?php render_sidebar_ads($conn, 10); ?>
+                    </aside>
                 </div>
                 <?php endif; ?>
 
