@@ -69,7 +69,7 @@ class ContentEngine
 
         $metaTitle = $service['meta_title_template']
             ? ge_replace_tokens($service['meta_title_template'], $ctx)
-            : "Best {$ctx['service_name']} in {$ctx['city_name']} | " . SITE_NAME;
+            : "Best {$ctx['service_name']} Company in {$ctx['city_name']} | " . SITE_NAME;
 
         $metaDesc = $service['meta_description_template']
             ? ge_replace_tokens($service['meta_description_template'], $ctx)
@@ -77,11 +77,11 @@ class ContentEngine
 
         $h1 = $service['h1_template']
             ? ge_replace_tokens($service['h1_template'], $ctx)
-            : "Best {$ctx['service_name']} in {$ctx['city_name']}";
+            : "Best {$ctx['service_name']} Company in {$ctx['city_name']}";
 
         $h2 = $service['h2_template']
             ? ge_replace_tokens($service['h2_template'], $ctx)
-            : "Professional {$ctx['service_name']} Services in {$ctx['state']}";
+            : "Expert {$ctx['service_name']} in {$ctx['state']} · Nectra Digital";
 
         $h3 = '';
         if ($industry) {

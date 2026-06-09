@@ -3,11 +3,15 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/text-utils.php';
 require_once __DIR__ . '/seo-data.php';
 
-global $page_title, $page_desc, $page_img, $page_keys, $noindex, $og_type, $page_schema;
+global $page_title, $page_desc, $page_img, $page_keys, $noindex, $og_type, $page_schema, $canonical_url;
 
-$request_uri = strtok($_SERVER["REQUEST_URI"], '?');
+$request_uri = strtok($_SERVER["REQUEST_URI"] ?? '/', '?');
 $clean_uri = str_replace('.php', '', $request_uri); 
-$final_url = trim(SITE_URL . $clean_uri, '/'); 
+if (!empty($canonical_url)) {
+    $final_url = rtrim($canonical_url, '/');
+} else {
+    $final_url = trim(SITE_URL . $clean_uri, '/'); 
+}
 
 $default_title = "Nectra Digital | Best SEO Company India & AI Automation Agency";
 $default_desc  = "Nectra Digital is the best SEO company in India offering search engine optimization services, AI automation, digital marketing, web development, and software development. 5+ years expertise, 200+ projects.";
@@ -28,7 +32,10 @@ if (isset($page_img) && !empty($page_img)) {
 }
 
 if (!empty($page_title)) {
-    $meta_title = (strpos($page_title, 'Nectra Digital') !== false) ? $page_title : $page_title . " | " . $site_name_safe;
+    $meta_title = trim($page_title);
+    if (stripos($meta_title, 'Nectra Digital') === false) {
+        $meta_title .= ' | ' . $site_name_safe;
+    }
 } else {
     $meta_title = $default_title;
 }

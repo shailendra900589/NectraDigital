@@ -116,6 +116,20 @@ include 'includes/header.php';
 </section>
 <?php endforeach; ?>
 
+<section id="locations" class="py-5 bg-darker border-top border-secondary">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="text-white h3 mb-2">Service Locations Across <span class="text-neon">India</span></h2>
+            <p class="text-white-50 small mx-auto mb-0" style="max-width:620px;">Local SEO, digital marketing, and development services in major cities — each location hub links to every service page for that city.</p>
+        </div>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            <?php foreach (get_cities_data() as $slug => $c): ?>
+            <a href="/digital-agency-<?php echo $slug; ?>" class="badge bg-dark border border-secondary text-white-50 p-2 text-decoration-none hover-effect"><?php echo htmlspecialchars($c['name']); ?><?php if (!empty($c['state'])): ?> <span class="opacity-75">· <?php echo htmlspecialchars($c['state']); ?></span><?php endif; ?></a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+
 <section class="py-5 border-top border-secondary">
     <div class="container text-center">
         <h2 class="text-white h4 mb-3">Not Sure Which Service You Need?</h2>

@@ -6,6 +6,7 @@ require_once __DIR__ . '/seo-data.php';
 require_once __DIR__ . '/text-utils.php';
 require_once __DIR__ . '/growth/helpers.php';
 require_once __DIR__ . '/service-content.php';
+require_once __DIR__ . '/local-page-seo.php';
 
 function ge_city_from_slug(string $citySlug): ?array
 {
@@ -234,11 +235,13 @@ function ge_resolve_service_city_page(string $slug): ?array
     $cityState = $city['state'] ?? '';
     $silo = $service['silo'] ?? $service['h1'];
 
-    $h1 = $landing['h1'] ?? "Best {$silo} Company in {$cityName}";
-    $h2 = $landing['h2'] ?? "Professional {$silo} Services in {$cityState}";
-    $pageTitle = $landing['meta_title'] ?? "Best {$silo} in {$cityName} | Nectra Digital";
-    $pageDesc = $landing['meta_description'] ?? "Top {$silo} company in {$cityName}, {$cityState}. Expert services, free consultation, proven ROI. Contact Nectra Digital.";
-    $intro = $service['intro'] . " Serving businesses in {$cityName}, {$cityState} with local market expertise and measurable results.";
+    $seo = ge_service_city_seo($serviceSlug, $serviceBase, $city, $citySlug, $geServiceRecord);
+
+    $h1 = $seo['localized_h1'];
+    $h2 = $seo['localized_h2'];
+    $pageTitle = $seo['page_title'];
+    $pageDesc = $seo['page_desc'];
+    $intro = $seo['localized_intro'];
     $overviewExtra = '';
     if (!empty($landing['content'])) {
         $overviewExtra = $landing['content'];
@@ -271,6 +274,10 @@ function ge_resolve_service_city_page(string $slug): ?array
         'localized_faqs' => $faqs,
         'page_title' => nectra_decode_entities($pageTitle),
         'page_desc' => nectra_decode_entities($pageDesc),
-        'quick_answer' => nectra_decode_entities($landing['quick_answer'] ?? $intro),
+        'page_keys' => $seo['page_keys'],
+        'canonical_url' => $seo['canonical_url'],
+        'breadcrumbs' => $seo['breadcrumbs'],
+        'og_type' => $seo['og_type'],
+        'quick_answer' => nectra_decode_entities($landing['quick_answer'] ?? $seo['quick_answer']),
     ];
 }

@@ -5,6 +5,7 @@
 require_once __DIR__ . '/seo-data.php';
 require_once __DIR__ . '/seo-components.php';
 require_once __DIR__ . '/service-content.php';
+require_once __DIR__ . '/local-page-seo.php';
 
 if (!isset($service_slug)) {
     header('Location: /services');
@@ -38,11 +39,13 @@ if (empty($service) || !is_array($service) || !isset($service['process'])) {
 }
 
 if ($is_city_page) {
-    $services = get_services_data();
     $service['h1'] = $localized_h1 ?? $service['h1'];
     $service['intro'] = $localized_intro ?? $service['intro'];
     $page_title = $page_title ?? $service['title'];
     $page_desc = $page_desc ?? $service['meta_desc'];
+    $page_keys = $page_keys ?? ($service['keywords'] ?? '');
+    $canonical_url = $canonical_url ?? null;
+    $og_type = $og_type ?? 'website';
     $overview = ($service['overview'] ?? '<p>' . htmlspecialchars($service['intro']) . '</p>');
     if (!empty($localized_overview_extra)) {
         $overview .= $localized_overview_extra;
@@ -51,13 +54,14 @@ if ($is_city_page) {
     $city_quick_answer = $quick_answer ?? $service['intro'];
     $form_service = ($service['silo'] ?? $service['h1']) . ' — ' . ($city_name ?? '');
     $form_city = $city_name ?? '';
-    $parentServiceLabel = $services[$service_slug]['h1'] ?? ($service['silo'] ?? $service['h1']);
-    $breadcrumbs = [
-        ['name' => 'Home', 'url' => SITE_URL . '/'],
-        ['name' => 'Services', 'url' => SITE_URL . '/services'],
-        ['name' => $parentServiceLabel, 'url' => SITE_URL . '/' . $service_slug],
-        ['name' => $city_name ?? 'Location', 'url' => SITE_URL . ge_service_city_landing_url($service_slug, $city_slug ?? '')],
-    ];
+    if (empty($breadcrumbs)) {
+        $breadcrumbs = [
+            ['name' => 'Home', 'url' => SITE_URL . '/'],
+            ['name' => 'Locations', 'url' => ge_locations_url()],
+            ['name' => $city_name ?? 'Location', 'url' => ge_city_hub_url($city_slug ?? '')],
+            ['name' => $service['silo'] ?? $service['h1'], 'url' => SITE_URL . ge_service_city_landing_url($service_slug, $city_slug ?? '')],
+        ];
+    }
 } else {
     $page_title = $service['title'];
     $page_desc = $service['meta_desc'];
@@ -72,9 +76,24 @@ if ($is_city_page) {
     ];
 }
 $page_schema = [get_breadcrumb_schema($breadcrumbs)];
+if ($is_city_page && !empty($canonical_url)) {
+    $page_schema[] = [
+        '@type' => 'WebPage',
+        '@id' => rtrim($canonical_url, '/') . '#webpage',
+        'url' => rtrim($canonical_url, '/'),
+        'name' => $service['h1'] ?? $page_title,
+        'description' => $page_desc ?? '',
+        'isPartOf' => ['@id' => SITE_URL . '/#website'],
+        'about' => ['@id' => SITE_URL . '/#organization'],
+    ];
+}
 
 require_once __DIR__ . '/growth/engines/IntentKeywordEngine.php';
-$page_keys = \Growth\Engines\IntentKeywordEngine::forStaticPage($service_slug, $service['keywords'] ?? '');
+if ($is_city_page) {
+    // page_keys set by resolver via IntentKeywordEngine
+} else {
+    $page_keys = \Growth\Engines\IntentKeywordEngine::forStaticPage($service_slug, $service['keywords'] ?? '');
+}
 $tagline = $is_city_page && !empty($localized_h2)
     ? $localized_h2
     : ($service['tagline'] ?? 'Results-Driven ' . $service['silo'] . ' Solutions');
@@ -100,7 +119,11 @@ if ($is_city_page && !empty($city)) {
                 <div class="col-lg-7">
                     <span class="svc-badge"><?php echo htmlspecialchars($service['silo']); ?><?php if ($is_city_page && !empty($city_name)): ?> · <?php echo htmlspecialchars($city_name); ?><?php else: ?> · Nectra Digital<?php endif; ?></span>
                     <p class="svc-tagline text-neon mb-2"><?php echo htmlspecialchars($tagline); ?></p>
+                    <?php if ($is_city_page && !empty($city_name)): ?>
+                    <h1 class="display-4 fw-bold text-white mb-4">Best <?php echo htmlspecialchars($service['silo']); ?> Company in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h1>
+                    <?php else: ?>
                     <h1 class="display-4 fw-bold text-white mb-4"><?php echo htmlspecialchars($service['h1']); ?></h1>
+                    <?php endif; ?>
                     <p class="lead text-white-50 mb-4"><?php echo htmlspecialchars($service['intro']); ?></p>
                     <div class="d-flex flex-wrap gap-3 mb-4">
                         <a href="#serviceCityForm" class="btn btn-nectra btn-lg"><?php echo $is_city_page ? 'Get Free Proposal in ' . htmlspecialchars($city_name) : 'Get Free Audit'; ?></a>
