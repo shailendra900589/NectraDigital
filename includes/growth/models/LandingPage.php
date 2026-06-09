@@ -186,14 +186,23 @@ class LandingPage extends BaseModel
 
     public static function indexStats(): array
     {
-        return self::fetchOne(
-            "SELECT COUNT(*) AS total,
-                    SUM(CASE WHEN index_status = 'indexed' OR is_indexed = 1 THEN 1 ELSE 0 END) AS indexed,
-                    SUM(CASE WHEN index_status = 'pending' THEN 1 ELSE 0 END) AS pending,
-                    SUM(CASE WHEN index_status = 'submitted' THEN 1 ELSE 0 END) AS submitted,
-                    SUM(CASE WHEN index_status = 'failed' THEN 1 ELSE 0 END) AS failed
-             FROM ge_landing_pages WHERE status = 'published'"
-        ) ?? ['total' => 0, 'indexed' => 0, 'pending' => 0, 'submitted' => 0, 'failed' => 0];
+        $db = self::db();
+        $hasIndexStatus = self::columnExists('index_status');
+        $hasIsIndexed = self::columnExists('is_indexed');
+
+        if ($hasIndexStatus && $hasIsIndexed) {
+            return self::fetchOne(
+                "SELECT COUNT(*) AS total,
+                        SUM(CASE WHEN index_status = 'indexed' OR is_indexed = 1 THEN 1 ELSE 0 END) AS indexed,
+                        SUM(CASE WHEN index_status = 'pending' THEN 1 ELSE 0 END) AS pending,
+                        SUM(CASE WHEN index_status = 'submitted' THEN 1 ELSE 0 END) AS submitted,
+                        SUM(CASE WHEN index_status = 'failed' THEN 1 ELSE 0 END) AS failed
+                 FROM ge_landing_pages WHERE status = 'published'"
+            ) ?? ['total' => 0, 'indexed' => 0, 'pending' => 0, 'submitted' => 0, 'failed' => 0];
+        }
+
+        $total = (int)(self::fetchOne("SELECT COUNT(*) AS total FROM ge_landing_pages WHERE status = 'published'")['total'] ?? 0);
+        return ['total' => $total, 'indexed' => 0, 'pending' => $total, 'submitted' => 0, 'failed' => 0];
     }
 
     private static function columnExists(string $col): bool

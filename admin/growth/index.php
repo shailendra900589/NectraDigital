@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/auth.php';
+require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/../../includes/growth/bootstrap.php';
 
 use Growth\Models\Service;
@@ -11,21 +11,50 @@ use Growth\Models\GenerationJob;
 use Growth\Models\CrmLead;
 
 $stats = [
-    'services' => ge_is_ready() ? Service::count(true) : 0,
-    'cities' => ge_is_ready() ? City::count(true) : 0,
-    'industries' => (ge_is_ready() && ge_table_exists('ge_industries')) ? Industry::count(true) : 0,
-    'keywords' => ge_is_ready() ? Keyword::count() : 0,
-    'pages' => ge_is_ready() ? LandingPage::count('published') : 0,
-    'leads' => ge_table_exists('ge_crm_leads') ? (CrmLead::stats()['new'] ?? 0) : 0,
+    'services' => 0,
+    'cities' => 0,
+    'industries' => 0,
+    'keywords' => 0,
+    'pages' => 0,
+    'leads' => 0,
     'potential' => 0,
 ];
-$stats['potential'] = $stats['services'] * $stats['cities'] * max(1, $stats['industries'] + 1);
-$indexStats = ge_is_ready() ? LandingPage::indexStats() : ['indexed' => 0, 'pending' => 0, 'total' => 0];
-$recentJobs = ge_is_ready() ? GenerationJob::recent(5) : [];
+$indexStats = ['indexed' => 0, 'pending' => 0, 'total' => 0];
+$recentJobs = [];
+$dashboardError = null;
 
-require_once 'includes/layout.php';
+try {
+    if (ge_is_ready()) {
+        $stats['services'] = Service::count(true);
+        $stats['cities'] = City::count(true);
+        $stats['keywords'] = Keyword::count();
+        $stats['pages'] = LandingPage::count('published');
+        $indexStats = LandingPage::indexStats();
+        if (ge_table_exists('ge_generation_jobs')) {
+            $recentJobs = GenerationJob::recent(5);
+        }
+    }
+    if (ge_table_exists('ge_industries')) {
+        $stats['industries'] = Industry::count(true);
+    }
+    if (ge_table_exists('ge_crm_leads')) {
+        $stats['leads'] = CrmLead::stats()['new'] ?? 0;
+    }
+    $stats['potential'] = $stats['services'] * $stats['cities'] * max(1, $stats['industries'] + 1);
+} catch (Throwable $e) {
+    $dashboardError = $e->getMessage();
+}
+
+require_once __DIR__ . '/includes/layout.php';
 ge_admin_layout_start('Dashboard', 'dashboard');
 ?>
+
+<?php if ($dashboardError): ?>
+<div class="alert alert-danger mb-4">
+    <strong>Dashboard data error:</strong> <?php echo htmlspecialchars($dashboardError); ?>
+    <div class="small mt-1">Check database migration or run <a href="../../database/migrate.php" target="_blank">database/migrate.php</a>.</div>
+</div>
+<?php endif; ?>
 
 <div class="row g-4 mb-4">
     <div class="col-6 col-lg-3">

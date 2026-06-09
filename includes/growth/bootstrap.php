@@ -2,6 +2,11 @@
 /**
  * Nectra Digital Growth Engine — Bootstrap & Autoload
  */
+if (defined('GE_BOOTSTRAP_LOADED')) {
+    return;
+}
+define('GE_BOOTSTRAP_LOADED', true);
+
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/helpers.php';
@@ -39,6 +44,9 @@ function ge_setting(string $key, $default = null) {
     static $cache = [];
     if (isset($cache[$key])) {
         return $cache[$key];
+    }
+    if (!ge_table_exists('ge_settings')) {
+        return $default;
     }
     $db = ge_conn();
     $stmt = $db->prepare("SELECT setting_value FROM ge_settings WHERE setting_key = ? LIMIT 1");

@@ -1,4 +1,9 @@
 <?php
+if (defined('NECTRA_CONFIG_LOADED')) {
+    return;
+}
+define('NECTRA_CONFIG_LOADED', true);
+
 // Local overrides (Hostinger: copy config.local.php.example → config.local.php)
 if (is_file(__DIR__ . '/config.local.php')) {
     require __DIR__ . '/config.local.php';

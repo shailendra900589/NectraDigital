@@ -1,4 +1,9 @@
 <?php
+if (isset($GLOBALS['nectra_db_conn']) && $GLOBALS['nectra_db_conn'] instanceof mysqli) {
+    $conn = $GLOBALS['nectra_db_conn'];
+    return;
+}
+
 $host = 'localhost';
 $user = '';
 $pass = '';
@@ -14,6 +19,7 @@ if ($user === '' || $dbname === '') {
 }
 
 $conn = new mysqli($host, $user, $pass, $dbname);
+$GLOBALS['nectra_db_conn'] = $conn;
 
 if ($conn->connect_error) {
     die('Connection Failed: ' . $conn->connect_error);
