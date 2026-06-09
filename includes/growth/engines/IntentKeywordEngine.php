@@ -115,28 +115,32 @@ class IntentKeywordEngine
 
     public static function optimizeMetaTitle(string $title, string $primaryPhrase, string $brand = 'Nectra Digital'): string
     {
-        $title = trim($title);
-        if (stripos($title, $primaryPhrase) !== false) {
-            return mb_substr($title, 0, 60);
+        if (!function_exists('ge_trim_seo_title')) {
+            require_once __DIR__ . '/../helpers.php';
         }
-        $candidate = $primaryPhrase . ' | ' . $brand;
-        return mb_substr($candidate, 0, 60);
+        $title = trim($title);
+        if ($title === '' || stripos($title, $primaryPhrase) === false) {
+            $title = $primaryPhrase . ' | ' . $brand;
+        }
+        return ge_trim_seo_title($title, $brand, 60);
     }
 
     public static function optimizeMetaDescription(string $desc, array $service, array $city, ?array $industry = null): string
     {
+        if (!function_exists('ge_trim_seo_description')) {
+            require_once __DIR__ . '/../helpers.php';
+        }
         $cn = $city['name'];
         $state = $city['state'] ?? 'India';
         $sn = $service['name'];
-        $primary = self::primaryPhrase($service, $city, $industry);
 
-        if (mb_strlen($desc) >= 120 && stripos($desc, $cn) !== false) {
-            return mb_substr($desc, 0, 160);
+        if (mb_strlen(trim(strip_tags($desc))) >= 100 && stripos($desc, $cn) !== false) {
+            return ge_trim_seo_description($desc, 120, 160);
         }
 
         $in = $industry ? " for {$industry['name']}" : '';
-        $desc = "Looking for {$primary}? Nectra Digital offers expert {$sn}{$in} in {$cn}, {$state}. Free consultation, proven ROI, 200+ projects. Call today.";
-        return mb_substr($desc, 0, 160);
+        $desc = "Expert {$sn}{$in} in {$cn}, {$state}. Search engine optimization & digital marketing by Nectra Digital. Free audit, 200+ projects.";
+        return ge_trim_seo_description($desc, 120, 160);
     }
 
     private static function localize(string $kw, string $city, string $state): string

@@ -42,6 +42,7 @@ function get_organization_schema() {
         'logo' => SITE_URL . '/assets/images/logo.png',
         'description' => 'Nectra Digital is a leading SEO company in India offering search engine optimization services, AI automation, digital marketing, web development, and software development for businesses worldwide.',
         'email' => 'contact@nectradigital.com',
+        'telephone' => '+917678387759',
         'foundingDate' => '2020',
         'founder' => get_founder_schema(),
         'address' => [
@@ -54,10 +55,12 @@ function get_organization_schema() {
         'contactPoint' => [
             '@type' => 'ContactPoint',
             'contactType' => 'customer support',
+            'telephone' => '+917678387759',
             'email' => 'contact@nectradigital.com',
             'availableLanguage' => ['English', 'Hindi']
         ],
         'sameAs' => [
+            'https://www.facebook.com/nectradigital',
             'https://twitter.com/nectradigital',
             'https://www.instagram.com/nectradigital',
             'https://www.linkedin.com/company/nectradigital'

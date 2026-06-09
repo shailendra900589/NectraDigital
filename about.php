@@ -101,7 +101,7 @@ include 'includes/header.php';
                     <div class="p-4 border border-secondary rounded bg-glass">
                         <i class="fas fa-envelope text-neon mb-2"></i>
                         <h3 class="text-white h6">Direct Contact</h3>
-                        <p class="text-white-50 small mb-0"><a href="mailto:contact@nectradigital.com" class="text-neon">contact@nectradigital.com</a></p>
+                        <p class="text-white-50 small mb-0"><?php require_once __DIR__ . '/includes/site-contact.php'; echo nectra_email_html_link('text-neon'); ?></p>
                     </div>
                 </div>
                 <div class="col-md-4">

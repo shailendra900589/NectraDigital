@@ -6,6 +6,7 @@ require_once __DIR__ . '/seo-data.php';
 require_once __DIR__ . '/seo-components.php';
 require_once __DIR__ . '/service-content.php';
 require_once __DIR__ . '/local-page-seo.php';
+require_once __DIR__ . '/site-contact.php';
 
 if (!isset($service_slug)) {
     header('Location: /services');
@@ -336,6 +337,29 @@ if ($is_city_page && !empty($city)) {
     </section>
 
     <?php render_faq_section($service['faqs'], $service['h1'] . ' — FAQ'); ?>
+
+    <?php if ($is_city_page && !empty($city_name)): ?>
+    <section class="py-5 bg-darker border-top border-secondary">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-8">
+                    <h2 class="text-white h3 mb-4"><?php echo htmlspecialchars($service['silo']); ?> &amp; Search Engine Optimization in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h2>
+                    <p class="text-white-50">Nectra Digital delivers professional <?php echo htmlspecialchars(strtolower($service['silo'])); ?> and search engine optimization for businesses in <?php echo htmlspecialchars($city_name); ?>, <?php echo htmlspecialchars($city_state ?? ''); ?>. Our digital marketing team combines local keyword research, technical SEO, content authority, and conversion-focused landing pages so you rank on Google and generate qualified leads.</p>
+                    <p class="text-white-50">Whether you need map pack visibility, enterprise SEO, or integrated performance marketing — we provide transparent reporting, dedicated account management, and software development support when your growth requires custom tools or automation.</p>
+                    <h3 class="text-white h5 mt-4">Local <?php echo htmlspecialchars($service['silo']); ?> services include</h3>
+                    <ul class="text-white-50">
+                        <li class="mb-2">City-specific keyword targeting for <?php echo htmlspecialchars($city_name); ?> and <?php echo htmlspecialchars($city_state ?? 'India'); ?></li>
+                        <li class="mb-2">Search engine optimization audits, content strategy, and monthly ROI reporting</li>
+                        <li class="mb-2">AI automation, Google Ads, and software development integrations</li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <?php render_nap_block('service-city'); ?>
+                </div>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <?php
     try {

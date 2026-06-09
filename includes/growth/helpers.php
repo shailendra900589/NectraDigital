@@ -119,6 +119,75 @@ function ge_default_ctas(): array {
     ];
 }
 
+/** Trim title to SEO audit range (~50–60 chars). */
+function ge_trim_seo_title(string $title, string $brand = 'Nectra Digital', int $max = 60): string
+{
+    $title = trim(preg_replace('/\s+/u', ' ', $title));
+    if ($title === '') {
+        return $brand;
+    }
+
+    $suffix = ' | ' . $brand;
+    $hasBrand = stripos($title, $brand) !== false;
+
+    if (mb_strlen($title) <= $max) {
+        return $title;
+    }
+
+    if ($hasBrand && str_ends_with($title, $suffix)) {
+        $coreMax = $max - mb_strlen($suffix);
+        if ($coreMax >= 24) {
+            return ge_trim_at_word_boundary($title, $coreMax, false) . $suffix;
+        }
+    }
+
+    if (!$hasBrand && mb_strlen($title) + mb_strlen($suffix) <= $max) {
+        return $title . $suffix;
+    }
+
+    return ge_trim_at_word_boundary($title, $max, false);
+}
+
+/** Trim description to 120–160 chars for meta tags. */
+function ge_trim_seo_description(string $desc, int $min = 120, int $max = 160): string
+{
+    $desc = trim(preg_replace('/\s+/u', ' ', strip_tags($desc)));
+    if ($desc === '') {
+        return '';
+    }
+
+    if (mb_strlen($desc) > $max) {
+        $desc = ge_trim_at_word_boundary($desc, $max, true);
+    }
+
+    if (mb_strlen($desc) < $min) {
+        $pad = ' Free SEO audit & consultation.';
+        if (mb_strlen($desc . $pad) <= $max) {
+            $desc .= $pad;
+        }
+    }
+
+    return $desc;
+}
+
+function ge_trim_at_word_boundary(string $text, int $max, bool $ellipsis): string
+{
+    if (mb_strlen($text) <= $max) {
+        return $text;
+    }
+
+    $room = $ellipsis ? $max - 1 : $max;
+    $cut = mb_substr($text, 0, $room);
+    $lastSpace = mb_strrpos($cut, ' ');
+    if ($lastSpace !== false && $lastSpace > (int)($room * 0.55)) {
+        $cut = mb_substr($cut, 0, $lastSpace);
+    }
+
+    $cut = rtrim($cut, ' |,;-');
+
+    return $ellipsis ? $cut . '…' : $cut;
+}
+
 function ge_table_exists_check(string $table): bool {
     return ge_table_exists($table);
 }

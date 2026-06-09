@@ -28,6 +28,8 @@ RewriteRule ^atom\.xml$ atom.php [L]
 # ========================================================
 RewriteRule ^tools/?$ tools/index.php [L]
 RewriteRule ^tools/([a-z0-9-]+)/?$ tools/tool.php?slug=$1 [L,QSA]
+RewriteRule ^process/?$ process.php [L]
+RewriteRule ^api/chatbot/?$ api/chatbot.php [L,QSA]
 
 # ========================================================
 # 3B. CITY LANDING PAGES

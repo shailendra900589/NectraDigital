@@ -1,9 +1,9 @@
 <?php 
-// SEO CONFIGURATION
-$page_title = "Contact Nectra Digital | Global HQ";
-$page_desc = "Initialize your project with Nectra Digital. Lucknow-based HQ serving global clients. 24/7 Support. Web, AI, & Marketing Solutions.";
-$page_keys = "Contact Nectra Digital, Hire Developers India, Web Design Agency Contact, AI Automation Consultation";
-include 'includes/header.php'; 
+$page_title = "Contact Nectra Digital | Lucknow HQ";
+$page_desc = "Contact Nectra Digital — SEO company HQ in Lucknow, India. Phone, address & project inquiry form. Search engine optimization & digital marketing.";
+$page_keys = "Contact Nectra Digital, SEO company contact India, digital marketing consultation";
+include 'includes/header.php';
+require_once 'includes/site-contact.php';
 ?>
 
 <script type="application/ld+json">
@@ -15,8 +15,8 @@ include 'includes/header.php';
   "mainEntity": {
     "@type": "ProfessionalService",
     "name": "Nectra Digital",
-    "telephone": "+91-XXXXXXXXXX",
-    "email": "contact@nectradigital.com",
+    "telephone": "<?php echo NECTRA_PHONE_E164; ?>",
+    "email": "<?php echo nectra_schema_email(); ?>",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "Lucknow",
@@ -64,12 +64,18 @@ include 'includes/header.php';
                             </div>
 
                             <div class="d-flex align-items-start mb-4">
+                                <div class="me-3 mt-1" aria-hidden="true"><i class="fas fa-phone fa-lg text-neon"></i></div>
+                                <div>
+                                    <h3 class="text-white h6 mb-1">Phone</h3>
+                                    <p class="text-white-50 small mb-0"><a href="tel:<?php echo NECTRA_PHONE_E164; ?>" class="text-neon text-decoration-none"><?php echo NECTRA_PHONE_DISPLAY; ?></a></p>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start mb-4">
                                 <div class="me-3 mt-1" aria-hidden="true"><i class="fas fa-envelope fa-lg text-neon"></i></div>
                                 <div>
-                                    <h3 class="text-white h6 mb-1">Direct Uplink</h3>
-                                    <p class="text-white-50 small mb-0">
-                                        <a href="mailto:contact@nectradigital.com" class="text-decoration-none text-neon" aria-label="Email us at contact@nectradigital.com">contact@nectradigital.com</a>
-                                    </p>
+                                    <h3 class="text-white h6 mb-1">Email</h3>
+                                    <p class="text-white-50 small mb-0"><?php echo nectra_email_html_link('text-neon text-decoration-none'); ?></p>
                                 </div>
                             </div>
                         </address>
@@ -247,7 +253,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const formData = new FormData(this);
 
             // AJAX Request
-            fetch('process.php', {
+            fetch('/process', {
                 method: 'POST',
                 body: formData
             })

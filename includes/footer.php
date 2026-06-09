@@ -1,75 +1,10 @@
 
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    if (!document.getElementById('nectra-canvas')) {
-        var canvas = document.createElement('canvas');
-        canvas.id = 'nectra-canvas';
-        canvas.style.position = 'fixed';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.width = '100vw';
-        canvas.style.height = '100vh';
-        canvas.style.zIndex = '0';
-        canvas.style.pointerEvents = 'none';
-        document.body.appendChild(canvas);
-
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resize);
-        resize();
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.size = Math.random() * 2;
-            }
-            update() {
-                this.x += this.vx; this.y += this.vy;
-                if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
-            }
-            draw() {
-                ctx.fillStyle = 'rgba(0, 242, 255, 0.5)';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        for(let i=0; i<100; i++) particles.push(new Particle());
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for(let i=0; i<particles.length; i++) {
-                particles[i].update(); particles[i].draw();
-                for(let j=i; j<particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const distance = Math.sqrt(dx*dx + dy*dy);
-                    if(distance < 100) {
-                        ctx.strokeStyle = `rgba(0, 242, 255, ${0.1 - distance/1000})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-            requestAnimationFrame(animate);
-        }
-        animate();
-    }
-});
-</script>
-
 <?php
 if (!function_exists('get_services_data')) {
     require_once __DIR__ . '/seo-data.php';
 }
+require_once __DIR__ . '/site-contact.php';
 $footer_services = array_slice(get_services_data(), 0, 8, true);
 $footer_cities = array_slice(get_cities_data(), 0, 8, true);
 ?>
@@ -85,12 +20,14 @@ $footer_cities = array_slice(get_cities_data(), 0, 8, true);
                     </a>
                 </div>
                 <p class="text-white-50 small" style="line-height: 1.6;">
-                    Best SEO company in India. Search engine optimization, AI automation, digital marketing, and software development — engineered for ROI.
+                    Best SEO company in India — search engine optimization, AI automation, digital marketing, and software development engineered for ROI.
                 </p>
+                <?php render_nap_block('footer'); ?>
                 <div class="d-flex gap-3 mt-3">
-                    <a href="https://www.linkedin.com/company/nectradigital" target="_blank" rel="noopener" class="text-white-50 hover-neon transition" aria-label="LinkedIn"><i class="fab fa-linkedin fa-lg"></i></a>
-                    <a href="https://twitter.com/nectradigital" target="_blank" rel="noopener" class="text-white-50 hover-neon transition" aria-label="Twitter"><i class="fab fa-twitter fa-lg"></i></a>
-                    <a href="https://www.instagram.com/nectradigital" target="_blank" rel="noopener" class="text-white-50 hover-neon transition" aria-label="Instagram"><i class="fab fa-instagram fa-lg"></i></a>
+                    <a href="<?php echo NECTRA_FACEBOOK_URL; ?>" target="_blank" rel="noopener noreferrer" class="text-white-50 hover-neon transition" aria-label="Facebook"><i class="fab fa-facebook fa-lg"></i></a>
+                    <a href="https://www.linkedin.com/company/nectradigital" target="_blank" rel="noopener noreferrer" class="text-white-50 hover-neon transition" aria-label="LinkedIn"><i class="fab fa-linkedin fa-lg"></i></a>
+                    <a href="https://twitter.com/nectradigital" target="_blank" rel="noopener noreferrer" class="text-white-50 hover-neon transition" aria-label="Twitter"><i class="fab fa-twitter fa-lg"></i></a>
+                    <a href="https://www.instagram.com/nectradigital" target="_blank" rel="noopener noreferrer" class="text-white-50 hover-neon transition" aria-label="Instagram"><i class="fab fa-instagram fa-lg"></i></a>
                 </div>
             </div>
 
@@ -123,14 +60,13 @@ $footer_cities = array_slice(get_cities_data(), 0, 8, true);
                     <?php foreach ($footer_cities as $slug => $city): ?>
                     <li class="mb-2"><a href="/digital-agency-<?php echo $slug; ?>" class="text-white-50 text-decoration-none small hover-neon"><?php echo htmlspecialchars($city['name']); ?></a></li>
                     <?php endforeach; ?>
+                    <li class="mb-2"><a href="/services#locations" class="text-neon text-decoration-none small">All Cities →</a></li>
                 </ul>
             </div>
 
             <div class="col-lg-2 col-6">
                 <h6 class="text-neon text-uppercase mb-3 small fw-bold">Legal</h6>
                 <ul class="list-unstyled text-white-50 small">
-                    <li class="mb-2"><i class="fas fa-map-marker-alt me-2 text-secondary"></i> Lucknow, UP, India</li>
-                    <li class="mb-2"><i class="fas fa-envelope me-2 text-secondary"></i> contact@nectradigital.com</li>
                     <li class="mb-2"><a href="/privacy" class="text-white-50 text-decoration-none hover-neon">Privacy Policy</a></li>
                     <li class="mb-2"><a href="/terms" class="text-white-50 text-decoration-none hover-neon">Terms</a></li>
                     <li class="mb-2"><a href="/disclaimer" class="text-white-50 text-decoration-none hover-neon">Disclaimer</a></li>
@@ -152,14 +88,14 @@ $footer_cities = array_slice(get_cities_data(), 0, 8, true);
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="<?php echo SITE_URL; ?>/assets/js/main.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-<script>
-    window.addEventListener('scroll', function() {
-        const nav = document.querySelector('.navbar');
-        if(nav) {
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+<script src="<?php echo SITE_URL; ?>/assets/js/main.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js" defer></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', function() {
+    const nav = document.querySelector('.navbar');
+    if (nav) {
+        window.addEventListener('scroll', function() {
             if (window.scrollY > 50) {
                 nav.style.padding = '10px 0';
                 nav.style.background = 'rgba(5,5,5,0.95)';
@@ -167,22 +103,23 @@ $footer_cities = array_slice(get_cities_data(), 0, 8, true);
                 nav.style.padding = '15px 0';
                 nav.style.background = 'rgba(5,5,5,0.8)';
             }
-        }
-    });
-    if(document.getElementById('particles-js')) {
+        }, {passive: true});
+    }
+    if (document.getElementById('particles-js') && typeof particlesJS === 'function') {
         particlesJS('particles-js', {
           "particles": {
-            "number": { "value": 60, "density": { "enable": true, "value_area": 800 } },
+            "number": { "value": 35, "density": { "enable": true, "value_area": 900 } },
             "color": { "value": "#00E5FF" },
             "shape": { "type": "circle" },
-            "opacity": { "value": 0.3 },
-            "size": { "value": 3, "random": true },
-            "line_linked": { "enable": true, "distance": 150, "color": "#00E5FF", "opacity": 0.2, "width": 1 },
-            "move": { "enable": true, "speed": 1.5 }
+            "opacity": { "value": 0.25 },
+            "size": { "value": 2, "random": true },
+            "line_linked": { "enable": true, "distance": 140, "color": "#00E5FF", "opacity": 0.15, "width": 1 },
+            "move": { "enable": true, "speed": 1 }
           },
           "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" } } }
         });
     }
+});
 </script>
 
 <style>
@@ -201,12 +138,19 @@ try {
     $nectraChatbotEnabled = false;
 }
 ?>
-<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/floating-contact.css?v=3">
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/floating-contact.css?v=4">
 <?php if ($nectraChatbotEnabled): ?>
-<script>window.NECTRA_CHATBOT = { apiUrl: '<?php echo SITE_URL; ?>/api/chatbot.php' };</script>
-<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/growth-chatbot.css?v=3">
-<script src="<?php echo SITE_URL; ?>/assets/js/growth-chatbot.js?v=3"></script>
+<script>window.NECTRA_CHATBOT = { apiUrl: '<?php echo SITE_URL; ?>/api/chatbot' };</script>
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/growth-chatbot.css?v=4">
+<script src="<?php echo SITE_URL; ?>/assets/js/growth-chatbot.js?v=4" defer></script>
 <?php endif; ?>
-<script src="<?php echo SITE_URL; ?>/assets/js/floating-contact.js?v=3"></script>
+<script src="<?php echo SITE_URL; ?>/assets/js/floating-contact.js?v=4" defer></script>
+<script defer>
+(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "vjpbvxww01");
+</script>
 </body>
 </html>

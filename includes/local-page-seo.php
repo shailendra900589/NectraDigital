@@ -49,8 +49,8 @@ function ge_city_hub_seo(array $city, string $citySlug): array
     $state = $city['state'] ?? '';
     $canonical = ge_city_hub_url($citySlug);
 
-    $pageTitle = "Best SEO & Digital Marketing Company in {$name} | Nectra Digital";
-    $pageDesc = "Top SEO company & digital marketing agency in {$name}, {$state}. Local SEO, Google Ads, AI automation, web development & lead generation. Free audit — Nectra Digital.";
+    $pageTitle = ge_trim_seo_title("Best SEO & Digital Marketing in {$name} | Nectra Digital");
+    $pageDesc = ge_trim_seo_description("Top SEO company in {$name}, {$state}. Search engine optimization, local SEO, Google Ads, AI automation, web development & lead generation. Free audit.");
     $pageKeys = implode(', ', array_unique([
         "SEO company {$name}",
         "best SEO company in {$name}",
@@ -103,15 +103,19 @@ function ge_service_city_seo(
 
     $h1 = "Best {$silo} Company in {$cityName}";
     $h2 = "Expert {$silo} in {$cityState} · Results-Driven · Nectra Digital";
-    $pageTitle = \Growth\Engines\IntentKeywordEngine::optimizeMetaTitle(
-        "Best {$silo} Company in {$cityName} | Nectra Digital",
-        $primary
+    $pageTitle = ge_trim_seo_title(
+        \Growth\Engines\IntentKeywordEngine::optimizeMetaTitle(
+            "Best {$silo} in {$cityName} | Nectra Digital",
+            $primary
+        )
     );
-    $pageDesc = \Growth\Engines\IntentKeywordEngine::optimizeMetaDescription(
-        '',
-        $svcRecord,
-        $cityRecord,
-        null
+    $pageDesc = ge_trim_seo_description(
+        \Growth\Engines\IntentKeywordEngine::optimizeMetaDescription(
+            '',
+            $svcRecord,
+            $cityRecord,
+            null
+        )
     );
     $pageKeys = \Growth\Engines\IntentKeywordEngine::metaKeywords($svcRecord, $cityRecord, null, 15);
 

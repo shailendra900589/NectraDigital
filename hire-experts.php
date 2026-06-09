@@ -196,8 +196,8 @@ include 'includes/header.php';
                             <div class="flex-grow-1" style="height:1px; background: rgba(255,255,255,0.1);"></div>
                         </div>
                         
-                        <a href="mailto:contact@nectradigital.com" class="btn btn-outline-info w-100">
-                            <i class="fas fa-envelope me-2"></i> contact@nectradigital.com
+                        <a href="/contact" class="btn btn-outline-info w-100">
+                            <i class="fas fa-envelope me-2"></i> Contact via form
                         </a>
                     </div>
                 </div>

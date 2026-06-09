@@ -2,11 +2,16 @@
 require_once 'includes/seo-data.php';
 require_once 'includes/seo-components.php';
 
-$page_title = "Best SEO Company India | SEO Services, AI Automation & Digital Marketing Agency";
-$page_desc = "Nectra Digital is the best SEO company in India offering search engine optimization services, local SEO, technical SEO, AI automation, digital marketing, web development & lead generation. 5+ years expertise, 200+ projects, 4.9★ rating.";
-$page_keys = "SEO Company India, Best SEO Company India, SEO Services India, Local SEO Services, Technical SEO Services, Enterprise SEO Agency, Digital Marketing Agency India, Performance Marketing Agency, Google Ads Agency, Meta Ads Agency, AI Automation Services, AI Chatbot Development, WhatsApp AI Bot, Website Development Company, Web Development Agency, Software Development Company, Mobile App Development Company, Lead Generation Agency, Marketing Automation Agency, Search Engine Optimization Services, SEO Expert India, AI Agency India";
+$page_title = "Best SEO Company India | Nectra Digital";
+$page_desc = "Best SEO company in India — search engine optimization, AI automation, digital marketing & software development. 200+ projects. Free audit.";
+$page_keys = "SEO Company India, search engine optimization India, SEO services India, digital marketing agency India, AI automation, software development company India";
 
-$page_schema = [get_breadcrumb_schema([['name' => 'Home', 'url' => SITE_URL . '/']]), get_review_schema()];
+$page_schema = [
+    get_breadcrumb_schema([['name' => 'Home', 'url' => SITE_URL . '/']]),
+    get_review_schema(),
+];
+require_once __DIR__ . '/includes/site-contact.php';
+$page_schema[] = get_home_local_business_schema();
 
 include 'includes/header.php';
 output_faq_schema(get_homepage_faqs());
@@ -23,11 +28,11 @@ output_faq_schema(get_homepage_faqs());
                 </div>
                 
                 <h1 class="display-3 fw-bold text-white mb-4" style="text-shadow: 0 0 20px rgba(0,0,0,0.8);">
-                    India's Leading <span class="text-neon" style="text-shadow: 0 0 15px var(--nectra-neon);">SEO & Digital Marketing Agency</span>
+                    India's Leading <span class="text-neon" style="text-shadow: 0 0 15px var(--nectra-neon);">Search Engine Optimization</span> &amp; Digital Marketing Agency
                 </h1>
                 
                 <p class="lead text-white-50 mb-4 mx-auto" style="max-width: 800px; line-height: 1.7;">
-                    Nectra Digital delivers search engine optimization services, AI automation, performance marketing, and custom software development that generate qualified leads and measurable ROI for businesses across India and globally.
+                    Nectra Digital is the best SEO company in India — delivering search engine optimization, AI automation, performance marketing, and custom software development that generates qualified leads and measurable ROI.
                 </p>
 
                 <div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
@@ -73,6 +78,33 @@ output_faq_schema(get_homepage_faqs());
 </section>
 
 <?php render_usp_section(); ?>
+
+<section class="py-5 border-top border-secondary">
+    <div class="container py-4">
+        <div class="row g-5 align-items-start">
+            <div class="col-lg-7">
+                <h2 class="text-white h3 mb-4">Search Engine Optimization &amp; <span class="text-neon">Digital Growth</span> for Indian Businesses</h2>
+                <p class="text-white-50">As a full-service SEO company and digital marketing agency, Nectra Digital helps brands rank on Google, convert traffic into revenue, and scale with AI automation. Our search engine optimization services cover technical SEO, content strategy, local SEO, and link building — backed by transparent reporting and a dedicated account team.</p>
+                <p class="text-white-50">Beyond SEO services, we deliver performance marketing on Google Ads and Meta, web development with React and WordPress, and enterprise software development for SaaS and mobile apps. Whether you need local visibility in Lucknow, Mumbai, Bangalore, or Delhi — or national rankings across India — our engine optimization framework is built for sustainable growth.</p>
+                <h3 class="text-white h5 mt-4 mb-3">Why businesses choose Nectra Digital</h3>
+                <ul class="text-white-50">
+                    <li class="mb-2"><strong class="text-white">Search engine optimization expertise</strong> — 5+ years, 200+ projects, 340% average traffic growth</li>
+                    <li class="mb-2"><strong class="text-white">AI automation &amp; digital marketing</strong> — chatbots, workflows, and paid media under one roof</li>
+                    <li class="mb-2"><strong class="text-white">Software development</strong> — custom apps, APIs, and ecommerce platforms that convert</li>
+                    <li class="mb-2"><strong class="text-white">Local SEO across 20+ cities</strong> — map pack rankings and city-specific landing pages</li>
+                </ul>
+            </div>
+            <div class="col-lg-5">
+                <?php render_nap_block('home'); ?>
+                <div class="mt-4 p-4 border border-neon rounded bg-glass">
+                    <h3 class="text-neon h6 mb-2">Free SEO Audit</h3>
+                    <p class="text-white-50 small mb-3">Get a technical search engine optimization review and growth roadmap — no obligation.</p>
+                    <a href="/contact?service=SEO+Audit" class="btn btn-nectra btn-sm w-100">Request Free Audit</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <section id="services" class="py-5 border-top border-secondary">
     <div class="container py-5">
@@ -250,7 +282,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const originalText = btn.innerHTML;
             btn.innerHTML = 'CONNECTING...';
             btn.disabled = true;
-            fetch('process.php', { method: 'POST', body: new FormData(this) })
+            fetch('/process', { method: 'POST', body: new FormData(this) })
             .then(r => r.json())
             .then(data => {
                 if(data.status === 'success') window.location.href = "/thank-you";

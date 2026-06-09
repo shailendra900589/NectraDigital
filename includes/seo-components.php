@@ -267,8 +267,9 @@ function render_local_business_schema($city_data, $city_slug) {
         '@context' => 'https://schema.org',
         '@type' => 'LocalBusiness',
         'name' => 'Nectra Digital — ' . $city_data['name'],
-        'description' => 'SEO, digital marketing, AI automation, and web development services in ' . $city_data['name'] . ', ' . $city_data['state'] . '.',
+        'description' => 'SEO, search engine optimization, digital marketing, AI automation, and web development services in ' . $city_data['name'] . ', ' . $city_data['state'] . '.',
         'url' => SITE_URL . '/digital-agency-' . $city_slug,
+        'telephone' => '+917678387759',
         'email' => 'contact@nectradigital.com',
         'address' => [
             '@type' => 'PostalAddress',

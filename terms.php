@@ -40,7 +40,7 @@ include 'includes/header.php';
                     <div class="border-top border-secondary pt-4 mt-5">
                         <p class="small mb-0">
                             Questions regarding these terms? Contact HQ at: 
-                            <a href="mailto:contact@nectradigital.com" class="text-neon text-decoration-none">contact@nectradigital.com</a>
+                            <?php require_once __DIR__ . '/includes/site-contact.php'; echo nectra_email_html_link('text-neon text-decoration-none'); ?>
                         </p>
                     </div>
 

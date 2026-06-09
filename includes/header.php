@@ -2,6 +2,7 @@
 require_once __DIR__ . '/config.php'; 
 require_once __DIR__ . '/text-utils.php';
 require_once __DIR__ . '/seo-data.php';
+require_once __DIR__ . '/growth/helpers.php';
 
 global $page_title, $page_desc, $page_img, $page_keys, $noindex, $og_type, $page_schema, $canonical_url;
 
@@ -13,8 +14,8 @@ if (!empty($canonical_url)) {
     $final_url = trim(SITE_URL . $clean_uri, '/'); 
 }
 
-$default_title = "Nectra Digital | Best SEO Company India & AI Automation Agency";
-$default_desc  = "Nectra Digital is the best SEO company in India offering search engine optimization services, AI automation, digital marketing, web development, and software development. 5+ years expertise, 200+ projects.";
+$default_title = "Best SEO Company India | Nectra Digital";
+$default_desc  = "Best SEO company in India — search engine optimization, AI automation, digital marketing & software development. 200+ projects. Free audit.";
 $default_img   = SITE_URL . "/assets/images/logo.png"; 
 
 $site_name_safe = defined('SITE_NAME') ? SITE_NAME : 'Nectra Digital';
@@ -32,15 +33,12 @@ if (isset($page_img) && !empty($page_img)) {
 }
 
 if (!empty($page_title)) {
-    $meta_title = trim($page_title);
-    if (stripos($meta_title, 'Nectra Digital') === false) {
-        $meta_title .= ' | ' . $site_name_safe;
-    }
+    $meta_title = ge_trim_seo_title(trim($page_title), $site_name_safe, 60);
 } else {
     $meta_title = $default_title;
 }
 
-$meta_desc = (!empty($page_desc)) ? $page_desc : $default_desc;
+$meta_desc = ge_trim_seo_description((!empty($page_desc)) ? $page_desc : $default_desc, 120, 160);
 $meta_keys = (!empty($page_keys)) ? $page_keys : "SEO Company India, Best SEO Company India, SEO Services India, Digital Marketing Agency India, AI Automation Services, Web Development Agency";
 $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
 ?>
@@ -74,12 +72,15 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <meta name="bingbot" content="index, follow">
     <meta name="news_keywords" content="<?php echo htmlspecialchars($meta_keys); ?>">
     <meta name="syndication-source" content="<?php echo htmlspecialchars($final_url); ?>">
-    <meta property="article:publisher" content="<?php echo SITE_URL; ?>" />
     <?php endif; ?>
 
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css">
     
     <meta property="og:site_name" content="<?php echo $site_name_safe; ?>" />
@@ -90,6 +91,9 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <meta property="og:image" content="<?php echo htmlspecialchars($meta_img); ?>" />
     <meta property="og:image:alt" content="<?php echo $site_name_safe; ?> - SEO & Digital Marketing Agency India" />
     <meta property="og:locale" content="en_IN" />
+    <?php if (defined('NECTRA_FACEBOOK_URL')): ?>
+    <meta property="article:publisher" content="<?php echo NECTRA_FACEBOOK_URL; ?>" />
+    <?php endif; ?>
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@nectradigital">
@@ -99,6 +103,7 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <meta name="twitter:image:alt" content="<?php echo $site_name_safe; ?>">
 
     <?php
+    require_once __DIR__ . '/site-contact.php';
     $global_schemas = [get_organization_schema(), get_website_schema(), get_founder_schema()];
     if (!empty($page_schema) && is_array($page_schema)) {
         $global_schemas = array_merge($global_schemas, $page_schema);
@@ -113,36 +118,20 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
       gtag('js', new Date());
       gtag('config', 'G-1S5L5N87KR');
     </script>
-
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-TCZBG6K3');</script>
-    
+    <?php if (defined('NECTRA_FB_PIXEL_ID') && NECTRA_FB_PIXEL_ID !== ''): ?>
     <script>
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i+"?ref=bwt";
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "vjpbvxww01");
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '<?php echo htmlspecialchars(NECTRA_FB_PIXEL_ID, ENT_QUOTES); ?>');
+    fbq('track', 'PageView');
     </script>
-    
-    <script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
-    <script>
-      (self.SWG_BASIC = self.SWG_BASIC || []).push( basicSubscriptions => {
-        basicSubscriptions.init({
-          type: "NewsArticle",
-          isPartOfType: ["Product"],
-          isPartOfProductId: "CAow-93FDA:openaccess",
-          clientOptions: { theme: "light", lang: "en" },
-        });
-      });
-    </script>
+    <?php endif; ?>
 </head>
 <body>
 
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TCZBG6K3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="particles-js"></div>
 
 <nav class="navbar navbar-expand-lg fixed-top">

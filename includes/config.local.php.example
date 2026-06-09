@@ -3,3 +3,8 @@
 if (!defined('SITE_URL')) {
     define('SITE_URL', 'https://www.nectradigital.com');
 }
+// Optional Facebook Pixel ID (create in Meta Business Suite)
+// if (!defined('NECTRA_FB_PIXEL_ID')) {
+//     define('NECTRA_FB_PIXEL_ID', 'YOUR_PIXEL_ID');
+// }
+// DNS (Hostinger/cPanel): add SPF TXT record, e.g. v=spf1 include:_spf.google.com ~all

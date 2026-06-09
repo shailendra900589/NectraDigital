@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             const formData = new FormData(this);
 
-            fetch('process.php', {
+            fetch('/process', {
                 method: 'POST',
                 body: formData
             })

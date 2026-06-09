@@ -47,7 +47,7 @@ $form_id = 'serviceCityForm_' . substr(md5($form_service . $form_city . $form_in
         const original = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = 'Sending...';
-        fetch('/process.php', { method: 'POST', body: new FormData(form) })
+        fetch('/process', { method: 'POST', body: new FormData(form) })
             .then(r => r.json())
             .then(data => {
                 res.innerHTML = data.status === 'success'
