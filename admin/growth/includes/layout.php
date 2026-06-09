@@ -46,17 +46,17 @@ function ge_admin_layout_start(string $title, string $activePage = ''): void {
     <title><?php echo ge_admin_page_title($title); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../../assets/css/growth-admin.css?v=3">
+    <link rel="stylesheet" href="../../assets/css/growth-admin.css?v=4">
     <?php require_once __DIR__ . '/../../../includes/ckeditor.php'; nectra_ckeditor_styles(); ?>
 </head>
 <body class="ge-admin">
 <div class="ge-layout">
     <aside class="ge-sidebar">
-        <div class="ge-brand">
+        <div class="ge-brand ge-sidebar-brand">
             <span class="ge-brand-text">NECTRA</span><span class="ge-brand-accent">GROWTH</span>
             <small class="d-block text-muted mt-1">Enterprise Growth Platform v<?php echo htmlspecialchars(ge_setting('platform_version', '2.0')); ?></small>
         </div>
-        <nav class="ge-nav">
+        <nav class="ge-nav ge-sidebar-scroll">
             <?php foreach (ge_admin_nav() as $item): ?>
             <?php if (!empty($item['section'])): ?>
             <div class="ge-nav-section"><?php echo htmlspecialchars($item['section']); ?></div>
@@ -66,10 +66,11 @@ function ge_admin_layout_start(string $title, string $activePage = ''): void {
             </a>
             <?php endif; ?>
             <?php endforeach; ?>
-            <hr class="border-secondary my-2">
+        </nav>
+        <div class="ge-sidebar-footer">
             <a href="../dashboard.php?page=home" class="ge-nav-link"><i class="fas fa-arrow-left"></i> NECTRAOS Admin</a>
             <a href="../logout.php" class="ge-nav-link text-danger"><i class="fas fa-power-off"></i> Logout</a>
-        </nav>
+        </div>
     </aside>
     <main class="ge-main">
         <header class="ge-topbar">

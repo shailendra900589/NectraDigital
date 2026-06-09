@@ -73,11 +73,33 @@ if (isset($_POST['update_hire_status'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #111; color: #ccc; }
-        .sidebar { min-height: 100vh; background: #050505; border-right: 1px solid #333; width: 250px; position: fixed; top: 0; left: 0; }
-        .content { margin-left: 250px; padding: 30px; }
-        .nav-link { color: #aaa; padding: 15px; border-bottom: 1px solid #222; }
-        .nav-link:hover, .nav-link.active { background: #00E5FF; color: #000; font-weight: bold; }
+        body { background: #111; color: #ccc; margin: 0; }
+        .sidebar {
+            background: #050505; border-right: 1px solid #333; width: 250px;
+            position: fixed; top: 0; left: 0; height: 100vh; height: 100dvh;
+            display: flex; flex-direction: column; z-index: 100; overflow: hidden;
+        }
+        .sidebar-brand { flex-shrink: 0; padding: 1.25rem 1rem; text-align: center; border-bottom: 1px solid #333; }
+        .sidebar-nav {
+            flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden;
+            overscroll-behavior: contain;
+            scrollbar-width: thin; scrollbar-color: #00E5FF #1a1a1a;
+        }
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: #111; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: #00E5FF; }
+        .sidebar-footer { flex-shrink: 0; border-top: 1px solid #333; background: #050505; }
+        .content { margin-left: 250px; padding: 30px; min-height: 100vh; }
+        .sidebar .nav-link {
+            color: #aaa; padding: 12px 15px; border-bottom: 1px solid #222;
+            display: block; text-decoration: none; font-size: 0.9rem;
+            transition: background 0.15s, color 0.15s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #00E5FF; color: #000; font-weight: bold; }
+        .sidebar-footer .nav-link { border-bottom: none; border-top: 1px solid #222; }
+        .sidebar-footer .nav-link.text-danger { color: #f66 !important; }
+        .sidebar-footer .nav-link.text-danger:hover { background: rgba(255,80,80,0.15); color: #ff8888 !important; font-weight: 600; }
         .card { background: #1a1a1a; border: 1px solid #333; color: #fff; }
         .table-dark { --bs-table-bg: #1a1a1a; }
         .form-control, .form-select { background-color: #222; border-color: #444; color: #fff; }
@@ -86,23 +108,30 @@ if (isset($_POST['update_hire_status'])) {
         .stat-box { background: #0d1117; border: 1px solid #333; border-radius: 8px; padding: 1rem; text-align: center; }
         .stat-val { font-size: 1.75rem; font-weight: bold; color: #00E5FF; }
         .stat-lbl { font-size: 0.75rem; color: #888; text-transform: uppercase; }
-        .section-title { color: #666; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 15px 5px; }
+        .section-title { color: #666; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 15px 5px; margin: 0; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+            .sidebar.sidebar-open { transform: translateX(0); }
+            .content { margin-left: 0; padding: 16px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="sidebar d-flex flex-column">
-    <div class="p-4 text-center border-bottom border-secondary">
+<div class="sidebar">
+    <div class="sidebar-brand">
         <h4 class="text-white m-0">NECTRA<span class="text-info">OS</span></h4>
         <small class="text-muted">Admin Control Center</small>
     </div>
 
+    <nav class="sidebar-nav" aria-label="Admin navigation">
     <div class="section-title">Overview</div>
     <a href="?page=home" class="nav-link <?php echo (!isset($_GET['page']) || $_GET['page']=='home')?'active':''; ?>"><i class="fas fa-home me-2"></i> Dashboard Home</a>
 
     <div class="section-title">Growth & SEO</div>
     <a href="?page=cities" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='cities')?'active':''; ?>"><i class="fas fa-map-marker-alt me-2"></i> Cities</a>
     <a href="?page=seo" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='seo')?'active':''; ?>"><i class="fas fa-search-plus me-2"></i> Auto Indexing</a>
+    <a href="export-urls.php?type=all" class="nav-link"><i class="fas fa-download me-2"></i> Export URLs</a>
     <a href="growth/services.php" class="nav-link"><i class="fas fa-cogs me-2"></i> Services</a>
     <a href="growth/generate.php" class="nav-link"><i class="fas fa-magic me-2"></i> Generate Pages</a>
     <a href="growth/landing-pages.php" class="nav-link"><i class="fas fa-file-alt me-2"></i> Landing Pages</a>
@@ -120,9 +149,12 @@ if (isset($_POST['update_hire_status'])) {
     <div class="section-title">Monetization & HR</div>
     <a href="?page=ads" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='ads')?'active':''; ?>"><i class="fas fa-ad me-2"></i> Ad Engine</a>
     <a href="?page=careers" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='careers')?'active':''; ?>"><i class="fas fa-briefcase me-2"></i> Careers</a>
+    </nav>
 
-    <a href="<?php echo defined('SITE_URL') ? SITE_URL : 'https://www.nectradigital.com'; ?>" target="_blank" class="nav-link"><i class="fas fa-external-link-alt me-2"></i> View Site</a>
-    <a href="logout.php" class="nav-link mt-auto text-danger"><i class="fas fa-power-off me-2"></i> Terminate</a>
+    <div class="sidebar-footer">
+        <a href="<?php echo defined('SITE_URL') ? SITE_URL : 'https://www.nectradigital.com'; ?>" target="_blank" class="nav-link"><i class="fas fa-external-link-alt me-2"></i> View Site</a>
+        <a href="logout.php" class="nav-link text-danger"><i class="fas fa-power-off me-2"></i> Terminate</a>
+    </div>
 </div>
 
 <div class="content">
