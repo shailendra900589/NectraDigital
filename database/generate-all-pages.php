@@ -83,9 +83,9 @@ if (!empty($result['slugs'])) {
 }
 
 if (class_exists(\Growth\Engines\DiscoveryEngine::class)) {
-    echo "\nSubmitting to search engines (batch IndexNow + sitemap)...\n";
-    $pub = \Growth\Engines\DiscoveryEngine::publishAll(500, 100);
-    echo "Queued: {$pub['queued']}, IndexNow batch processed: {$pub['processed']}\n";
+    echo "\nSubmitting ALL URLs to search engines (IndexNow batch)...\n";
+    $pub = \Growth\Engines\DiscoveryEngine::publishAll(10000, 100);
+    echo "Queued: {$pub['queued']}, IndexNow submitted: {$pub['processed']}\n";
 }
 
 echo "Complete.\n";

@@ -17,7 +17,7 @@ if (php_sapi_name() !== 'cli') {
     }
 }
 
-$result = IndexingEngine::processQueue((int)ge_setting('index_batch_size', 50));
+$result = IndexingEngine::processAllQueue((int)ge_setting('index_batch_size', 100), 50);
 
 if (php_sapi_name() === 'cli') {
     echo json_encode($result, JSON_PRETTY_PRINT) . "\n";

@@ -174,6 +174,96 @@ class IndexingEngine
         return ['ok' => $ok, 'sitemap' => $sitemap, 'engines' => $results];
     }
 
+    /** Drain the indexing queue in repeated batches until empty or max batches reached. */
+    public static function processAllQueue(int $batchSize = 100, int $maxBatches = 100): array
+    {
+        $totalProcessed = 0;
+        $totalFailed = 0;
+        $batches = 0;
+
+        while ($batches < $maxBatches) {
+            $r = self::processQueue($batchSize);
+            $totalProcessed += (int)($r['processed'] ?? 0);
+            $totalFailed += (int)($r['failed'] ?? 0);
+            $batches++;
+
+            if (($r['processed'] ?? 0) === 0 && ($r['failed'] ?? 0) === 0) {
+                break;
+            }
+        }
+
+        return [
+            'processed' => $totalProcessed,
+            'failed' => $totalFailed,
+            'batches' => $batches,
+        ];
+    }
+
+    /**
+     * Submit ALL published landing pages (+ optional city hubs) via IndexNow in batches.
+     * Use from dashboard "Submit All" — not limited to pending status.
+     */
+    public static function submitAllPublishedUrls(bool $includeCityHubs = true, bool $includeCoreUrls = false): array
+    {
+        if (!ge_table_exists('ge_landing_pages')) {
+            return ['ok' => false, 'message' => 'Landing pages table missing', 'urls_total' => 0];
+        }
+
+        $base = rtrim(SITE_URL, '/');
+        $urls = [];
+
+        $res = ge_conn()->query("SELECT id, slug FROM ge_landing_pages WHERE status='published' ORDER BY id ASC");
+        if ($res) {
+            while ($row = $res->fetch_assoc()) {
+                $urls[] = $base . '/' . $row['slug'];
+            }
+        }
+
+        if ($includeCityHubs) {
+            require_once __DIR__ . '/../../seo-data.php';
+            foreach (array_keys(get_cities_data()) as $citySlug) {
+                $urls[] = $base . '/digital-agency-' . $citySlug;
+            }
+        }
+
+        if ($includeCoreUrls) {
+            require_once __DIR__ . '/DiscoveryEngine.php';
+            $urls = array_merge($urls, DiscoveryEngine::coreUrls());
+        }
+
+        $urls = array_values(array_unique(array_filter($urls)));
+        if (empty($urls)) {
+            return ['ok' => false, 'message' => 'No URLs to submit', 'urls_total' => 0];
+        }
+
+        $submitted = 0;
+        $batchCount = 0;
+        $lastBatch = ['ok' => false];
+
+        foreach (array_chunk($urls, 10000) as $chunk) {
+            $lastBatch = self::submitIndexNow($chunk);
+            $batchCount++;
+            if (!empty($lastBatch['ok'])) {
+                $submitted += count($chunk);
+            }
+        }
+
+        if ($submitted > 0) {
+            ge_conn()->query("UPDATE ge_landing_pages SET index_status='submitted', index_submitted_at=NOW() WHERE status='published'");
+        }
+
+        $sitemap = self::pingAllSitemaps();
+
+        return [
+            'ok' => $submitted > 0,
+            'urls_total' => count($urls),
+            'urls_submitted' => $submitted,
+            'batches' => $batchCount,
+            'indexnow' => $lastBatch,
+            'sitemap' => $sitemap,
+        ];
+    }
+
     /** Process pending ge_indexing_queue items with real HTTP submissions. */
     public static function processQueue(int $limit = 50): array
     {
@@ -220,25 +310,58 @@ class IndexingEngine
         ];
     }
 
-    /** Queue all pending landing pages and optionally process immediately. */
-    public static function queueAllPending(int $limit = 500, bool $processNow = false): array
+    /** Queue landing pages for indexing and optionally process the full queue. */
+    public static function queueAllPending(int $limit = 5000, bool $processNow = false, bool $onlyPending = true): array
     {
         if (!ge_table_exists('ge_landing_pages')) {
-            return ['queued' => 0, 'processed' => 0];
+            return ['queued' => 0, 'process' => ['processed' => 0, 'failed' => 0]];
         }
 
         $db = ge_conn();
-        $res = $db->query("SELECT id, slug FROM ge_landing_pages WHERE status='published' AND index_status IN ('pending','failed') LIMIT " . (int)$limit);
+        $where = $onlyPending
+            ? "status='published' AND index_status IN ('pending','failed')"
+            : "status='published'";
+        $res = $db->query("SELECT id, slug FROM ge_landing_pages WHERE {$where} ORDER BY id ASC LIMIT " . (int)$limit);
         $queued = 0;
-        while ($row = $res->fetch_assoc()) {
-            IndexingQueue::enqueue(SITE_URL . '/' . $row['slug'], (int)$row['id']);
-            $db->query("UPDATE ge_landing_pages SET index_status='submitted', index_submitted_at=NOW() WHERE id=" . (int)$row['id']);
-            $queued++;
+        if ($res) {
+            while ($row = $res->fetch_assoc()) {
+                if (IndexingQueue::enqueueUnique(SITE_URL . '/' . $row['slug'], (int)$row['id'])) {
+                    $queued++;
+                }
+            }
         }
 
-        $processResult = $processNow ? self::processQueue(min(50, $queued ?: 50)) : ['processed' => 0];
+        $batchSize = (int)ge_setting('index_batch_size', 100);
+        $processResult = $processNow
+            ? self::processAllQueue($batchSize, 100)
+            : ['processed' => 0, 'failed' => 0];
 
         return ['queued' => $queued, 'process' => $processResult];
+    }
+
+    /** Queue every published page + city hubs, then submit entire queue via IndexNow. */
+    public static function queueAndSubmitAll(int $pageLimit = 10000): array
+    {
+        $queue = self::queueAllPending($pageLimit, false, false);
+        $batchSize = (int)ge_setting('index_batch_size', 100);
+
+        $base = rtrim(SITE_URL, '/');
+        require_once __DIR__ . '/../../seo-data.php';
+        $hubsQueued = 0;
+        foreach (array_keys(get_cities_data()) as $citySlug) {
+            if (IndexingQueue::enqueueUnique($base . '/digital-agency-' . $citySlug, 0)) {
+                $hubsQueued++;
+            }
+        }
+
+        $process = self::processAllQueue($batchSize, 100);
+        $direct = self::submitAllPublishedUrls(true, false);
+
+        return [
+            'queued' => $queue['queued'] + $hubsQueued,
+            'process' => $process,
+            'direct' => $direct,
+        ];
     }
 
     public static function lastSubmissionSummary(): array

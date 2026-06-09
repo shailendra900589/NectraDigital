@@ -103,13 +103,13 @@ function admin_handle_growth_post(string $page): ?string
     }
 
     if ($page === 'seo' && $action === 'queue_pending') {
-        $r = IndexingEngine::queueAllPending(500, false);
+        $r = IndexingEngine::queueAllPending(5000, false);
         return "Queued {$r['queued']} pages for indexing.";
     }
 
     if ($page === 'seo' && $action === 'process_queue') {
-        $r = IndexingEngine::processQueue((int)ge_setting('index_batch_size', 50));
-        return "Processed {$r['processed']} URLs. Failed: {$r['failed']}.";
+        $r = IndexingEngine::processAllQueue((int)ge_setting('index_batch_size', 100));
+        return "Submitted {$r['processed']} URLs via IndexNow. Failed: {$r['failed']}. ({$r['batches']} batches)";
     }
 
     if ($page === 'seo' && $action === 'ping_sitemap') {
@@ -117,10 +117,21 @@ function admin_handle_growth_post(string $page): ?string
         return $r['ok'] ? 'Sitemap pinged to search engines.' : 'Sitemap ping failed — check settings.';
     }
 
-    if ($page === 'seo' && $action === 'queue_and_process') {
-        $r = IndexingEngine::queueAllPending(500, true);
-        $p = $r['process']['processed'] ?? 0;
-        return "Queued {$r['queued']} pages. Submitted {$p} via IndexNow.";
+    if (($page === 'seo' || $page === 'home') && $action === 'queue_and_process') {
+        $r = IndexingEngine::queueAndSubmitAll(10000);
+        $submitted = (int)($r['direct']['urls_submitted'] ?? 0);
+        $processed = (int)($r['process']['processed'] ?? 0);
+        return "Submitted {$submitted} URLs via IndexNow (+ {$processed} from queue). Total queued: {$r['queued']}.";
+    }
+
+    if ($page === 'seo' && $action === 'submit_all_indexnow') {
+        set_time_limit(300);
+        $r = IndexingEngine::submitAllPublishedUrls(true, true);
+        $n = (int)($r['urls_submitted'] ?? 0);
+        $total = (int)($r['urls_total'] ?? 0);
+        return $r['ok']
+            ? "IndexNow: submitted {$n} of {$total} URLs (landing pages + city hubs + core pages)."
+            : 'IndexNow submission failed — check Growth Settings → IndexNow API key.';
     }
 
     return null;
@@ -148,4 +159,46 @@ function admin_indexnow_info(): array
         'key_url' => IndexingEngine::keyFileUrl(),
         'host' => IndexingEngine::host(),
     ];
+}
+
+/** City hub URLs for Google listing / Search Console. */
+function admin_city_hub_urls(): array
+{
+    if (!admin_growth_ready()) {
+        return [];
+    }
+
+    $base = rtrim(defined('SITE_URL') ? SITE_URL : 'https://www.nectradigital.com', '/');
+    $list = [];
+    foreach (City::all(true) as $city) {
+        $slug = $city['slug'] ?? '';
+        if ($slug === '') {
+            continue;
+        }
+        $list[] = [
+            'id' => (int)$city['id'],
+            'name' => $city['name'],
+            'state' => $city['state'] ?? '',
+            'slug' => $slug,
+            'hub_url' => $base . '/digital-agency-' . $slug,
+        ];
+    }
+    return $list;
+}
+
+function admin_landing_page_urls(int $limit = 5000): array
+{
+    return admin_growth_ready() ? LandingPage::publishedUrlList($limit) : [];
+}
+
+function admin_all_indexable_urls(): array
+{
+    $urls = [];
+    foreach (admin_city_hub_urls() as $hub) {
+        $urls[] = $hub['hub_url'];
+    }
+    foreach (admin_landing_page_urls() as $row) {
+        $urls[] = $row['url'];
+    }
+    return array_values(array_unique($urls));
 }

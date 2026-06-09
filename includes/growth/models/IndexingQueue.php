@@ -5,11 +5,29 @@ class IndexingQueue extends BaseModel
 {
     public static function enqueue(string $url, ?int $landingPageId = null, string $action = 'submit'): int
     {
+        if (self::enqueueUnique($url, $landingPageId, $action)) {
+            return self::lastId();
+        }
+        return 0;
+    }
+
+    public static function enqueueUnique(string $url, ?int $landingPageId = null, string $action = 'submit'): bool
+    {
+        $existing = self::fetchOne(
+            "SELECT id FROM ge_indexing_queue WHERE url = ? AND status = 'pending' LIMIT 1",
+            's',
+            [$url]
+        );
+        if ($existing) {
+            return false;
+        }
+
         self::execute(
             "INSERT INTO ge_indexing_queue (landing_page_id, url, action_type, status) VALUES (?, ?, ?, 'pending')",
-            'iss', [$landingPageId, $url, $action]
+            'iss',
+            [$landingPageId ?? 0, $url, $action]
         );
-        return self::lastId();
+        return true;
     }
 
     public static function pending(int $limit = 100): array

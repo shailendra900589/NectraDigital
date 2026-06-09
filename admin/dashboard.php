@@ -161,10 +161,38 @@ if (isset($_POST['update_hire_status'])) {
         echo '<div class="d-flex justify-content-between mb-2"><span class="text-white-50">Indexed</span><strong class="text-success">'.number_format($growthStats['indexed']).'</strong></div>';
         echo '<div class="d-flex justify-content-between mb-2"><span class="text-white-50">Pending</span><strong class="text-warning">'.number_format($growthStats['pending_index']).'</strong></div>';
         echo '<div class="d-flex justify-content-between mb-3"><span class="text-white-50">Queue</span><strong>'.number_format($growthStats['queue_pending']).'</strong></div>';
-        echo '<form method="POST" action="?page=seo" class="d-grid gap-2"><input type="hidden" name="growth_action" value="queue_and_process">';
+        echo '<form method="POST" action="?page=seo" class="d-grid gap-2"><input type="hidden" name="growth_action" value="submit_all_indexnow">';
+        echo '<button type="submit" class="btn btn-warning text-dark"><i class="fas fa-paper-plane"></i> Submit ALL URLs to IndexNow</button></form>';
+        echo '<form method="POST" action="?page=seo" class="d-grid gap-2 mt-2"><input type="hidden" name="growth_action" value="queue_and_process">';
         echo '<button type="submit" class="btn btn-success"><i class="fas fa-bolt"></i> Queue & Submit (IndexNow + Bing + DDG)</button></form>';
-        echo '<p class="small text-muted mt-2 mb-0"><a href="?page=seo">Full indexing panel →</a></p></div></div>';
+        echo '<p class="small text-muted mt-2 mb-0"><a href="?page=seo">Full indexing panel →</a> · <a href="export-urls.php?type=all">Download all URLs</a></p></div></div>';
         echo '</div>';
+
+        if ($growthStats['ready']) {
+            $cityHubs = function_exists('admin_city_hub_urls') ? admin_city_hub_urls() : [];
+            $allUrlCount = function_exists('admin_all_indexable_urls') ? count(admin_all_indexable_urls()) : 0;
+            echo '<div class="card p-4 mt-4"><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">';
+            echo '<h5 class="text-info mb-0"><i class="fas fa-link"></i> City Hub URLs (Google Listing)</h5>';
+            echo '<div class="d-flex flex-wrap gap-2">';
+            echo '<a href="export-urls.php?type=cities" class="btn btn-sm btn-outline-info"><i class="fas fa-download"></i> Download City URLs</a>';
+            echo '<a href="export-urls.php?type=landing" class="btn btn-sm btn-outline-info"><i class="fas fa-download"></i> Download Landing URLs</a>';
+            echo '<a href="export-urls.php?type=all" class="btn btn-sm btn-info"><i class="fas fa-download"></i> Download All (' . number_format($allUrlCount) . ')</a>';
+            echo '</div></div>';
+            echo '<p class="text-white-50 small">Har city ka hub page — Google Search Console / Bing me manual listing ke liye. Service×city pages alag se <code>export-urls.php?type=landing</code> se download karein.</p>';
+            echo '<div class="table-responsive" style="max-height:360px;overflow-y:auto;"><table class="table table-dark table-sm mb-0"><thead><tr><th>City</th><th>Hub URL</th><th></th></tr></thead><tbody>';
+            foreach ($cityHubs as $hub) {
+                $url = htmlspecialchars($hub['hub_url']);
+                echo '<tr><td><strong>' . htmlspecialchars($hub['name']) . '</strong><br><span class="text-muted small">' . htmlspecialchars($hub['state']) . '</span></td>';
+                echo '<td class="small"><code>' . $url . '</code></td><td class="text-nowrap">';
+                echo '<a href="' . $url . '" target="_blank" class="btn btn-sm btn-outline-secondary me-1" title="Open"><i class="fas fa-external-link-alt"></i></a>';
+                echo '<button type="button" class="btn btn-sm btn-outline-info" onclick="navigator.clipboard.writeText(\'' . addslashes($hub['hub_url']) . '\');this.innerHTML=\'Copied!\';setTimeout(()=>this.innerHTML=\'<i class=&quot;fas fa-copy&quot;></i>\',1500)" title="Copy URL"><i class="fas fa-copy"></i></button>';
+                echo '</td></tr>';
+            }
+            if (empty($cityHubs)) {
+                echo '<tr><td colspan="3" class="text-center text-muted py-3">No cities — <a href="?page=cities">add cities</a> first.</td></tr>';
+            }
+            echo '</tbody></table></div></div>';
+        }
 
         if ($growthStats['ready']) {
             $pct = $growthStats['potential'] > 0 ? min(100, round(($growthStats['pages'] / $growthStats['potential']) * 100)) : 0;
@@ -205,6 +233,26 @@ if (isset($_POST['update_hire_status'])) {
         }
         if (empty($cities)) echo '<tr><td colspan="5" class="text-center text-muted py-4">No cities yet. Add above or run migration.</td></tr>';
         echo '</tbody></table></div><p class="small text-muted mt-2 mb-0">'.count($cities).' cities · Used for programmatic landing pages</p></div>';
+
+        if ($growthStats['ready']) {
+            $cityHubs = function_exists('admin_city_hub_urls') ? admin_city_hub_urls() : [];
+            $landingCount = (int)($growthStats['pages'] ?? 0);
+            echo '<div class="card p-4 mt-4"><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">';
+            echo '<h5 class="mb-0"><i class="fas fa-link text-info"></i> Generated City Hub Links</h5>';
+            echo '<div class="d-flex flex-wrap gap-2">';
+            echo '<a href="export-urls.php?type=cities" class="btn btn-sm btn-outline-info"><i class="fas fa-download"></i> Export City URLs</a>';
+            echo '<a href="export-urls.php?type=all" class="btn btn-sm btn-info"><i class="fas fa-download"></i> Export All URLs</a>';
+            echo '</div></div>';
+            echo '<p class="text-white-50 small mb-3">City hub pages + <strong>' . number_format($landingCount) . '</strong> service×city landing pages. Download list for Google Search Console bulk indexing.</p>';
+            echo '<div class="table-responsive" style="max-height:420px;overflow-y:auto;"><table class="table table-dark table-sm mb-0"><thead><tr><th>City</th><th>Slug</th><th>Hub URL</th><th></th></tr></thead><tbody>';
+            foreach ($cityHubs as $hub) {
+                $url = htmlspecialchars($hub['hub_url']);
+                echo '<tr><td>'.htmlspecialchars($hub['name']).'</td><td><code class="small">'.htmlspecialchars($hub['slug']).'</code></td>';
+                echo '<td class="small"><a href="'.$url.'" target="_blank" class="text-info text-decoration-none">'.$url.'</a></td>';
+                echo '<td><button type="button" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(\''.addslashes($hub['hub_url']).'\')" title="Copy"><i class="fas fa-copy"></i></button></td></tr>';
+            }
+            echo '</tbody></table></div></div>';
+        }
     }
 
     // ==========================================
@@ -223,12 +271,15 @@ if (isset($_POST['update_hire_status'])) {
         echo '</div>';
 
         echo '<div class="row g-4"><div class="col-lg-5"><div class="card p-4"><h5 class="text-info">Indexing Actions</h5>';
-        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="queue_pending"><button class="btn btn-info">Queue All Pending (500)</button></form>';
-        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="process_queue"><button class="btn btn-success">Process Queue → IndexNow + Bing + Yandex</button></form>';
+        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="submit_all_indexnow"><button class="btn btn-warning text-dark"><i class="fas fa-paper-plane"></i> Submit ALL URLs to IndexNow</button></form>';
+        echo '<p class="small text-muted mb-3">Sends all '.number_format($growthStats['pages']).'+ landing pages + city hubs + core pages in one batch.</p>';
+        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="queue_pending"><button class="btn btn-info">Queue Pending Only</button></form>';
+        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="process_queue"><button class="btn btn-success">Process Full Queue → IndexNow</button></form>';
         echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="ping_sitemap"><button class="btn btn-outline-light">Ping Sitemap (Google + Bing)</button></form>';
-        echo '<form method="POST" class="d-grid gap-2"><input type="hidden" name="growth_action" value="queue_and_process"><button class="btn btn-warning text-dark">Queue + Submit All (One Click)</button></form>';
-        echo '<hr><p class="small text-muted mb-1"><strong>Search engines:</strong> IndexNow API, Bing, Yandex, DuckDuckGo (via IndexNow), Google sitemap ping</p>';
-        echo '<p class="small text-muted mb-0">Cron: <code>php cron/process-indexing.php</code></p></div></div>';
+        echo '<form method="POST" class="d-grid gap-2"><input type="hidden" name="growth_action" value="queue_and_process"><button class="btn btn-outline-success">Queue + Submit All (One Click)</button></form>';
+        echo '<hr><p class="small text-muted mb-1"><a href="export-urls.php?type=all" class="text-info"><i class="fas fa-download"></i> Download all URLs for Google</a></p>';
+        echo '<p class="small text-muted mb-1"><strong>Search engines:</strong> IndexNow API, Bing, Yandex, DuckDuckGo (via IndexNow)</p>';
+        echo '<p class="small text-muted mb-0">Cron: <code>php cron/process-indexing.php</code> (auto batch)</p></div></div>';
 
         echo '<div class="col-lg-7"><div class="card p-4 mb-3"><h5 class="text-info">IndexNow Configuration</h5>';
         echo '<p class="small text-white-50 mb-1">API Key: <code>'.htmlspecialchars($idxInfo['key']).'</code></p>';

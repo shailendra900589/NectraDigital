@@ -25,22 +25,19 @@ class DiscoveryEngine
         return $results;
     }
 
-    /** Full site discovery push: queue pending pages + submit + ping feeds. */
-    public static function publishAll(int $queueLimit = 500, int $processLimit = 100): array
+    /** Full site discovery push: submit all URLs via IndexNow + ping sitemaps. */
+    public static function publishAll(int $queueLimit = 10000, int $processBatchSize = 100): array
     {
-        $queue = IndexingEngine::queueAllPending($queueLimit, false);
-        $process = IndexingEngine::processQueue($processLimit);
-        $sitemap = IndexingEngine::pingAllSitemaps();
-        $staticUrls = self::coreUrls();
-        $indexnow = IndexingEngine::submitIndexNow($staticUrls);
+        $queued = IndexingEngine::queueAllPending($queueLimit, false, false);
+        $submit = IndexingEngine::submitAllPublishedUrls(true, true);
+        $process = IndexingEngine::processAllQueue($processBatchSize, 50);
 
         return [
-            'queued' => $queue['queued'],
-            'processed' => $process['processed'],
-            'failed' => $process['failed'],
-            'sitemap' => $sitemap,
-            'core_urls' => count($staticUrls),
-            'indexnow_core' => $indexnow['ok'] ?? false,
+            'queued' => $queued['queued'],
+            'processed' => (int)($submit['urls_submitted'] ?? 0) + (int)($process['processed'] ?? 0),
+            'failed' => (int)($process['failed'] ?? 0),
+            'submit' => $submit,
+            'sitemap' => $submit['sitemap'] ?? null,
         ];
     }
 

@@ -228,6 +228,30 @@ class LandingPage extends BaseModel
         ];
     }
 
+    /** @return list<array{id:int,slug:string,url:string,city_name:?string,service_name:?string}> */
+    public static function publishedUrlList(int $limit = 50000, int $offset = 0): array
+    {
+        $rows = self::fetchAll(
+            "SELECT lp.id, lp.slug, s.name AS service_name, c.name AS city_name, c.slug AS city_slug
+             FROM ge_landing_pages lp
+             INNER JOIN ge_services s ON s.id = lp.service_id
+             INNER JOIN ge_cities c ON c.id = lp.city_id
+             WHERE lp.status = 'published'
+             ORDER BY c.name ASC, s.sort_order ASC, lp.id ASC
+             LIMIT ? OFFSET ?",
+            'ii',
+            [$limit, $offset]
+        );
+
+        $base = rtrim(SITE_URL, '/');
+        foreach ($rows as &$row) {
+            $row['url'] = $base . '/' . $row['slug'];
+        }
+        unset($row);
+
+        return $rows;
+    }
+
     public static function forSitemap(int $limit = 50000, int $offset = 0): array
     {
         return self::fetchAll(

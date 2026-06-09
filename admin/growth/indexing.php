@@ -18,13 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'queue_all_pending') {
-        $r = IndexingEngine::queueAllPending(500, false);
+        $r = IndexingEngine::queueAllPending(5000, false);
         ge_admin_flash('success', "Queued {$r['queued']} pages for indexing.");
     }
 
     if ($action === 'process_queue') {
-        $r = IndexingEngine::processQueue((int)ge_setting('index_batch_size', 50));
-        ge_admin_flash('success', "Submitted {$r['processed']} URLs via IndexNow/Bing/Yandex. Failed: {$r['failed']}.");
+        $r = IndexingEngine::processAllQueue((int)ge_setting('index_batch_size', 100));
+        ge_admin_flash('success', "Submitted {$r['processed']} URLs via IndexNow. Failed: {$r['failed']}. ({$r['batches']} batches)");
     }
 
     if ($action === 'ping_sitemap') {
@@ -32,16 +32,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ge_admin_flash($r['ok'] ? 'success' : 'error', $r['ok'] ? 'All sitemaps & feeds pinged (Google, Bing, Yandex).' : 'Sitemap ping failed.');
     }
 
+    if ($action === 'submit_all_indexnow') {
+        set_time_limit(300);
+        $r = IndexingEngine::submitAllPublishedUrls(true, true);
+        $n = (int)($r['urls_submitted'] ?? 0);
+        $total = (int)($r['urls_total'] ?? 0);
+        ge_admin_flash($r['ok'] ? 'success' : 'error', $r['ok']
+            ? "IndexNow: submitted {$n} of {$total} URLs."
+            : 'IndexNow submission failed.');
+    }
+
     if ($action === 'queue_and_process') {
-        $r = IndexingEngine::queueAllPending(500, true);
-        $p = $r['process']['processed'] ?? 0;
-        ge_admin_flash('success', "Queued {$r['queued']} pages. Submitted {$p} via search engines.");
+        $r = IndexingEngine::queueAndSubmitAll(10000);
+        $submitted = (int)($r['direct']['urls_submitted'] ?? 0);
+        ge_admin_flash('success', "Submitted {$submitted} URLs via IndexNow. Queued: {$r['queued']}.");
     }
 
     if ($action === 'publish_all') {
         set_time_limit(300);
-        $r = DiscoveryEngine::publishAll(500, 100);
-        ge_admin_flash('success', "Published: queued {$r['queued']}, submitted {$r['processed']}, pinged all sitemaps/feeds.");
+        $r = DiscoveryEngine::publishAll(10000, 100);
+        ge_admin_flash('success', "IndexNow: submitted {$r['processed']} URLs. Queued: {$r['queued']}.");
     }
 
     if ($action === 'refresh_seo') {
@@ -96,13 +106,18 @@ ge_admin_layout_start('Indexing Manager', 'indexing');
                 <button type="submit" class="btn btn-outline-secondary">Ping Sitemap (Google + Bing)</button>
             </form>
             <form method="POST" class="d-grid gap-2 mt-2">
+                <input type="hidden" name="action" value="submit_all_indexnow">
+                <button type="submit" class="btn btn-warning">Submit ALL URLs → IndexNow</button>
+            </form>
+            <form method="POST" class="d-grid gap-2 mt-2">
                 <input type="hidden" name="action" value="queue_and_process">
-                <button type="submit" class="btn btn-warning">Queue + Submit All (One Click)</button>
+                <button type="submit" class="btn btn-outline-success">Queue + Submit All (One Click)</button>
             </form>
             <form method="POST" class="d-grid gap-2 mt-2">
                 <input type="hidden" name="action" value="publish_all">
-                <button type="submit" class="btn btn-success">Publish All → IndexNow + All Feeds/Sitemaps</button>
+                <button type="submit" class="btn btn-success">Publish All → IndexNow + Sitemaps</button>
             </form>
+            <p class="small text-muted mt-2 mb-0"><a href="../export-urls.php?type=all">Download all URLs for Google Search Console</a></p>
             <form method="POST" class="d-grid gap-2 mt-2">
                 <input type="hidden" name="action" value="refresh_seo">
                 <button type="submit" class="btn btn-outline-info">Refresh High-Intent SEO Keywords (All Pages)</button>
