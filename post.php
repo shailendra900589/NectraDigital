@@ -253,16 +253,30 @@ function get_active_ads(mysqli $conn, array $placements, int $limit, array $excl
     return $ads;
 }
 
-function build_sidebar_ad_slots(mysqli $conn, int $target = 10, int $minimum = 7): array
+function ad_has_displayable_content(array $ad): bool
 {
-    $target = max($minimum, min(10, $target));
-    $minimum = max(1, min($minimum, $target));
+    if (($ad['type'] ?? '') === 'image') {
+        return trim($ad['image_path'] ?? '') !== '';
+    }
+    return trim($ad['ad_code'] ?? '') !== '';
+}
 
-    $ads = get_active_ads($conn, ['sidebar'], $target);
+function build_sidebar_ad_slots(mysqli $conn, int $target = 20, int $minimum = 15): array
+{
+    $target = max($minimum, min(25, $target));
+    $minimum = max(15, min($minimum, $target));
+
+    $ads = array_values(array_filter(
+        get_active_ads($conn, ['sidebar'], $target),
+        'ad_has_displayable_content'
+    ));
     $usedIds = array_column($ads, 'id');
 
     if (count($ads) < $target) {
-        $more = get_active_ads($conn, ['header', 'content'], $target - count($ads), $usedIds);
+        $more = array_values(array_filter(
+            get_active_ads($conn, ['header', 'content'], $target - count($ads), $usedIds),
+            'ad_has_displayable_content'
+        ));
         foreach ($more as $ad) {
             $ads[] = $ad;
             $usedIds[] = $ad['id'];
@@ -270,7 +284,10 @@ function build_sidebar_ad_slots(mysqli $conn, int $target = 10, int $minimum = 7
     }
 
     if (count($ads) < $target) {
-        $more = get_active_ads($conn, ['sidebar', 'header', 'content'], $target - count($ads), $usedIds);
+        $more = array_values(array_filter(
+            get_active_ads($conn, ['sidebar', 'header', 'content'], $target - count($ads), $usedIds),
+            'ad_has_displayable_content'
+        ));
         foreach ($more as $ad) {
             $ads[] = $ad;
             $usedIds[] = $ad['id'];
@@ -289,14 +306,14 @@ function build_sidebar_ad_slots(mysqli $conn, int $target = 10, int $minimum = 7
     return array_slice($ads, 0, $target);
 }
 
-function render_sidebar_ads($conn, int $target = 10): int
+function render_sidebar_ads($conn, int $target = 20): int
 {
     $check = $conn->query("SHOW TABLES LIKE 'ads'");
     if (!$check || $check->num_rows === 0) {
         return 0;
     }
 
-    $ads = build_sidebar_ad_slots($conn, $target, 7);
+    $ads = build_sidebar_ad_slots($conn, $target, 15);
     if (empty($ads)) {
         return 0;
     }
@@ -553,7 +570,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                 <div class="col-lg-4 mt-5 mt-lg-0 ps-lg-5">
                     <aside class="sidebar-ad-column" aria-label="Sponsored content">
                         <h6 class="text-white-50 text-uppercase small mb-3 border-bottom border-secondary pb-2 text-center">Sponsored Intel</h6>
-                        <?php render_sidebar_ads($conn, 10); ?>
+                        <?php render_sidebar_ads($conn, 20); ?>
                     </aside>
                 </div>
                 <?php endif; ?>
