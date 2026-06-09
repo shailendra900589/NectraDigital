@@ -71,4 +71,25 @@ class Service extends BaseModel
     {
         return self::execute("DELETE FROM ge_services WHERE id = ?", 'i', [$id]);
     }
+
+    public static function withPageCounts(bool $activeOnly = false): array
+    {
+        $services = self::all($activeOnly);
+        if (!ge_table_exists('ge_landing_pages')) {
+            foreach ($services as &$service) {
+                $service['page_count'] = 0;
+            }
+            return $services;
+        }
+
+        $counts = LandingPage::countsGroupedByService();
+        $cityTotal = City::count(true);
+
+        foreach ($services as &$service) {
+            $service['page_count'] = $counts[(int)$service['id']] ?? 0;
+            $service['city_total'] = $cityTotal;
+        }
+
+        return $services;
+    }
 }

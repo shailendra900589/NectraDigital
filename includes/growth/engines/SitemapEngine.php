@@ -23,6 +23,24 @@ class SitemapEngine
             $xml .= self::urlEntry($loc, $now, 'weekly', $priority);
         }
 
+        require_once __DIR__ . '/../../seo-data.php';
+        foreach (get_services_data() as $slug => $svc) {
+            $xml .= self::urlEntry($base . '/' . $slug, $now, 'weekly', '0.85');
+        }
+        foreach (get_cities_data() as $slug => $city) {
+            $xml .= self::urlEntry($base . '/digital-agency-' . $slug, $now, 'weekly', '0.8');
+        }
+
+        global $conn;
+        if (isset($conn) && $conn instanceof \mysqli) {
+            $res = @$conn->query("SELECT slug, created_at FROM blog_posts ORDER BY created_at DESC");
+            if ($res) {
+                while ($row = $res->fetch_assoc()) {
+                    $xml .= self::urlEntry($base . '/' . $row['slug'], date('c', strtotime($row['created_at'])), 'monthly', '0.75');
+                }
+            }
+        }
+
         if (ge_is_ready()) {
             $offset = 0;
             $batch = 5000;

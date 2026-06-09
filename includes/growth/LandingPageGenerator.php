@@ -68,7 +68,7 @@ class LandingPageGenerator
             'faq_json' => ge_json_encode($faqs),
             'paa_json' => ge_json_encode($paa),
             'voice_answer' => $voice,
-            'keywords_json' => ge_json_encode(array_column($keywords, 'keyword')),
+            'keywords_json' => ge_json_encode(KeywordEngine::metaKeywordList($service, $city, $industry, 20)),
             'internal_links_json' => ge_json_encode($links),
             'cta_json' => ge_json_encode(ge_default_ctas()),
             'content_hash' => ge_hash_content($content['content'] . $geo['quick_answer'] . $slug . ($industryId ?: '')),
@@ -90,6 +90,9 @@ class LandingPageGenerator
 
         if (ge_setting('auto_index_queue', '1') === '1') {
             IndexingQueue::enqueue(SITE_URL . $urlPath, $pageId);
+            if (class_exists(\Growth\Engines\DiscoveryEngine::class)) {
+                \Growth\Engines\DiscoveryEngine::signalUrls([SITE_URL . $urlPath]);
+            }
         }
 
         return ['success' => true, 'id' => $pageId, 'slug' => $slug];

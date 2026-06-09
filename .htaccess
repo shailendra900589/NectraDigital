@@ -20,6 +20,8 @@ RewriteRule ^sitemap\.xml$ sitemap.php [L]
 RewriteRule ^llms\.txt$ llms.php [L]
 RewriteRule ^rss\.xml$ rss.php [L]
 RewriteRule ^news-sitemap\.xml$ news-sitemap.php [L]
+RewriteRule ^discover-feed\.xml$ discover-feed.php [L]
+RewriteRule ^atom\.xml$ atom.php [L]
 
 # ========================================================
 # 3C. TOOLS MARKETPLACE

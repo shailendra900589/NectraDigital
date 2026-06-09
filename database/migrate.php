@@ -65,4 +65,15 @@ $r2 = run_sql_file($conn, __DIR__ . '/schema-v2.sql');
 
 echo $r1['msg'] . $r2['msg'];
 echo "Total: " . ($r1['ok'] + $r2['ok']) . " ok, " . ($r1['fail'] + $r2['fail']) . " failed\n";
+
+if (file_exists(__DIR__ . '/../includes/growth/bootstrap.php')) {
+    require_once __DIR__ . '/../includes/growth/bootstrap.php';
+    if (function_exists('ge_is_ready') && ge_is_ready()) {
+        require_once __DIR__ . '/../includes/growth/engines/CatalogSyncEngine.php';
+        $sync = \Growth\Engines\CatalogSyncEngine::syncAll();
+        echo "\nCatalog sync: {$sync['services']} services, {$sync['cities']} cities\n";
+        echo "Run: php database/generate-all-pages.php — to create all service × city landing pages\n";
+    }
+}
+
 echo "Admin: https://www.nectradigital.com/admin/growth/\n";

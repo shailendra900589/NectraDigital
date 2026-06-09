@@ -4,6 +4,8 @@ require_once __DIR__ . '/init.php';
 use Growth\Models\LandingPage;
 use Growth\Models\IndexingQueue;
 use Growth\Engines\IndexingEngine;
+use Growth\Engines\DiscoveryEngine;
+use Growth\Engines\SeoRefreshEngine;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -27,13 +29,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'ping_sitemap') {
         $r = IndexingEngine::pingSitemap();
-        ge_admin_flash($r['ok'] ? 'success' : 'error', $r['ok'] ? 'Sitemap pinged to Google & Bing.' : 'Sitemap ping failed.');
+        ge_admin_flash($r['ok'] ? 'success' : 'error', $r['ok'] ? 'All sitemaps & feeds pinged (Google, Bing, Yandex).' : 'Sitemap ping failed.');
     }
 
     if ($action === 'queue_and_process') {
         $r = IndexingEngine::queueAllPending(500, true);
         $p = $r['process']['processed'] ?? 0;
         ge_admin_flash('success', "Queued {$r['queued']} pages. Submitted {$p} via search engines.");
+    }
+
+    if ($action === 'publish_all') {
+        set_time_limit(300);
+        $r = DiscoveryEngine::publishAll(500, 100);
+        ge_admin_flash('success', "Published: queued {$r['queued']}, submitted {$r['processed']}, pinged all sitemaps/feeds.");
+    }
+
+    if ($action === 'refresh_seo') {
+        set_time_limit(300);
+        $r = SeoRefreshEngine::refreshAll(true);
+        ge_admin_flash('success', "Refreshed SEO on {$r['updated']} pages. Signaled {$r['urls_signaled']} URLs.");
     }
 
     header('Location: indexing.php');
@@ -57,9 +71,12 @@ ge_admin_layout_start('Indexing Manager', 'indexing');
 </div>
 
 <div class="alert alert-info small">
-    <strong>Auto engines:</strong> IndexNow API · Bing · Yandex · DuckDuckGo (IndexNow network) · Google sitemap ping · Bing sitemap ping
-    <br>Key file: <a href="<?php echo htmlspecialchars($idxInfo['key_url']); ?>" target="_blank"><?php echo htmlspecialchars($idxInfo['key_url']); ?></a>
-    · <a href="../dashboard.php?page=seo">Open in NECTRAOS Dashboard</a>
+    <strong>Auto engines:</strong> IndexNow · Bing · Yandex · DuckDuckGo · Google/Bing sitemap ping · RSS · Discover feed · News sitemap · Atom feed
+    <br>Feeds: <a href="<?php echo SITE_URL; ?>/rss.xml" target="_blank">RSS</a> ·
+    <a href="<?php echo SITE_URL; ?>/discover-feed.xml" target="_blank">Discover</a> ·
+    <a href="<?php echo SITE_URL; ?>/news-sitemap.xml" target="_blank">News</a> ·
+    <a href="<?php echo SITE_URL; ?>/atom.xml" target="_blank">Atom</a>
+    <br>IndexNow key: <a href="<?php echo htmlspecialchars($idxInfo['key_url']); ?>" target="_blank"><?php echo htmlspecialchars($idxInfo['key_url']); ?></a>
 </div>
 
 <div class="row g-4">
@@ -82,9 +99,18 @@ ge_admin_layout_start('Indexing Manager', 'indexing');
                 <input type="hidden" name="action" value="queue_and_process">
                 <button type="submit" class="btn btn-warning">Queue + Submit All (One Click)</button>
             </form>
+            <form method="POST" class="d-grid gap-2 mt-2">
+                <input type="hidden" name="action" value="publish_all">
+                <button type="submit" class="btn btn-success">Publish All → IndexNow + All Feeds/Sitemaps</button>
+            </form>
+            <form method="POST" class="d-grid gap-2 mt-2">
+                <input type="hidden" name="action" value="refresh_seo">
+                <button type="submit" class="btn btn-outline-info">Refresh High-Intent SEO Keywords (All Pages)</button>
+            </form>
             <hr>
-            <p class="small text-muted mb-1">Cron job (Hostinger):</p>
-            <code class="small d-block mb-2">php cron/process-indexing.php</code>
+            <p class="small text-muted mb-1">Cron jobs (Hostinger):</p>
+            <code class="small d-block mb-1">php cron/process-indexing.php</code>
+            <code class="small d-block mb-2">php cron/publish-discovery.php</code>
             <p class="small text-muted mb-0">Also submit in <a href="https://search.google.com/search-console" target="_blank">Google Search Console</a>:<br><code><?php echo SITE_URL; ?>/sitemap.xml</code></p>
         </div>
     </div>

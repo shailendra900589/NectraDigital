@@ -1,0 +1,68 @@
+<?php
+namespace Growth\Engines;
+
+use Growth\Models\IndexingQueue;
+
+/**
+ * Orchestrates search engine discovery: IndexNow, sitemap pings, feed signals.
+ */
+class DiscoveryEngine
+{
+    /** Notify search engines about new/updated URLs (non-blocking best-effort). */
+    public static function signalUrls(array $urls): array
+    {
+        $urls = array_values(array_unique(array_filter($urls)));
+        if (empty($urls)) {
+            return ['ok' => false];
+        }
+
+        $results = ['indexnow' => IndexingEngine::submitIndexNow($urls)];
+
+        if (ge_setting('auto_sitemap_ping', '1') === '1') {
+            $results['sitemap'] = IndexingEngine::pingAllSitemaps();
+        }
+
+        return $results;
+    }
+
+    /** Full site discovery push: queue pending pages + submit + ping feeds. */
+    public static function publishAll(int $queueLimit = 500, int $processLimit = 100): array
+    {
+        $queue = IndexingEngine::queueAllPending($queueLimit, false);
+        $process = IndexingEngine::processQueue($processLimit);
+        $sitemap = IndexingEngine::pingAllSitemaps();
+        $staticUrls = self::coreUrls();
+        $indexnow = IndexingEngine::submitIndexNow($staticUrls);
+
+        return [
+            'queued' => $queue['queued'],
+            'processed' => $process['processed'],
+            'failed' => $process['failed'],
+            'sitemap' => $sitemap,
+            'core_urls' => count($staticUrls),
+            'indexnow_core' => $indexnow['ok'] ?? false,
+        ];
+    }
+
+    public static function coreUrls(): array
+    {
+        $base = rtrim(SITE_URL, '/');
+        $paths = ['', '/services', '/about', '/contact', '/insights', '/aeo', '/rss.xml', '/discover-feed.xml', '/news-sitemap.xml', '/sitemap.xml'];
+        require_once __DIR__ . '/../../seo-data.php';
+        foreach (array_keys(get_services_data()) as $slug) {
+            $paths[] = '/' . $slug;
+        }
+        foreach (array_keys(get_cities_data()) as $slug) {
+            $paths[] = '/digital-agency-' . $slug;
+        }
+        return array_map(fn($p) => $base . $p, $paths);
+    }
+
+    public static function enqueueUrl(string $url, int $landingPageId = 0): void
+    {
+        if (ge_setting('auto_index_queue', '1') !== '1') {
+            return;
+        }
+        IndexingQueue::enqueue($url, $landingPageId);
+    }
+}

@@ -1,5 +1,22 @@
 <?php
 
+function ge_static_service_url_prefix(string $slug): string {
+    if (str_ends_with($slug, '-services')) {
+        return substr($slug, 0, -strlen('-services'));
+    }
+    return $slug;
+}
+
+function ge_static_service_name(string $slug, array $data): string {
+    if (!empty($data['silo'])) {
+        return $data['silo'];
+    }
+    if (!empty($data['title'])) {
+        return trim(explode('|', $data['title'])[0]);
+    }
+    return ucwords(str_replace('-', ' ', ge_static_service_url_prefix($slug)));
+}
+
 function ge_slugify(string $text): string {
     $text = strtolower(trim($text));
     $text = preg_replace('/[^a-z0-9\s-]/', '', $text);

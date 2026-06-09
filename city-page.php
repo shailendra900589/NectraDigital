@@ -21,7 +21,7 @@ $is_hq = !empty($city['is_hq']);
 
 $page_title = "Best Digital Marketing & SEO Company in {$city_name} | Nectra Digital";
 $page_desc = "Top SEO company and digital marketing agency in {$city_name}, {$city_state}. Expert SEO services, AI automation, web development & lead generation. Free consultation.";
-$page_keys = "SEO Company {$city_name}, Digital Marketing Agency {$city_name}, Web Development {$city_name}, Best SEO Company {$city_name}";
+$page_keys = "SEO company {$city_name}, best SEO company in {$city_name}, digital marketing agency {$city_name}, web development company {$city_name}, website development {$city_name}, PPC agency {$city_name}, local SEO {$city_name}, AI automation {$city_name}, hire SEO {$city_name}, SEO services {$city_name}";
 
 $breadcrumbs = [
     ['name' => 'Home', 'url' => SITE_URL . '/'],
@@ -71,9 +71,10 @@ output_faq_schema($city_faqs);
                 foreach ($featured as $slug):
                     if (!isset($all_services[$slug])) continue;
                     $s = $all_services[$slug];
+                    $serviceHref = ge_service_city_landing_url($slug, $city_slug);
                 ?>
                 <div class="col-md-6 col-lg-4">
-                    <a href="/<?php echo $slug; ?>" class="text-decoration-none">
+                    <a href="<?php echo htmlspecialchars($serviceHref); ?>" class="text-decoration-none">
                         <div class="p-4 border border-secondary rounded bg-glass h-100 hover-effect">
                             <i class="fas <?php echo $s['icon']; ?> text-neon fa-2x mb-3"></i>
                             <h3 class="text-white h6"><?php echo htmlspecialchars($s['h1']); ?></h3>

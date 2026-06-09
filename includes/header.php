@@ -56,7 +56,18 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <link rel="icon" type="image/png" href="<?php echo SITE_URL; ?>/assets/favicon_io/favicon-32x32.png">
     <link rel="manifest" href="<?php echo SITE_URL; ?>/assets/favicon_io/site.webmanifest">
     <link rel="alternate" type="text/plain" href="<?php echo SITE_URL; ?>/llms.txt" title="LLM Context">
-    <link rel="alternate" type="application/rss+xml" title="Nectra Digital Latest Intel" href="<?php echo SITE_URL; ?>/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Nectra Digital RSS Feed" href="<?php echo SITE_URL; ?>/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Nectra Digital Discover Feed" href="<?php echo SITE_URL; ?>/discover-feed.xml" />
+    <link rel="alternate" type="application/atom+xml" title="Nectra Digital Atom Feed" href="<?php echo SITE_URL; ?>/atom.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Nectra Digital News" href="<?php echo SITE_URL; ?>/news-sitemap.xml" />
+
+    <?php if (empty($noindex)): ?>
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="bingbot" content="index, follow">
+    <meta name="news_keywords" content="<?php echo htmlspecialchars($meta_keys); ?>">
+    <meta name="syndication-source" content="<?php echo htmlspecialchars($final_url); ?>">
+    <meta property="article:publisher" content="<?php echo SITE_URL; ?>" />
+    <?php endif; ?>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">

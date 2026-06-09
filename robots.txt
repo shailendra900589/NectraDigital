@@ -4,6 +4,14 @@ Disallow: /includes/
 Disallow: /admin/
 Disallow: /process.php
 Disallow: /thank-you
+Disallow: /cron/
 
+# Search engine discovery
 Sitemap: https://www.nectradigital.com/sitemap.xml
 Sitemap: https://www.nectradigital.com/news-sitemap.xml
+Sitemap: https://www.nectradigital.com/rss.xml
+Sitemap: https://www.nectradigital.com/discover-feed.xml
+Sitemap: https://www.nectradigital.com/atom.xml
+
+# IndexNow key location (Bing, Yandex, DuckDuckGo, Seznam)
+# Key file: https://www.nectradigital.com/{indexnow-key}.txt

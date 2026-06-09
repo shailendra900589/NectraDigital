@@ -102,6 +102,9 @@ class ContentEngine
             $metaDesc = ge_replace_tokens($industry['meta_description_template'], $ctx);
         }
 
+        $metaTitle = IntentKeywordEngine::optimizeMetaTitle($metaTitle, IntentKeywordEngine::primaryPhrase($service, $city, $industry));
+        $metaDesc = IntentKeywordEngine::optimizeMetaDescription($metaDesc, $service, $city, $industry);
+
         return compact('content', 'metaTitle', 'metaDesc', 'h1', 'h2', 'h3', 'ctx');
     }
 }

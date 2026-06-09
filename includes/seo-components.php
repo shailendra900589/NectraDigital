@@ -283,3 +283,90 @@ function render_local_business_schema($city_data, $city_slug) {
     ];
     echo '<script type="application/ld+json">' . json_encode($schema, JSON_UNESCAPED_SLASHES) . '</script>';
 }
+
+function ge_service_city_landing_url(string $service_slug, string $city_slug, ?string $url_prefix = null): string
+{
+    if (!function_exists('ge_static_service_url_prefix')) {
+        require_once __DIR__ . '/growth/helpers.php';
+    }
+
+    if ($url_prefix === null) {
+        $url_prefix = ge_static_service_url_prefix($service_slug);
+        if (file_exists(__DIR__ . '/growth/bootstrap.php')) {
+            require_once __DIR__ . '/growth/bootstrap.php';
+            if (ge_is_ready()) {
+                $geService = \Growth\Models\Service::findBySlug($service_slug);
+                if ($geService) {
+                    $url_prefix = $geService['url_prefix'];
+                    $published = \Growth\Models\LandingPage::citySlugMapByService((int)$geService['id']);
+                    if (isset($published[$city_slug])) {
+                        return '/' . $published[$city_slug];
+                    }
+                }
+            }
+        }
+    }
+
+    if (function_exists('ge_build_landing_slug') && function_exists('ge_is_ready') && ge_is_ready()) {
+        return '/' . ge_build_landing_slug($url_prefix, $city_slug);
+    }
+
+    return '/' . ge_slugify($url_prefix . '-company-in-' . $city_slug);
+}
+
+function render_service_city_links(string $service_slug, array $service): void
+{
+    if (!function_exists('ge_static_service_url_prefix')) {
+        require_once __DIR__ . '/growth/helpers.php';
+    }
+
+    $cities = get_cities_data();
+    if (empty($cities)) {
+        return;
+    }
+
+    $label = $service['silo'] ?? ($service['h1'] ?? 'Services');
+    $urlPrefix = ge_static_service_url_prefix($service_slug);
+    $published = [];
+
+    if (file_exists(__DIR__ . '/growth/bootstrap.php')) {
+        require_once __DIR__ . '/growth/bootstrap.php';
+        if (ge_is_ready()) {
+            \Growth\Engines\CatalogSyncEngine::syncService($service_slug, $service);
+            $geService = \Growth\Models\Service::findBySlug($service_slug);
+            if ($geService) {
+                $urlPrefix = $geService['url_prefix'];
+                $published = \Growth\Models\LandingPage::citySlugMapByService((int)$geService['id']);
+            }
+        }
+    }
+
+    $buildSlug = function (string $citySlug) use ($urlPrefix, $published) {
+        if (isset($published[$citySlug])) {
+            return $published[$citySlug];
+        }
+        if (function_exists('ge_build_landing_slug') && function_exists('ge_is_ready') && ge_is_ready()) {
+            return ge_build_landing_slug($urlPrefix, $citySlug);
+        }
+        return ge_slugify($urlPrefix . '-company-in-' . $citySlug);
+    };
+
+    echo '<section class="py-5 bg-darker border-top border-secondary">';
+    echo '<div class="container py-2">';
+    echo '<h2 class="text-white h4 mb-2">' . htmlspecialchars($label) . ' in <span class="text-neon">All Cities</span></h2>';
+    echo '<p class="text-white-50 small mb-4">City-specific ' . htmlspecialchars(strtolower($label)) . ' pages across India — local expertise, national standards.</p>';
+    echo '<div class="row g-2">';
+
+    foreach ($cities as $citySlug => $city) {
+        $slug = $buildSlug($citySlug);
+        $href = '/' . $slug;
+        $title = $label . ' in ' . $city['name'];
+        echo '<div class="col-6 col-md-4 col-lg-3 col-xl-2">';
+        echo '<a href="' . htmlspecialchars($href) . '" class="d-block p-2 border border-secondary rounded text-decoration-none hover-effect text-center h-100">';
+        echo '<span class="text-white small fw-semibold d-block">' . htmlspecialchars($city['name']) . '</span>';
+        echo '<span class="text-white-50" style="font-size:0.7rem;">' . htmlspecialchars($city['state']) . '</span>';
+        echo '</a></div>';
+    }
+
+    echo '</div></div></section>';
+}

@@ -20,7 +20,8 @@ if (!isset($services[$service_slug])) {
 $service = get_service_extended($service_slug, $services[$service_slug]);
 $page_title = $service['title'];
 $page_desc = $service['meta_desc'];
-$page_keys = $service['keywords'];
+require_once __DIR__ . '/growth/engines/IntentKeywordEngine.php';
+$page_keys = \Growth\Engines\IntentKeywordEngine::forStaticPage($service_slug, $service['keywords'] ?? '');
 $tagline = $service['tagline'] ?? 'Results-Driven ' . $service['silo'] . ' Solutions';
 $overview = $service['overview'] ?? '<p>' . htmlspecialchars($service['intro']) . '</p>';
 $benefits = $service['benefits'] ?? [];
@@ -262,6 +263,8 @@ render_service_schema($service_slug, $service);
     </section>
 
     <?php render_faq_section($service['faqs'], $service['h1'] . ' — FAQ'); ?>
+
+    <?php render_service_city_links($service_slug, $service); ?>
 
     <?php if (!empty($paa)): ?>
     <section class="py-5 bg-darker border-top border-secondary">

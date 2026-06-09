@@ -4,5 +4,5 @@ require_once __DIR__ . '/includes/growth/bootstrap.php';
 
 use Growth\Engines\FeedEngine;
 
-header('Content-Type: application/rss+xml; charset=utf-8');
-echo FeedEngine::rssXml(50);
+header('Content-Type: application/atom+xml; charset=utf-8');
+echo FeedEngine::atomXml(30);

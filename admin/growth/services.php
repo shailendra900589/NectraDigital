@@ -2,6 +2,12 @@
 require_once __DIR__ . '/init.php';
 
 use Growth\Models\Service;
+use Growth\Models\City;
+use Growth\Models\LandingPage;
+use Growth\Engines\CatalogSyncEngine;
+use Growth\LandingPageGenerator;
+
+require_once __DIR__ . '/../../includes/seo-data.php';
 
 $action = $_GET['action'] ?? 'list';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -13,6 +19,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: services.php');
         exit;
     }
+
+    if (($action === 'sync_catalog') || !empty($_POST['sync_catalog'])) {
+        $sync = CatalogSyncEngine::syncAll();
+        ge_admin_flash('success', "Synced {$sync['services']} services and {$sync['cities']} cities from website catalog.");
+        header('Location: services.php');
+        exit;
+    }
+
+    if ($action === 'generate_all_pages') {
+        set_time_limit(600);
+        CatalogSyncEngine::syncAll();
+        $result = LandingPageGenerator::generateFullMatrix(false, !empty($_POST['regenerate']));
+        ge_admin_flash('success', "Generated {$result['processed']} landing pages" . ($result['failed'] ? " ({$result['failed']} failed)" : '') . '.');
+        header('Location: landing-pages.php');
+        exit;
+    }
+
+    if ($action === 'generate_cities' && $id) {
+        set_time_limit(300);
+        CatalogSyncEngine::syncAll();
+        $cityIds = array_column(City::all(true), 'id');
+        $result = LandingPageGenerator::generateBulk([$id], $cityIds, [0], !empty($_POST['regenerate']));
+        ge_admin_flash('success', "Generated {$result['processed']} city pages for this service.");
+        header('Location: landing-pages.php?service_id=' . $id);
+        exit;
+    }
+
     $data = [
         'name' => trim($_POST['name'] ?? ''),
         'slug' => ge_slugify($_POST['slug'] ?? $_POST['name'] ?? ''),
@@ -67,7 +100,15 @@ if ($action === 'delete' && $id) {
 }
 
 $item = ($id && ge_admin_require_ready()) ? Service::find($id) : null;
-$services = ge_admin_require_ready() ? ge_admin_safe(fn() => Service::all(), []) : [];
+$services = ge_admin_require_ready() ? ge_admin_safe(fn() => Service::withPageCounts(), []) : [];
+$cityTotal = ge_admin_require_ready() ? (int)City::count(true) : count(get_cities_data());
+$coverage = ge_admin_require_ready() ? ge_admin_safe(fn() => LandingPage::coverageSummary(), []) : [];
+
+if (ge_admin_require_ready() && Service::count() === 0) {
+    ge_admin_safe(fn() => CatalogSyncEngine::syncAll());
+    $services = Service::withPageCounts();
+    $coverage = LandingPage::coverageSummary();
+}
 
 ge_admin_layout();
 ge_admin_layout_start($action === 'add' || $action === 'edit' ? 'Service Manager' : 'Services', 'services');
@@ -105,12 +146,53 @@ if ($action === 'add' || ($action === 'edit' && $item)):
 </div>
 <script>function addFaqRow(){document.getElementById('faqRepeater').insertAdjacentHTML('beforeend','<div class="row g-2 mb-2 faq-row"><div class="col-md-5"><input type="text" name="faq_q[]" class="form-control" placeholder="Question"></div><div class="col-md-6"><input type="text" name="faq_a[]" class="form-control" placeholder="Answer"></div></div>');}</script>
 <?php else: ?>
-<div class="d-flex justify-content-between mb-4"><span class="text-muted"><?php echo count($services); ?> services</span><a href="?action=add" class="btn btn-ge-primary"><i class="fas fa-plus me-2"></i>Create Service</a></div>
-<div class="ge-card"><div class="table-responsive"><table class="table ge-table"><thead><tr><th>Name</th><th>URL Prefix</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-<?php foreach ($services as $s): ?>
-<tr><td><strong><?php echo htmlspecialchars($s['name']); ?></strong><br><small class="text-muted"><?php echo htmlspecialchars($s['slug']); ?></small></td><td><code><?php echo htmlspecialchars($s['url_prefix']); ?>-company-{city}</code></td><td><span class="ge-badge ge-badge-<?php echo $s['status']==='active'?'indexed':'pending'; ?>"><?php echo $s['status']; ?></span></td><td><a href="?action=edit&id=<?php echo $s['id']; ?>" class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></a> <a href="?action=delete&id=<?php echo $s['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete? Cascades landing pages.')"><i class="fas fa-trash"></i></a></td></tr>
+<?php if (!empty($coverage)): ?>
+<div class="ge-card mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h2 class="h6 mb-1">Service × City Coverage</h2>
+            <p class="text-muted small mb-0"><?php echo number_format($coverage['pages']); ?> of <?php echo number_format($coverage['expected']); ?> pages (<?php echo $coverage['coverage_pct']; ?>%) · <?php echo $coverage['services']; ?> services × <?php echo $coverage['cities']; ?> cities</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <form method="POST" action="?action=sync_catalog" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sync me-1"></i>Sync from Website</button>
+            </form>
+            <form method="POST" action="?action=generate_all_pages" class="d-inline" onsubmit="return confirm('Generate all service × city pages? This may take a few minutes.')">
+                <button type="submit" class="btn btn-sm btn-ge-primary"><i class="fas fa-magic me-1"></i>Generate All City Pages</button>
+            </form>
+            <a href="landing-pages.php" class="btn btn-sm btn-outline-info">View Landing Pages</a>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+<div class="d-flex justify-content-between mb-4"><span class="text-muted"><?php echo count($services); ?> services · <?php echo $cityTotal; ?> cities each</span><a href="?action=add" class="btn btn-ge-primary"><i class="fas fa-plus me-2"></i>Create Service</a></div>
+<div class="ge-card"><div class="table-responsive"><table class="table ge-table"><thead><tr><th>Name</th><th>URL Prefix</th><th>City Pages</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+<?php foreach ($services as $s):
+    $pages = (int)($s['page_count'] ?? 0);
+    $total = (int)($s['city_total'] ?? $cityTotal);
+    $pct = $total > 0 ? (int)round(($pages / $total) * 100) : 0;
+?>
+<tr>
+    <td><strong><?php echo htmlspecialchars($s['name']); ?></strong><br><small class="text-muted"><a href="/<?php echo htmlspecialchars($s['slug']); ?>" target="_blank"><?php echo htmlspecialchars($s['slug']); ?></a></small></td>
+    <td><code><?php echo htmlspecialchars($s['url_prefix']); ?>-company-in-{city}</code></td>
+    <td>
+        <span class="ge-badge ge-badge-<?php echo $pct >= 100 ? 'indexed' : ($pages > 0 ? 'pending' : 'failed'); ?>"><?php echo $pages; ?>/<?php echo $total; ?></span>
+        <?php if ($pages > 0): ?><br><a href="landing-pages.php?service_id=<?php echo $s['id']; ?>" class="small">View pages</a><?php endif; ?>
+    </td>
+    <td><span class="ge-badge ge-badge-<?php echo $s['status']==='active'?'indexed':'pending'; ?>"><?php echo $s['status']; ?></span></td>
+    <td class="text-nowrap">
+        <a href="?action=edit&id=<?php echo $s['id']; ?>" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fas fa-edit"></i></a>
+        <?php if ($pages < $total): ?>
+        <form method="POST" action="?action=generate_cities&id=<?php echo $s['id']; ?>" class="d-inline" onsubmit="return confirm('Generate city pages for <?php echo htmlspecialchars($s['name'], ENT_QUOTES); ?>?')">
+            <button type="submit" class="btn btn-sm btn-ge-primary" title="Generate all cities"><i class="fas fa-map-marker-alt"></i></button>
+        </form>
+        <?php endif; ?>
+        <a href="generate.php?service_id=<?php echo $s['id']; ?>&mode=service_all_cities" class="btn btn-sm btn-outline-info" title="Generator"><i class="fas fa-magic"></i></a>
+        <a href="?action=delete&id=<?php echo $s['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete? Cascades landing pages.')"><i class="fas fa-trash"></i></a>
+    </td>
+</tr>
 <?php endforeach; ?>
-<?php if (empty($services)): ?><tr><td colspan="4" class="text-muted text-center py-4">No services yet. Create your first service to start generating pages.</td></tr><?php endif; ?>
+<?php if (empty($services)): ?><tr><td colspan="5" class="text-muted text-center py-4">No services yet. <form method="POST" action="?action=sync_catalog" class="d-inline"><button type="submit" class="btn btn-sm btn-ge-primary">Sync from Website</button></form> to import all 15 services.</td></tr><?php endif; ?>
 </tbody></table></div></div>
 <?php endif;
 ge_admin_layout_end();

@@ -91,7 +91,7 @@ class LandingPage extends BaseModel
         $params[] = $pg['offset'];
 
         $rows = self::fetchAll(
-            "SELECT lp.id, lp.slug, lp.meta_title, lp.index_status, lp.is_indexed, lp.status, lp.page_type, lp.generated_at,
+            "SELECT lp.id, lp.slug, lp.service_id, lp.meta_title, lp.index_status, lp.is_indexed, lp.status, lp.page_type, lp.generated_at,
                     s.name AS service_name, c.name AS city_name{$indCol}
              FROM ge_landing_pages lp
              INNER JOIN ge_services s ON s.id = lp.service_id
@@ -176,11 +176,76 @@ class LandingPage extends BaseModel
         return self::execute("DELETE FROM ge_landing_pages WHERE id = ?", 'i', [$id]);
     }
 
+    public static function countsGroupedByService(): array
+    {
+        if (!self::db()) {
+            return [];
+        }
+
+        $rows = self::fetchAll(
+            "SELECT service_id, COUNT(*) AS c FROM ge_landing_pages
+             WHERE industry_id = 0 AND status = 'published'
+             GROUP BY service_id"
+        );
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(int)$row['service_id']] = (int)$row['c'];
+        }
+        return $map;
+    }
+
+    public static function citySlugMapByService(int $serviceId): array
+    {
+        $rows = self::fetchAll(
+            "SELECT lp.slug, c.slug AS city_slug
+             FROM ge_landing_pages lp
+             INNER JOIN ge_cities c ON c.id = lp.city_id
+             WHERE lp.service_id = ? AND lp.industry_id = 0 AND lp.status = 'published'",
+            'i',
+            [$serviceId]
+        );
+        $map = [];
+        foreach ($rows as $row) {
+            $map[$row['city_slug']] = $row['slug'];
+        }
+        return $map;
+    }
+
+    public static function coverageSummary(): array
+    {
+        $serviceCount = ge_table_exists('ge_services') ? (int)(Service::count(true)) : 0;
+        $cityCount = ge_table_exists('ge_cities') ? (int)(City::count(true)) : 0;
+        $pageCount = self::count('published');
+        $expected = $serviceCount * $cityCount;
+
+        return [
+            'services' => $serviceCount,
+            'cities' => $cityCount,
+            'pages' => $pageCount,
+            'expected' => $expected,
+            'coverage_pct' => $expected > 0 ? (int)round(($pageCount / $expected) * 100) : 0,
+        ];
+    }
+
     public static function forSitemap(int $limit = 50000, int $offset = 0): array
     {
         return self::fetchAll(
             "SELECT slug, updated_at, generated_at FROM ge_landing_pages WHERE status = 'published' ORDER BY id ASC LIMIT ? OFFSET ?",
             'ii', [$limit, $offset]
+        );
+    }
+
+    public static function forFeed(int $limit = 100): array
+    {
+        return self::fetchAll(
+            "SELECT lp.slug, lp.meta_title, lp.meta_description, lp.h1, lp.quick_answer, lp.keywords_json, lp.generated_at,
+                    s.name AS service_name, c.name AS city_name
+             FROM ge_landing_pages lp
+             INNER JOIN ge_services s ON s.id = lp.service_id
+             INNER JOIN ge_cities c ON c.id = lp.city_id
+             WHERE lp.status = 'published' AND lp.industry_id = 0
+             ORDER BY lp.generated_at DESC LIMIT ?",
+            'i', [$limit]
         );
     }
 

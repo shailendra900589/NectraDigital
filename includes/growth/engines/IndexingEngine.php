@@ -116,6 +116,46 @@ class IndexingEngine
     /** Ping sitemap to Google and Bing webmaster endpoints. */
     public static function pingSitemap(): array
     {
+        return self::pingAllSitemaps();
+    }
+
+    /** Ping all sitemap and feed URLs to search engines. */
+    public static function pingAllSitemaps(): array
+    {
+        $sitemaps = [
+            SITE_URL . '/sitemap.xml',
+            SITE_URL . '/news-sitemap.xml',
+            SITE_URL . '/rss.xml',
+            SITE_URL . '/discover-feed.xml',
+            SITE_URL . '/atom.xml',
+        ];
+        $results = [];
+
+        foreach ($sitemaps as $sitemap) {
+            $encoded = urlencode($sitemap);
+            if (self::isEngineEnabled('google_sitemap')) {
+                $results['google_' . basename($sitemap)] = self::httpGet("https://www.google.com/ping?sitemap={$encoded}");
+            }
+            if (self::isEngineEnabled('bing_sitemap')) {
+                $results['bing_' . basename($sitemap)] = self::httpGet("https://www.bing.com/ping?sitemap={$encoded}");
+            }
+            if (self::isEngineEnabled('yandex')) {
+                $results['yandex_' . basename($sitemap)] = self::httpGet("https://webmaster.yandex.com/ping?sitemap={$encoded}");
+            }
+        }
+
+        $ok = false;
+        foreach ($results as $r) {
+            if (!empty($r['ok'])) {
+                $ok = true;
+            }
+        }
+        return ['ok' => $ok, 'sitemaps' => $sitemaps, 'engines' => $results];
+    }
+
+    /** Legacy single sitemap ping — delegates to pingAllSitemaps. */
+    public static function pingSitemapLegacy(): array
+    {
         $sitemap = SITE_URL . '/sitemap.xml';
         $encoded = urlencode($sitemap);
         $results = [];
