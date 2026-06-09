@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /includes/
+Disallow: /admin/
+Disallow: /process.php
+Disallow: /thank-you
+
+Sitemap: https://www.nectradigital.com/sitemap.xml
+Sitemap: https://www.nectradigital.com/news-sitemap.xml

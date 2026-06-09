@@ -1,0 +1,40 @@
+/* Growth Engine — Dynamic Landing Pages */
+.gl-hero {
+    background: linear-gradient(135deg, #050505 0%, #0a1520 50%, #050505 100%);
+    position: relative;
+    overflow: hidden;
+}
+.gl-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+.gl-stat-ring {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 2px solid var(--nectra-neon);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 40px rgba(0,229,255,0.2);
+    animation: gl-pulse 3s ease-in-out infinite;
+}
+.gl-stat-value { font-size: 2rem; font-weight: 700; color: var(--nectra-neon); }
+.gl-stat-label { font-size: 0.75rem; color: #888; text-transform: uppercase; }
+.gl-mini-stat strong { font-size: 1.25rem; }
+.gl-content h3 { color: #fff; font-size: 1.1rem; margin-top: 1.5rem; }
+.gl-content ul { padding-left: 1.2rem; }
+.gl-content li { margin-bottom: 0.5rem; }
+@keyframes gl-pulse {
+    0%, 100% { box-shadow: 0 0 40px rgba(0,229,255,0.2); }
+    50% { box-shadow: 0 0 60px rgba(0,229,255,0.35); }
+}
+.accordion-button:not(.collapsed) { background: rgba(0,229,255,0.1); color: var(--nectra-neon); }
+.accordion-button::after { filter: invert(1); }
