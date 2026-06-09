@@ -196,11 +196,12 @@ class LandingPage extends BaseModel
 
     public static function citySlugMapByService(int $serviceId): array
     {
+        $industryFilter = self::columnExists('industry_id') ? ' AND lp.industry_id = 0' : '';
         $rows = self::fetchAll(
             "SELECT lp.slug, c.slug AS city_slug
              FROM ge_landing_pages lp
              INNER JOIN ge_cities c ON c.id = lp.city_id
-             WHERE lp.service_id = ? AND lp.industry_id = 0 AND lp.status = 'published'",
+             WHERE lp.service_id = ?{$industryFilter} AND lp.status = 'published'",
             'i',
             [$serviceId]
         );

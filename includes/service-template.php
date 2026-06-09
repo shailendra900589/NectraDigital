@@ -295,7 +295,13 @@ if ($is_city_page && !empty($city)) {
 
     <?php render_faq_section($service['faqs'], $service['h1'] . ' — FAQ'); ?>
 
-    <?php render_service_city_links($service_slug, $service, $is_city_page ? ($city_slug ?? null) : null); ?>
+    <?php
+    try {
+        render_service_city_links($service_slug, $service, $is_city_page ? ($city_slug ?? null) : null);
+    } catch (\Throwable $e) {
+        // Never block footer / lower sections if city links fail
+    }
+    ?>
 
     <?php if ($is_city_page): ?>
     <section class="py-5 border-top border-secondary">

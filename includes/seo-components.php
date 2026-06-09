@@ -333,16 +333,19 @@ function render_service_city_links(string $service_slug, array $service, ?string
     $urlPrefix = ge_static_service_url_prefix($service_slug);
     $published = [];
 
-    if (file_exists(__DIR__ . '/growth/bootstrap.php')) {
-        require_once __DIR__ . '/growth/bootstrap.php';
-        if (ge_is_ready()) {
-            \Growth\Engines\CatalogSyncEngine::syncService($service_slug, $service);
-            $geService = \Growth\Models\Service::findBySlug($service_slug);
-            if ($geService) {
-                $urlPrefix = $geService['url_prefix'];
-                $published = \Growth\Models\LandingPage::citySlugMapByService((int)$geService['id']);
+    try {
+        if (is_file(__DIR__ . '/db.local.php') && file_exists(__DIR__ . '/growth/bootstrap.php')) {
+            require_once __DIR__ . '/growth/bootstrap.php';
+            if (function_exists('ge_is_ready') && ge_is_ready()) {
+                $geService = \Growth\Models\Service::findBySlug($service_slug);
+                if ($geService) {
+                    $urlPrefix = $geService['url_prefix'];
+                    $published = \Growth\Models\LandingPage::citySlugMapByService((int)$geService['id']);
+                }
             }
         }
+    } catch (\Throwable $e) {
+        $published = [];
     }
 
     $buildSlug = function (string $citySlug) use ($urlPrefix, $published) {
