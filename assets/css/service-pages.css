@@ -1,0 +1,163 @@
+/* Nectra Digital — Premium Service Pages */
+.svc-page { background: #050505; }
+
+.svc-hero {
+    position: relative;
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(160deg, #050505 0%, #0a1520 50%, #050505 100%);
+    overflow: hidden;
+}
+.svc-hero-glow {
+    position: absolute;
+    top: 20%;
+    right: 10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(0,229,255,0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+.svc-badge {
+    display: inline-block;
+    border: 1px solid rgba(0,229,255,0.4);
+    color: #00E5FF;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 0.35rem 1rem;
+    border-radius: 50px;
+    margin-bottom: 1rem;
+}
+.svc-tagline {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.svc-hero-card {
+    background: rgba(10,15,20,0.8);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+}
+.svc-hero-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(0,229,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #00E5FF;
+    box-shadow: 0 0 30px rgba(0,229,255,0.2);
+}
+.svc-stat-box {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #2a2a3a;
+    border-radius: 10px;
+}
+.svc-stat-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.svc-stat-lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.svc-glass {
+    background: rgba(15,20,25,0.6);
+    backdrop-filter: blur(8px);
+}
+.svc-sidebar-card {
+    background: rgba(15,15,20,0.9);
+    border: 1px solid #333;
+    border-radius: 12px;
+}
+.svc-checklist li {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.svc-checklist li i { width: 20px; }
+
+.svc-overview p { line-height: 1.8; margin-bottom: 1rem; }
+
+.svc-challenge-card,
+.svc-benefit-card,
+.svc-process-step {
+    background: rgba(20,20,25,0.6);
+    border: 1px solid #2a2a3a;
+    border-radius: 12px;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.svc-challenge-card:hover,
+.svc-benefit-card:hover,
+.svc-process-step:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,229,255,0.4);
+    box-shadow: 0 8px 24px rgba(0,229,255,0.08);
+}
+.svc-benefit-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: rgba(0,229,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00E5FF;
+    font-size: 1.25rem;
+}
+.svc-step-num {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    opacity: 0.8;
+}
+
+.svc-deliverable {
+    background: rgba(15,15,20,0.5);
+    border: 1px solid #2a2a3a;
+    border-radius: 8px;
+}
+
+.svc-tool-badge {
+    display: inline-block;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.25);
+    color: #00E5FF;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 50px;
+}
+
+.svc-industry-pill {
+    display: inline-block;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #333;
+    color: #ccc;
+    font-size: 0.85rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    transition: 0.2s;
+}
+.svc-industry-pill:hover {
+    border-color: #00E5FF;
+    color: #00E5FF;
+}
+
+.svc-compare-card {
+    background: rgba(15,15,20,0.6);
+    border: 1px solid #333;
+    border-radius: 12px;
+}
+.svc-compare-us {
+    border-color: rgba(0,229,255,0.3);
+    box-shadow: 0 0 20px rgba(0,229,255,0.05);
+}
+
+@media (max-width: 768px) {
+    .svc-hero { min-height: auto; }
+    .svc-stat-val { font-size: 1.2rem; }
+}

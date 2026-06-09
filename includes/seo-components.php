@@ -224,15 +224,38 @@ function render_usp_section() {
 
 function render_service_schema($slug, $service) {
     $schema = [
+        '@context' => 'https://schema.org',
         '@type' => 'Service',
         'name' => $service['h1'],
         'description' => $service['intro'],
         'provider' => ['@id' => SITE_URL . '/#organization'],
         'areaServed' => ['@type' => 'Country', 'name' => 'India'],
         'url' => SITE_URL . '/' . $slug,
-        'serviceType' => $service['silo']
+        'serviceType' => $service['silo'],
+        'offers' => [
+            '@type' => 'Offer',
+            'availability' => 'https://schema.org/InStock',
+            'priceCurrency' => 'INR',
+            'url' => SITE_URL . '/contact?service=' . urlencode($service['h1']),
+        ],
     ];
-    echo '<script type="application/ld+json">' . json_encode(['@context' => 'https://schema.org'] + $schema, JSON_UNESCAPED_SLASHES) . '</script>';
+    echo '<script type="application/ld+json">' . json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>';
+
+    if (!empty($service['faqs'])) {
+        $faqItems = array_map(function ($f) {
+            return [
+                '@type' => 'Question',
+                'name' => $f['q'],
+                'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f['a']],
+            ];
+        }, $service['faqs']);
+        $faqSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => $faqItems,
+        ];
+        echo '<script type="application/ld+json">' . json_encode($faqSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>';
+    }
 }
 
 function render_local_business_schema($city_data, $city_slug) {
