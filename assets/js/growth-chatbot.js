@@ -1,115 +1,162 @@
 (function () {
     const orphanToggle = document.getElementById('nectra-chatbot-toggle');
-    if (orphanToggle) {
-        orphanToggle.remove();
-    }
+    if (orphanToggle) orphanToggle.remove();
+    if (document.getElementById('nectra-chatbot-panel')) return;
 
-    if (document.getElementById('nectra-chatbot-panel')) {
-        return;
-    }
+    const API = (window.NECTRA_CHATBOT && window.NECTRA_CHATBOT.apiUrl) || '/api/chatbot.php';
+    let isSending = false;
 
-    const welcome = 'Hi! I am Nectra AI. How can I help you grow today? Ask about our services or leave your details for a free consultation.';
     const panel = document.createElement('div');
     panel.id = 'nectra-chatbot-panel';
     panel.innerHTML = `
         <div class="ncb-header">
             <span><i class="fas fa-robot me-2"></i>Nectra AI Assistant</span>
-            <button type="button" class="ncb-close" id="ncbClose" aria-label="Close chat">&times;</button>
+            <div class="ncb-header-actions">
+                <button type="button" class="ncb-icon-btn" id="ncbReset" title="New chat" aria-label="Reset chat"><i class="fas fa-redo-alt"></i></button>
+                <button type="button" class="ncb-close" id="ncbClose" aria-label="Close chat">&times;</button>
+            </div>
         </div>
         <div class="ncb-messages" id="ncbMessages"></div>
+        <div class="ncb-quick" id="ncbQuick"></div>
         <div class="ncb-input-row">
-            <input type="text" id="ncbInput" placeholder="Ask or type your email..." autocomplete="off">
-            <button type="button" id="ncbSend">Send</button>
+            <input type="text" id="ncbInput" placeholder="Hindi ya English mein likhein..." autocomplete="off" maxlength="500">
+            <button type="button" id="ncbSend" aria-label="Send message"><i class="fas fa-paper-plane"></i></button>
         </div>`;
     document.body.appendChild(panel);
 
     window.NECTRA_CHATBOT_INTEGRATED = true;
-    window.openNectraChatbot = function () {
+    window.openNectraChatbot = () => {
         panel.classList.add('open');
+        document.getElementById('ncbInput').focus();
     };
-    window.closeNectraChatbot = function () {
-        panel.classList.remove('open');
-    };
+    window.closeNectraChatbot = () => panel.classList.remove('open');
 
-    const closeBtn = panel.querySelector('#ncbClose');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+    const messagesEl = document.getElementById('ncbMessages');
+    const quickEl = document.getElementById('ncbQuick');
+    const inputEl = document.getElementById('ncbInput');
+    const sendBtn = document.getElementById('ncbSend');
+
+    document.getElementById('ncbClose').addEventListener('click', () => panel.classList.remove('open'));
+    document.getElementById('ncbReset').addEventListener('click', () => resetChat());
+
+    function formatReply(text) {
+        let html = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+        return html.replace(/\n/g, '<br>');
     }
-
-    const messages = panel.querySelector('#ncbMessages');
-    let collectingLead = false;
-    let leadData = {};
 
     function addMsg(text, who) {
         const d = document.createElement('div');
         d.className = 'ncb-msg ' + who;
-        d.textContent = text;
-        messages.appendChild(d);
-        messages.scrollTop = messages.scrollHeight;
+        if (who === 'bot') {
+            d.innerHTML = formatReply(text);
+        } else {
+            d.textContent = text;
+        }
+        messagesEl.appendChild(d);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    addMsg(welcome, 'bot');
-
-    function botReply(input) {
-        const lower = input.toLowerCase();
-        if (/seo|marketing|development|design|automation/.test(lower)) {
-            return 'We offer full-stack digital growth: SEO, ads, web & software development, AI automation, and branding. Would you like a free audit? Share your name and email.';
+    function showTyping() {
+        let t = document.getElementById('ncbTyping');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = 'ncbTyping';
+            t.className = 'ncb-msg bot ncb-typing';
+            t.innerHTML = '<span></span><span></span><span></span>';
+            messagesEl.appendChild(t);
         }
-        if (/price|cost|quote|proposal/.test(lower)) {
-            return 'Pricing depends on scope. Share your name, email, and service interest — our team will send a custom proposal within 24 hours.';
-        }
-        if (/contact|call|meet|consult/.test(lower)) {
-            collectingLead = true;
-            return 'Great! Please share: your name, email, and what service you need (e.g. SEO in Lucknow).';
-        }
-        collectingLead = true;
-        return 'I can connect you with our experts. Please share your name and email, plus your service interest.';
+        messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    async function sendLead() {
+    function hideTyping() {
+        const t = document.getElementById('ncbTyping');
+        if (t) t.remove();
+    }
+
+    function renderQuickReplies(items) {
+        quickEl.innerHTML = '';
+        if (!items || !items.length) return;
+        items.forEach(label => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'ncb-quick-btn';
+            btn.textContent = label;
+            btn.addEventListener('click', () => sendMessage(label));
+            quickEl.appendChild(btn);
+        });
+    }
+
+    async function apiCall(body) {
+        const res = await fetch(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error('Network error');
+        return res.json();
+    }
+
+    async function loadWelcome() {
         try {
-            const res = await fetch('/api/chat-lead.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(leadData),
-            });
-            const j = await res.json();
-            addMsg(j.reply || 'Thank you! We will be in touch.', 'bot');
+            const data = await apiCall({ action: 'welcome' });
+            addMsg(data.reply || 'Hello!', 'bot');
+            renderQuickReplies(data.quick_replies || []);
         } catch (e) {
-            addMsg('Thank you! Our team will contact you soon.', 'bot');
+            addMsg('Namaste! Main Nectra AI hoon. Services, pricing ya contact ke baare mein poochiye.', 'bot');
+            renderQuickReplies(['Services', 'Pricing', 'Contact', 'Free Audit']);
         }
-        collectingLead = false;
-        leadData = {};
     }
 
-    function handleSend() {
-        const input = document.getElementById('ncbInput');
-        const text = input.value.trim();
-        if (!text) return;
-        addMsg(text, 'user');
-        input.value = '';
-
-        if (collectingLead) {
-            if (!leadData.name) { leadData.name = text; addMsg('Thanks! What is your email?', 'bot'); return; }
-            if (!leadData.email) {
-                leadData.email = text;
-                leadData.message = text;
-                sendLead();
-                return;
-            }
+    async function resetChat() {
+        messagesEl.innerHTML = '';
+        quickEl.innerHTML = '';
+        try {
+            const data = await apiCall({ action: 'reset' });
+            addMsg(data.reply, 'bot');
+            renderQuickReplies(data.quick_replies || []);
+        } catch (e) {
+            loadWelcome();
         }
-
-        if (text.includes('@') && text.includes('.')) {
-            leadData.email = text;
-            if (!leadData.name) leadData.name = 'Website Visitor';
-            leadData.service = 'Chatbot Lead';
-            sendLead();
-            return;
-        }
-
-        addMsg(botReply(text), 'bot');
     }
 
-    document.getElementById('ncbSend').addEventListener('click', handleSend);
-    document.getElementById('ncbInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSend(); });
+    async function sendMessage(text) {
+        const msg = (text || inputEl.value).trim();
+        if (!msg || isSending) return;
+        isSending = true;
+        sendBtn.disabled = true;
+        addMsg(msg, 'user');
+        inputEl.value = '';
+        quickEl.innerHTML = '';
+        showTyping();
+
+        try {
+            const data = await apiCall({ action: 'chat', message: msg });
+            hideTyping();
+            if (data.reply) addMsg(data.reply, 'bot');
+            renderQuickReplies(data.quick_replies || []);
+        } catch (e) {
+            hideTyping();
+            addMsg('Connection error. Phir se try karein ya call karein: +91 7678387759', 'bot');
+            renderQuickReplies(['Contact', 'Services']);
+        } finally {
+            isSending = false;
+            sendBtn.disabled = false;
+            inputEl.focus();
+        }
+    }
+
+    sendBtn.addEventListener('click', () => sendMessage());
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    loadWelcome();
 })();

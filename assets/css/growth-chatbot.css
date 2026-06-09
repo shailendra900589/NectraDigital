@@ -8,8 +8,8 @@
     bottom: max(92px, calc(68px + env(safe-area-inset-bottom, 0px)));
     right: max(20px, env(safe-area-inset-right, 0px));
     z-index: 9989;
-    width: min(340px, calc(100vw - 40px));
-    height: min(420px, calc(100vh - 120px));
+    width: min(360px, calc(100vw - 40px));
+    height: min(480px, calc(100vh - 120px));
     background: #12121a;
     border: 1px solid #2a2a3a;
     border-radius: 16px;
@@ -99,6 +99,86 @@
     font-size: 0.85rem;
 }
 
+.ncb-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ncb-icon-btn {
+    background: transparent;
+    border: 1px solid #333;
+    color: #888;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ncb-icon-btn:hover {
+    color: #00e5ff;
+    border-color: #00e5ff;
+}
+
+.ncb-msg a {
+    color: #00e5ff;
+    word-break: break-all;
+}
+
+.ncb-msg strong {
+    color: #fff;
+}
+
+.ncb-typing {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 12px 16px !important;
+}
+
+.ncb-typing span {
+    width: 7px;
+    height: 7px;
+    background: #00e5ff;
+    border-radius: 50%;
+    animation: ncb-dot 1.2s infinite ease-in-out;
+}
+
+.ncb-typing span:nth-child(2) { animation-delay: 0.15s; }
+.ncb-typing span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes ncb-dot {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+}
+
+.ncb-quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 12px 8px;
+    flex-shrink: 0;
+}
+
+.ncb-quick-btn {
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    color: #00e5ff;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ncb-quick-btn:hover {
+    background: rgba(0, 229, 255, 0.22);
+}
+
 .ncb-input-row button {
     background: #00e5ff;
     border: none;
@@ -106,6 +186,8 @@
     padding: 8px 14px;
     font-weight: 600;
     flex-shrink: 0;
+    color: #000;
+    min-width: 44px;
 }
 
 @media (max-width: 576px) {
