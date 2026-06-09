@@ -42,7 +42,7 @@ if (!ge_table_exists('ge_authors')): ?>
 <div class="col-md-6"><label class="form-label">Slug</label><input type="text" name="slug" class="form-control" value="<?php echo htmlspecialchars($item['slug'] ?? ''); ?>"></div>
 <div class="col-md-6"><label class="form-label">Title</label><input type="text" name="title" class="form-control" value="<?php echo htmlspecialchars($item['title'] ?? ''); ?>"></div>
 <div class="col-md-6"><label class="form-label">Email</label><input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($item['email'] ?? ''); ?>"></div>
-<div class="col-12"><label class="form-label">Bio</label><textarea name="bio" class="form-control" rows="4"><?php echo htmlspecialchars($item['bio'] ?? ''); ?></textarea></div>
+<div class="col-12"><label class="form-label">Bio</label><textarea name="bio" class="form-control ckeditor-basic" rows="4"><?php echo $item['bio'] ?? ''; ?></textarea></div>
 <div class="col-md-8"><label class="form-label">LinkedIn</label><input type="url" name="linkedin" class="form-control" value="<?php echo htmlspecialchars($item['linkedin'] ?? ''); ?>"></div>
 <div class="col-md-4"><label class="form-label">Status</label><select name="status" class="form-select"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
 <div class="col-12"><div class="form-check"><input class="form-check-input" type="checkbox" name="is_founder" id="is_founder" <?php echo !empty($item['is_founder']) ? 'checked' : ''; ?>><label class="form-check-label" for="is_founder">Founder (Person Schema)</label></div></div>

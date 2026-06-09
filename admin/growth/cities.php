@@ -80,7 +80,7 @@ if ($action === 'add' || ($action === 'edit' && $item)):
             <div class="col-md-3"><label class="form-label">Population</label><input type="number" name="population" class="form-control" value="<?php echo (int)($item['population'] ?? 0); ?>"></div>
             <div class="col-md-3"><label class="form-label">Latitude</label><input type="text" name="latitude" class="form-control" value="<?php echo htmlspecialchars($item['latitude'] ?? ''); ?>"></div>
             <div class="col-md-3"><label class="form-label">Longitude</label><input type="text" name="longitude" class="form-control" value="<?php echo htmlspecialchars($item['longitude'] ?? ''); ?>"></div>
-            <div class="col-12"><label class="form-label">City Description</label><textarea name="city_description" class="form-control" rows="3"><?php echo htmlspecialchars($item['city_description'] ?? ''); ?></textarea></div>
+            <div class="col-12"><label class="form-label">City Description</label><textarea name="city_description" class="form-control ckeditor-basic" rows="3"><?php echo $item['city_description'] ?? ''; ?></textarea></div>
             <div class="col-md-3"><label class="form-label">Status</label><select name="status" class="form-select"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
             <div class="col-12"><button type="submit" class="btn btn-ge-primary">Save City</button><a href="cities.php" class="btn btn-outline-secondary ms-2">Cancel</a></div>
         </div>

@@ -62,11 +62,11 @@ if ($action === 'add' || ($action === 'edit' && $item)):
     <div class="col-md-4"><label class="form-label">Status</label><select name="status" class="form-select"><option value="draft">Draft</option><option value="published" <?php echo ($item['status']??'')==='published'?'selected':''; ?>>Published</option></select></div>
     <div class="col-md-6"><label class="form-label">Client Name</label><input type="text" name="client_name" class="form-control" value="<?php echo htmlspecialchars($item['client_name'] ?? ''); ?>"></div>
     <div class="col-md-6"><label class="form-label">Industry</label><input type="text" name="client_industry" class="form-control" value="<?php echo htmlspecialchars($item['client_industry'] ?? ''); ?>"></div>
-    <div class="col-12"><label class="form-label">Results Summary</label><textarea name="results_summary" class="form-control" rows="2"><?php echo htmlspecialchars($item['results_summary'] ?? ''); ?></textarea></div>
-    <div class="col-12"><label class="form-label">Content (HTML)</label><textarea name="content" class="form-control" rows="8"><?php echo htmlspecialchars($item['content'] ?? ''); ?></textarea></div>
+    <div class="col-12"><label class="form-label">Results Summary</label><textarea name="results_summary" class="form-control ckeditor-basic" rows="2"><?php echo $item['results_summary'] ?? ''; ?></textarea></div>
+    <div class="col-12"><label class="form-label">Content (HTML)</label><textarea name="content" class="form-control ckeditor-full" rows="8"><?php echo $item['content'] ?? ''; ?></textarea></div>
     <div class="col-md-6"><label class="form-label">Meta Title</label><input type="text" name="meta_title" class="form-control" value="<?php echo htmlspecialchars($item['meta_title'] ?? ''); ?>"></div>
     <div class="col-md-6"><label class="form-label">Featured Image</label><input type="file" name="image" class="form-control" accept="image/*"></div>
-    <div class="col-12"><label class="form-label">Meta Description</label><textarea name="meta_description" class="form-control" rows="2"><?php echo htmlspecialchars($item['meta_description'] ?? ''); ?></textarea></div>
+    <div class="col-12"><label class="form-label">Meta Description</label><textarea name="meta_description" class="form-control ckeditor-basic" rows="2"><?php echo htmlspecialchars($item['meta_description'] ?? ''); ?></textarea></div>
     <div class="col-12"><button type="submit" class="btn btn-ge-primary">Save</button><a href="case-studies.php" class="btn btn-outline-secondary ms-2">Cancel</a></div>
 </div></form></div>
 <?php else: ?>

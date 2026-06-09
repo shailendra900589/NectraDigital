@@ -49,10 +49,10 @@ if (!ge_table_exists('ge_industries')): ?>
         <div class="row g-3">
             <div class="col-md-6"><label class="form-label">Industry Name *</label><input type="text" name="name" class="form-control" required value="<?php echo htmlspecialchars($item['name'] ?? ''); ?>"></div>
             <div class="col-md-6"><label class="form-label">Slug</label><input type="text" name="slug" class="form-control" value="<?php echo htmlspecialchars($item['slug'] ?? ''); ?>"></div>
-            <div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="3"><?php echo htmlspecialchars($item['description'] ?? ''); ?></textarea></div>
+            <div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control ckeditor-basic" rows="3"><?php echo $item['description'] ?? ''; ?></textarea></div>
             <div class="col-md-4"><label class="form-label">Icon (FontAwesome)</label><input type="text" name="icon" class="form-control" value="<?php echo htmlspecialchars($item['icon'] ?? 'fa-industry'); ?>"></div>
             <div class="col-md-8"><label class="form-label">Meta Title Template</label><input type="text" name="meta_title_template" class="form-control" placeholder="{service_name} for {industry_name} in {city_name}" value="<?php echo htmlspecialchars($item['meta_title_template'] ?? ''); ?>"></div>
-            <div class="col-12"><label class="form-label">Meta Description Template</label><textarea name="meta_description_template" class="form-control" rows="2"><?php echo htmlspecialchars($item['meta_description_template'] ?? ''); ?></textarea></div>
+            <div class="col-12"><label class="form-label">Meta Description Template</label><textarea name="meta_description_template" class="form-control ckeditor-basic" rows="2"><?php echo htmlspecialchars($item['meta_description_template'] ?? ''); ?></textarea></div>
             <div class="col-md-3"><label class="form-label">Status</label><select name="status" class="form-select"><option value="active" <?php echo ($item['status'] ?? '') === 'active' ? 'selected' : ''; ?>>Active</option><option value="inactive">Inactive</option></select></div>
             <div class="col-12"><button type="submit" class="btn btn-ge-primary">Save Industry</button><a href="industries.php" class="btn btn-outline-secondary ms-2">Cancel</a></div>
         </div>

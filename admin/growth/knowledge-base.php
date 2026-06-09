@@ -59,8 +59,8 @@ ge_admin_layout_start('Knowledge Base', 'knowledge');
 <div class="col-md-4"><label class="form-label">Category</label><input type="text" name="category" class="form-control" value="<?php echo htmlspecialchars($editItem['category'] ?? ''); ?>"></div>
 <div class="col-md-4"><label class="form-label">Topic Silo</label><input type="text" name="silo" class="form-control" placeholder="SEO, AI Automation..." value="<?php echo htmlspecialchars($editItem['silo'] ?? ''); ?>"></div>
 <div class="col-md-4"><label class="form-label">Author</label><select name="author_id" class="form-select"><option value="0">—</option><?php foreach ($authors as $au): ?><option value="<?php echo $au['id']; ?>" <?php echo (int)($editItem['author_id'] ?? 0) === (int)$au['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($au['name']); ?></option><?php endforeach; ?></select></div>
-<div class="col-12"><label class="form-label">Quick Answer (AEO)</label><textarea name="quick_answer" class="form-control" rows="2"><?php echo htmlspecialchars($editItem['quick_answer'] ?? ''); ?></textarea></div>
-<div class="col-12"><label class="form-label">Content</label><textarea name="content" class="form-control" rows="10"><?php echo htmlspecialchars($editItem['content'] ?? ''); ?></textarea></div>
+<div class="col-12"><label class="form-label">Quick Answer (AEO)</label><textarea name="quick_answer" class="form-control ckeditor-basic" rows="2"><?php echo htmlspecialchars($editItem['quick_answer'] ?? ''); ?></textarea></div>
+<div class="col-12"><label class="form-label">Content</label><textarea name="content" class="form-control ckeditor-full" rows="10"><?php echo $editItem['content'] ?? ''; ?></textarea></div>
 <div class="col-md-3"><label class="form-label">Status</label><select name="status" class="form-select"><option value="draft">Draft</option><option value="published" <?php echo ($editItem['status'] ?? '') === 'published' ? 'selected' : ''; ?>>Published</option></select></div>
 <div class="col-12"><button type="submit" class="btn btn-ge-primary">Save</button><a href="knowledge-base.php" class="btn btn-outline-secondary ms-2">Cancel</a></div>
 </div></form></div>
