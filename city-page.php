@@ -3,8 +3,8 @@
  * Dynamic city landing page template
  * Accessed via /digital-agency-{city}
  */
-require_once __DIR__ . '/seo-data.php';
-require_once __DIR__ . '/seo-components.php';
+require_once __DIR__ . '/includes/seo-data.php';
+require_once __DIR__ . '/includes/seo-components.php';
 
 $city_slug = isset($_GET['city']) ? preg_replace('/[^a-z]/', '', strtolower($_GET['city'])) : '';
 $cities = get_cities_data();

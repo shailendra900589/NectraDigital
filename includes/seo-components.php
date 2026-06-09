@@ -2,7 +2,7 @@
 /**
  * Reusable SEO components for Nectra Digital
  */
-require_once __DIR__ . '/../seo-data.php';
+require_once __DIR__ . '/seo-data.php';
 
 function render_breadcrumbs($items) {
     echo '<nav aria-label="breadcrumb" class="mb-4"><ol class="breadcrumb bg-transparent p-0 m-0 small">';
