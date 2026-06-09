@@ -1,6 +1,6 @@
 <?php 
-require_once 'config.php'; 
-require_once 'seo-data.php';
+require_once __DIR__ . '/config.php'; 
+require_once __DIR__ . '/seo-data.php';
 
 global $page_title, $page_desc, $page_img, $page_keys, $noindex, $og_type, $page_schema;
 
