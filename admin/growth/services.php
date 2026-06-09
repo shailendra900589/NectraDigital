@@ -1,13 +1,18 @@
 <?php
-require_once 'includes/auth.php';
-require_once __DIR__ . '/../../includes/growth/bootstrap.php';
+require_once __DIR__ . '/init.php';
 
 use Growth\Models\Service;
 
 $action = $_GET['action'] ?? 'list';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$pageError = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!ge_admin_require_ready()) {
+        ge_admin_flash('error', 'Database not migrated. Run database/migrate.php first.');
+        header('Location: services.php');
+        exit;
+    }
     $data = [
         'name' => trim($_POST['name'] ?? ''),
         'slug' => ge_slugify($_POST['slug'] ?? $_POST['name'] ?? ''),
@@ -51,16 +56,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($action === 'delete' && $id) {
-    Service::delete($id);
-    ge_admin_flash('success', 'Service deleted.');
+    if (ge_admin_require_ready()) {
+        Service::delete($id);
+        ge_admin_flash('success', 'Service deleted.');
+    } else {
+        ge_admin_flash('error', 'Database not migrated.');
+    }
     header('Location: services.php');
     exit;
 }
 
-$item = $id ? Service::find($id) : null;
-$services = ge_is_ready() ? Service::all() : [];
+$item = ($id && ge_admin_require_ready()) ? Service::find($id) : null;
+$services = ge_admin_require_ready() ? ge_admin_safe(fn() => Service::all(), []) : [];
 
-require_once 'includes/layout.php';
+require_once __DIR__ . '/includes/layout.php';
 ge_admin_layout_start($action === 'add' || $action === 'edit' ? 'Service Manager' : 'Services', 'services');
 
 if ($action === 'add' || ($action === 'edit' && $item)):

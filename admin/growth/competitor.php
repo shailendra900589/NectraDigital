@@ -1,6 +1,5 @@
 <?php
-require_once 'includes/auth.php';
-require_once __DIR__ . '/../../includes/growth/bootstrap.php';
+require_once __DIR__ . '/init.php';
 
 use Growth\Engines\CompetitorEngine;
 

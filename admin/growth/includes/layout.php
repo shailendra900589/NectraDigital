@@ -1,5 +1,7 @@
 <?php
-require_once __DIR__ . '/../../includes/growth/bootstrap.php';
+if (!defined('GE_BOOTSTRAP_LOADED')) {
+    require_once __DIR__ . '/../../includes/growth/bootstrap.php';
+}
 
 function ge_admin_page_title(string $title): string {
     return htmlspecialchars($title) . ' — Nectra Growth Engine';
