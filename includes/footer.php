@@ -196,8 +196,9 @@ if (file_exists(__DIR__ . '/growth/bootstrap.php')) {
     require_once __DIR__ . '/growth/bootstrap.php';
     $nectraChatbotEnabled = ge_setting('chatbot_enabled', '0') === '1';
 }
-if ($nectraChatbotEnabled): ?>
-<script>window.NECTRA_CHATBOT_INTEGRATED = true;</script>
+?>
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/floating-contact.css">
+<?php if ($nectraChatbotEnabled): ?>
 <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/growth-chatbot.css">
 <script src="<?php echo SITE_URL; ?>/assets/js/growth-chatbot.js"></script>
 <?php endif; ?>

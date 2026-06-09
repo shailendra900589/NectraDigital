@@ -1,5 +1,13 @@
 (function () {
-    const integrated = window.NECTRA_CHATBOT_INTEGRATED === true;
+    const orphanToggle = document.getElementById('nectra-chatbot-toggle');
+    if (orphanToggle) {
+        orphanToggle.remove();
+    }
+
+    if (document.getElementById('nectra-chatbot-panel')) {
+        return;
+    }
+
     const welcome = 'Hi! I am Nectra AI. How can I help you grow today? Ask about our services or leave your details for a free consultation.';
     const panel = document.createElement('div');
     panel.id = 'nectra-chatbot-panel';
@@ -10,26 +18,18 @@
         </div>
         <div class="ncb-messages" id="ncbMessages"></div>
         <div class="ncb-input-row">
-            <input type="text" id="ncbInput" placeholder="Ask or type your email...">
+            <input type="text" id="ncbInput" placeholder="Ask or type your email..." autocomplete="off">
             <button type="button" id="ncbSend">Send</button>
         </div>`;
     document.body.appendChild(panel);
 
-    if (!integrated) {
-        const toggle = document.createElement('button');
-        toggle.id = 'nectra-chatbot-toggle';
-        toggle.innerHTML = '<i class="fas fa-comment-dots"></i>';
-        toggle.setAttribute('aria-label', 'Open chat');
-        document.body.appendChild(toggle);
-        toggle.addEventListener('click', () => panel.classList.toggle('open'));
-    } else {
-        window.openNectraChatbot = function () {
-            panel.classList.add('open');
-        };
-        window.closeNectraChatbot = function () {
-            panel.classList.remove('open');
-        };
-    }
+    window.NECTRA_CHATBOT_INTEGRATED = true;
+    window.openNectraChatbot = function () {
+        panel.classList.add('open');
+    };
+    window.closeNectraChatbot = function () {
+        panel.classList.remove('open');
+    };
 
     const closeBtn = panel.querySelector('#ncbClose');
     if (closeBtn) {

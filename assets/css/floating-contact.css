@@ -1,0 +1,157 @@
+/* Nectra floating contact widget — single FAB, no overlap on any device */
+.nectra-floating-wrap {
+    position: fixed;
+    bottom: max(24px, env(safe-area-inset-bottom, 0px));
+    right: max(20px, env(safe-area-inset-right, 0px));
+    z-index: 9990;
+    width: 56px;
+    height: 56px;
+    font-family: 'Inter', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nectra-main-btn {
+    position: relative;
+    z-index: 2;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #00f2ff;
+    color: #050505;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0 4px 18px rgba(0, 242, 255, 0.45);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.nectra-main-btn:hover,
+.nectra-main-btn:focus-visible {
+    transform: scale(1.06);
+    box-shadow: 0 6px 22px rgba(0, 242, 255, 0.55);
+    outline: none;
+}
+
+.nectra-main-btn i {
+    transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    pointer-events: none;
+}
+
+.nectra-contact-menu {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    right: 0;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nectra-contact-menu.active {
+    display: flex;
+}
+
+.nectra-contact-item {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-size: 18px;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    opacity: 0;
+    transform: translateY(8px);
+    animation: nectra-item-in 0.3s ease forwards;
+}
+
+.nectra-contact-menu.active .nectra-contact-item:nth-child(1) { animation-delay: 0.02s; }
+.nectra-contact-menu.active .nectra-contact-item:nth-child(2) { animation-delay: 0.06s; }
+.nectra-contact-menu.active .nectra-contact-item:nth-child(3) { animation-delay: 0.1s; }
+.nectra-contact-menu.active .nectra-contact-item:nth-child(4) { animation-delay: 0.14s; }
+.nectra-contact-menu.active .nectra-contact-item:nth-child(5) { animation-delay: 0.18s; }
+
+@keyframes nectra-item-in {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nectra-contact-item::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    right: calc(100% + 10px);
+    background: rgba(10, 10, 10, 0.92);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    border: 1px solid rgba(0, 242, 255, 0.25);
+}
+
+.nectra-contact-item:hover::before,
+.nectra-contact-item:focus-visible::before {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.nectra-contact-item:hover {
+    color: #fff;
+    transform: scale(1.08);
+}
+
+.item-whatsapp { background: #25D366; }
+.item-call     { background: #2563eb; color: #fff; }
+.item-mail     { background: #ea4335; }
+.item-ai       {
+    background: linear-gradient(135deg, #00e5ff, #0099b8);
+    color: #000;
+    border: none;
+    cursor: pointer;
+}
+.item-ai:hover { color: #000; }
+
+@media (max-width: 576px) {
+    .nectra-floating-wrap {
+        bottom: max(18px, env(safe-area-inset-bottom, 0px));
+        right: max(14px, env(safe-area-inset-right, 0px));
+        width: 52px;
+        height: 52px;
+    }
+    .nectra-main-btn {
+        width: 52px;
+        height: 52px;
+        font-size: 22px;
+    }
+    .nectra-contact-item {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        font-size: 17px;
+    }
+    .nectra-contact-item::before {
+        display: none;
+    }
+}
