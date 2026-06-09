@@ -1,55 +1,40 @@
-# Nectra Digital Growth Engine
+# Nectra Digital Growth Platform v2
 
-Programmatic SEO platform for unlimited Service × City landing pages.
+Enterprise programmatic SEO: **Service × City × Industry** with full admin control.
 
 ## Setup
 
-1. Run migration: visit `https://www.nectradigital.com/database/migrate.php`
-2. Login to admin: `/admin/login.php`
-3. Open Growth Engine: `/admin/growth/`
-4. Add services and cities
-5. Generate landing pages from **Generate** module
+1. Run migration: visit `https://www.nectradigital.com/database/migrate.php` (runs v1 + v2)
+2. Login: `/admin/login.php`
+3. Open Growth Platform: `/admin/growth/`
+4. Add **Services**, **Cities**, **Industries** (all admin-managed — nothing hardcoded)
+5. Generate pages from **Generate** (supports triple matrix + background queue)
+6. Optional cron: `php cron/process-queue.php` every 5 minutes for large batches
 
-## Architecture
+## URL Patterns
 
-```
-includes/growth/
-├── bootstrap.php          # Autoload & helpers
-├── helpers.php            # Utilities
-├── LandingPageGenerator.php
-├── models/                # Service, City, Keyword, LandingPage, etc.
-└── engines/
-    ├── ContentEngine.php  # Unique content per page
-    ├── KeywordEngine.php  # City + service keywords
-    ├── GeoEngine.php      # Quick answer, takeaways, summary
-    ├── AeoEngine.php      # FAQ, PAA, voice answers
-    ├── SeoEngine.php      # Meta, OG, Twitter
-    ├── SchemaEngine.php   # JSON-LD
-    ├── InternalLinkEngine.php
-    └── SitemapEngine.php  # Dynamic sitemap
+- City: `{url_prefix}-company-in-{city_slug}` → `seo-company-in-lucknow`
+- Industry: `{url_prefix}-company-in-{city_slug}-for-{industry_slug}`
 
-admin/growth/              # SaaS admin panel
-landing.php                # Frontend template
-page-router.php            # Routes slugs → landing or blog
-```
+Configure in **Settings** (`url_pattern_city`, `url_pattern_industry`).
 
-## URL Pattern
+## Admin Modules
 
-Default: `{url_prefix}-company-{city_slug}`
+| Module | Path |
+|--------|------|
+| Services, Cities, Industries, Keywords | `/admin/growth/` |
+| Landing Pages, Generate, Indexing | `/admin/growth/` |
+| Authors (EEAT), Knowledge Base, Case Studies | `/admin/growth/` |
+| Leads (CRM), Competitor Intel, Tools, Analytics | `/admin/growth/` |
 
-Examples:
-- `seo-company-lucknow`
-- `software-development-company-delhi`
+## Public
 
-Configure in **Settings** or per-service `url_prefix`.
+- Landing pages: routed via `page-router.php`
+- Tools marketplace: `/tools` and `/tools/{slug}`
+- AI Chatbot: enabled via `chatbot_enabled` setting
 
 ## Scale
 
-- Indexed slug column for O(1) lookups
-- Batch generation with configurable batch size
-- Sitemap streams 5000 URLs per batch
-- Supports 100,000+ landing pages
-
-## Founder / EEAT
-
-Configure founder details in **Settings**. Used in Expert Insight blocks and schema.
+- Unique key: `(service_id, city_id, industry_id)`
+- Async queue: `ge_generation_queue` + `cron/process-queue.php`
+- Sitemap auto-updates on new entities

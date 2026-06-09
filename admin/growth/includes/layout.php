@@ -7,14 +7,27 @@ function ge_admin_page_title(string $title): string {
 
 function ge_admin_nav(): array {
     return [
+        ['section' => 'Overview'],
         ['url' => 'index.php', 'icon' => 'fa-chart-line', 'label' => 'Dashboard', 'page' => 'dashboard'],
+        ['section' => 'Programmatic SEO'],
         ['url' => 'services.php', 'icon' => 'fa-cogs', 'label' => 'Services', 'page' => 'services'],
         ['url' => 'cities.php', 'icon' => 'fa-map-marker-alt', 'label' => 'Cities', 'page' => 'cities'],
+        ['url' => 'industries.php', 'icon' => 'fa-industry', 'label' => 'Industries', 'page' => 'industries'],
         ['url' => 'keywords.php', 'icon' => 'fa-key', 'label' => 'Keywords', 'page' => 'keywords'],
         ['url' => 'landing-pages.php', 'icon' => 'fa-file-alt', 'label' => 'Landing Pages', 'page' => 'landing'],
         ['url' => 'generate.php', 'icon' => 'fa-magic', 'label' => 'Generate', 'page' => 'generate'],
-        ['url' => 'indexing.php', 'icon' => 'fa-search-plus', 'label' => 'Indexing', 'page' => 'indexing'],
+        ['section' => 'Content & EEAT'],
         ['url' => 'case-studies.php', 'icon' => 'fa-trophy', 'label' => 'Case Studies', 'page' => 'case-studies'],
+        ['url' => 'authors.php', 'icon' => 'fa-user-edit', 'label' => 'Authors', 'page' => 'authors'],
+        ['url' => 'knowledge-base.php', 'icon' => 'fa-book', 'label' => 'Knowledge Base', 'page' => 'knowledge'],
+        ['section' => 'SEO & Indexing'],
+        ['url' => 'indexing.php', 'icon' => 'fa-search-plus', 'label' => 'Indexing', 'page' => 'indexing'],
+        ['url' => 'competitor.php', 'icon' => 'fa-crosshairs', 'label' => 'Competitor Intel', 'page' => 'competitor'],
+        ['section' => 'CRM & Sales'],
+        ['url' => 'leads.php', 'icon' => 'fa-user-plus', 'label' => 'Leads', 'page' => 'leads'],
+        ['section' => 'Platform'],
+        ['url' => 'tools.php', 'icon' => 'fa-toolbox', 'label' => 'Tools', 'page' => 'tools'],
+        ['url' => 'analytics.php', 'icon' => 'fa-chart-bar', 'label' => 'Analytics', 'page' => 'analytics'],
         ['url' => 'settings.php', 'icon' => 'fa-sliders-h', 'label' => 'Settings', 'page' => 'settings'],
     ];
 }
@@ -36,13 +49,17 @@ function ge_admin_layout_start(string $title, string $activePage = ''): void {
     <aside class="ge-sidebar">
         <div class="ge-brand">
             <span class="ge-brand-text">NECTRA</span><span class="ge-brand-accent">GROWTH</span>
-            <small class="d-block text-muted mt-1">SEO Growth Engine</small>
+            <small class="d-block text-muted mt-1">Enterprise Growth Platform v<?php echo htmlspecialchars(ge_setting('platform_version', '2.0')); ?></small>
         </div>
         <nav class="ge-nav">
             <?php foreach (ge_admin_nav() as $item): ?>
+            <?php if (!empty($item['section'])): ?>
+            <div class="ge-nav-section"><?php echo htmlspecialchars($item['section']); ?></div>
+            <?php else: ?>
             <a href="<?php echo $item['url']; ?>" class="ge-nav-link <?php echo $activePage === $item['page'] ? 'active' : ''; ?>">
                 <i class="fas <?php echo $item['icon']; ?>"></i> <?php echo $item['label']; ?>
             </a>
+            <?php endif; ?>
             <?php endforeach; ?>
             <hr class="border-secondary my-2">
             <a href="../dashboard.php" class="ge-nav-link"><i class="fas fa-arrow-left"></i> Legacy Admin</a>

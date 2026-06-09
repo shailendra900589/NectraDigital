@@ -17,6 +17,10 @@ $faqs = ge_json_decode($page['faq_json'] ?? '[]');
 $takeaways = ge_json_decode($page['key_takeaways'] ?? '[]');
 $paa = ge_json_decode($page['paa_json'] ?? '[]');
 $links = ge_json_decode($page['internal_links_json'] ?? '[]');
+$ctas = ge_json_decode($page['cta_json'] ?? '[]');
+if (empty($ctas)) {
+    $ctas = ge_default_ctas();
+}
 $seo = SeoEngine::metaTags($page);
 
 $page_title = $page['meta_title'];
@@ -38,19 +42,23 @@ if (!empty($schemaData)) {
                 <ol class="breadcrumb bg-transparent p-0 m-0 small">
                     <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">Home</a></li>
                     <li class="breadcrumb-item"><a href="/services" class="text-white-50 text-decoration-none">Services</a></li>
-                    <li class="breadcrumb-item active text-neon"><?php echo htmlspecialchars($page['city_name']); ?></li>
+                    <li class="breadcrumb-item active text-neon"><?php echo htmlspecialchars($page['city_name']); ?><?php if (!empty($page['industry_name'])): ?> · <?php echo htmlspecialchars($page['industry_name']); ?><?php endif; ?></li>
                 </ol>
             </nav>
             <div class="row align-items-center">
                 <div class="col-lg-8">
-                    <span class="badge border border-neon text-neon mb-3"><?php echo htmlspecialchars($page['service_name']); ?> · <?php echo htmlspecialchars($page['city_name']); ?></span>
+                    <span class="badge border border-neon text-neon mb-3"><?php echo htmlspecialchars($page['service_name']); ?> · <?php echo htmlspecialchars($page['city_name']); ?><?php if (!empty($page['industry_name'])): ?> · <?php echo htmlspecialchars($page['industry_name']); ?><?php endif; ?></span>
                     <h1 class="display-5 fw-bold text-white mb-3"><?php echo htmlspecialchars($page['h1']); ?></h1>
                     <?php if (!empty($page['h2'])): ?>
-                    <h2 class="h5 text-white-50 mb-4"><?php echo htmlspecialchars($page['h2']); ?></h2>
+                    <h2 class="h5 text-white-50 mb-3"><?php echo htmlspecialchars($page['h2']); ?></h2>
+                    <?php endif; ?>
+                    <?php if (!empty($page['h3'])): ?>
+                    <h3 class="h6 text-neon mb-4"><?php echo htmlspecialchars($page['h3']); ?></h3>
                     <?php endif; ?>
                     <div class="d-flex flex-wrap gap-2">
-                        <a href="/contact?city=<?php echo urlencode($page['city_name']); ?>&service=<?php echo urlencode($page['service_name']); ?>" class="btn btn-nectra">Get Free Audit</a>
-                        <a href="/contact?service=Consultation" class="btn btn-outline-light">Book Strategy Call</a>
+                        <?php foreach (array_slice($ctas, 0, 2) as $cta): ?>
+                        <a href="<?php echo htmlspecialchars($cta['url']); ?>" class="btn <?php echo ($cta['icon'] ?? '') === 'fa-search' ? 'btn-nectra' : 'btn-outline-light'; ?>"><?php echo htmlspecialchars($cta['label']); ?></a>
+                        <?php endforeach; ?>
                     </div>
                 </div>
                 <div class="col-lg-4 d-none d-lg-block text-center">
@@ -158,10 +166,9 @@ if (!empty($schemaData)) {
                     <div class="p-4 border border-secondary rounded bg-glass sticky-top gl-sidebar-cta" style="top:100px;">
                         <h3 class="text-white h6 mb-3">Start Your Project in <?php echo htmlspecialchars($page['city_name']); ?></h3>
                         <div class="d-grid gap-2">
-                            <a href="/contact?service=<?php echo urlencode('Free Audit'); ?>" class="btn btn-nectra btn-sm">Get Free Audit</a>
-                            <a href="/contact?service=<?php echo urlencode('Request Proposal'); ?>" class="btn btn-outline-light btn-sm">Request Proposal</a>
-                            <a href="/contact?service=<?php echo urlencode('Consultation'); ?>" class="btn btn-outline-light btn-sm">Book Consultation</a>
-                            <a href="/contact" class="btn btn-outline-secondary btn-sm text-white">Talk To Expert</a>
+                            <?php foreach ($ctas as $cta): ?>
+                            <a href="<?php echo htmlspecialchars($cta['url']); ?>" class="btn btn-sm <?php echo strpos($cta['label'], 'Audit') !== false ? 'btn-nectra' : 'btn-outline-light'; ?>"><?php echo htmlspecialchars($cta['label']); ?></a>
+                            <?php endforeach; ?>
                         </div>
                         <hr class="border-secondary my-3">
                         <p class="text-white-50 small mb-0"><i class="fas fa-map-marker-alt text-neon me-2"></i><?php echo htmlspecialchars($page['city_name'] . ', ' . ($page['state'] ?? 'India')); ?></p>

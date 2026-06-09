@@ -31,6 +31,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             VALUES ('$name', '$email', '$service', '$budget', '$message', '$ip', '$is_spam')";
 
     if ($conn->query($sql) === TRUE) {
+        if (!$is_spam && file_exists(__DIR__ . '/includes/growth/bootstrap.php')) {
+            require_once __DIR__ . '/includes/growth/bootstrap.php';
+            if (ge_table_exists('ge_crm_leads')) {
+                \Growth\Models\CrmLead::create([
+                    'name' => $name,
+                    'email' => $email,
+                    'service_interest' => $service,
+                    'message' => $message . ($budget ? " | Budget: $budget" : ''),
+                    'source' => 'contact_form',
+                    'meta_json' => ge_json_encode(['ip' => $ip, 'budget' => $budget]),
+                ]);
+            }
+        }
         if($is_spam) {
              echo json_encode(["status" => "error", "message" => "System flagged message as spam."]);
         } else {

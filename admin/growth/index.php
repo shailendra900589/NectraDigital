@@ -4,18 +4,22 @@ require_once __DIR__ . '/../../includes/growth/bootstrap.php';
 
 use Growth\Models\Service;
 use Growth\Models\City;
+use Growth\Models\Industry;
 use Growth\Models\Keyword;
 use Growth\Models\LandingPage;
 use Growth\Models\GenerationJob;
+use Growth\Models\CrmLead;
 
 $stats = [
     'services' => ge_is_ready() ? Service::count(true) : 0,
     'cities' => ge_is_ready() ? City::count(true) : 0,
+    'industries' => (ge_is_ready() && ge_table_exists('ge_industries')) ? Industry::count(true) : 0,
     'keywords' => ge_is_ready() ? Keyword::count() : 0,
     'pages' => ge_is_ready() ? LandingPage::count('published') : 0,
+    'leads' => ge_table_exists('ge_crm_leads') ? (CrmLead::stats()['new'] ?? 0) : 0,
     'potential' => 0,
 ];
-$stats['potential'] = $stats['services'] * $stats['cities'];
+$stats['potential'] = $stats['services'] * $stats['cities'] * max(1, $stats['industries'] + 1);
 $indexStats = ge_is_ready() ? LandingPage::indexStats() : ['indexed' => 0, 'pending' => 0, 'total' => 0];
 $recentJobs = ge_is_ready() ? GenerationJob::recent(5) : [];
 
@@ -54,7 +58,7 @@ ge_admin_layout_start('Dashboard', 'dashboard');
     <div class="col-lg-8">
         <div class="ge-card">
             <h2 class="h5 mb-4">Programmatic SEO Matrix</h2>
-            <p class="text-muted small">Services × Cities = Auto-generated landing pages with unique content, SEO metadata, FAQs, schema, and internal links.</p>
+            <p class="text-muted small">Services × Cities × Industries = unlimited dynamic landing pages with unique content, GEO/AEO blocks, schema, and internal links.</p>
             <div class="progress mb-3" style="height: 8px; background: var(--ge-surface-2);">
                 <?php $pct = $stats['potential'] > 0 ? min(100, round(($stats['pages'] / $stats['potential']) * 100)) : 0; ?>
                 <div class="progress-bar bg-info" style="width: <?php echo $pct; ?>%"></div>
@@ -63,6 +67,7 @@ ge_admin_layout_start('Dashboard', 'dashboard');
             <a href="generate.php" class="btn btn-ge-primary"><i class="fas fa-magic me-2"></i>Generate Landing Pages</a>
             <a href="services.php?action=add" class="btn btn-outline-secondary ms-2">Add Service</a>
             <a href="cities.php?action=add" class="btn btn-outline-secondary ms-2">Add City</a>
+            <a href="industries.php?action=add" class="btn btn-outline-secondary ms-2">Add Industry</a>
         </div>
     </div>
     <div class="col-lg-4">

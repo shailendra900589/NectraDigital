@@ -72,13 +72,36 @@ function ge_upload_image(array $file, string $prefix = 'ge_'): array {
     return ['error' => 'Move failed.'];
 }
 
-function ge_build_landing_slug(string $url_prefix, string $city_slug, ?string $pattern = null): string {
-    $pattern = $pattern ?: ge_setting('url_pattern', '{url_prefix}-company-{city_slug}');
+function ge_build_landing_slug(string $url_prefix, string $city_slug, ?array $extra = null): string {
+    $extra = $extra ?? [];
+    $industry_slug = $extra['industry_slug'] ?? '';
+    $hasIndustry = !empty($industry_slug);
+
+    $pattern = $hasIndustry
+        ? ge_setting('url_pattern_industry', '{url_prefix}-company-in-{city_slug}-for-{industry_slug}')
+        : ge_setting('url_pattern_city', ge_setting('url_pattern', '{url_prefix}-company-in-{city_slug}'));
+
     return ge_slugify(ge_replace_tokens($pattern, [
         'url_prefix' => $url_prefix,
         'city_slug' => $city_slug,
+        'industry_slug' => $industry_slug,
         'service_slug' => $url_prefix,
     ]));
+}
+
+function ge_default_ctas(): array {
+    return [
+        ['label' => 'Get Free SEO Audit', 'url' => '/contact?service=SEO+Audit', 'icon' => 'fa-search'],
+        ['label' => 'Get Free Consultation', 'url' => '/contact?service=Consultation', 'icon' => 'fa-calendar-check'],
+        ['label' => 'Request Proposal', 'url' => '/contact?service=Proposal', 'icon' => 'fa-file-alt'],
+        ['label' => 'Talk To Expert', 'url' => '/contact?service=Expert+Call', 'icon' => 'fa-headset'],
+        ['label' => 'Schedule Strategy Call', 'url' => '/contact?service=Strategy+Call', 'icon' => 'fa-phone'],
+        ['label' => 'Get Free Website Audit', 'url' => '/contact?service=Website+Audit', 'icon' => 'fa-globe'],
+    ];
+}
+
+function ge_table_exists_check(string $table): bool {
+    return ge_table_exists($table);
 }
 
 function ge_paginate(int $total, int $page, int $per_page = 25): array {

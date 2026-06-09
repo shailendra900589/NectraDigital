@@ -3,10 +3,11 @@ namespace Growth\Engines;
 
 class KeywordEngine
 {
-    public static function generateForPage(array $service, array $city): array
+    public static function generateForPage(array $service, array $city, ?array $industry = null): array
     {
         $sn = $service['name'];
         $cn = $city['name'];
+        $in = $industry['name'] ?? '';
         $prefix = $service['url_prefix'] ?? ge_slugify($service['name']);
 
         $patterns = [
@@ -49,7 +50,25 @@ class KeywordEngine
                 "Certified {sn} {cn}",
                 "Trusted {sn} provider {cn}",
             ],
+            'long_tail' => [
+                "Best {sn} company for small business in {cn}",
+                "Affordable {sn} agency {cn} {state}",
+                "Top rated {sn} services near {cn}",
+            ],
+            'semantic' => [
+                "Digital growth partner {cn}",
+                "Marketing automation {cn}",
+                "Online visibility {state}",
+            ],
         ];
+
+        if ($in) {
+            $patterns['primary'][] = "{sn} for {in} in {cn}";
+            $patterns['commercial'][] = "{sn} {in} company {cn}";
+            $patterns['local'][] = "{in} {sn} {cn}";
+            $patterns['long_tail'][] = "Best {sn} for {in} businesses in {cn}";
+            $patterns['semantic'][] = "{in} digital marketing {cn}";
+        }
 
         $keywords = [];
         $state = $city['state'] ?? $city['country'] ?? 'India';
@@ -59,6 +78,7 @@ class KeywordEngine
                 $kw = ge_replace_tokens($tpl, [
                     'sn' => $sn,
                     'cn' => $cn,
+                    'in' => $in,
                     'state' => $state,
                     'prefix' => str_replace('-', ' ', $prefix),
                 ]);

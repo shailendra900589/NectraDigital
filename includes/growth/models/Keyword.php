@@ -29,14 +29,30 @@ class Keyword extends BaseModel
     {
         $sid = !empty($data['service_id']) ? (int)$data['service_id'] : 0;
         $cid = !empty($data['city_id']) ? (int)$data['city_id'] : 0;
-        $sql = "INSERT INTO ge_keywords (keyword, keyword_type, service_id, city_id, is_auto_generated, status) VALUES (?, ?, NULLIF(?, 0), NULLIF(?, 0), ?, ?)";
-        self::execute($sql, 'ssiiis', [
-            $data['keyword'],
-            $data['keyword_type'] ?? 'primary',
-            $sid, $cid,
-            (int)($data['is_auto_generated'] ?? 0),
-            $data['status'] ?? 'active',
-        ]);
+        $iid = !empty($data['industry_id']) ? (int)$data['industry_id'] : 0;
+        $lpid = !empty($data['landing_page_id']) ? (int)$data['landing_page_id'] : 0;
+
+        $r = ge_conn()->query("SHOW COLUMNS FROM ge_keywords LIKE 'industry_id'");
+        if ($r && $r->num_rows > 0) {
+            $sql = "INSERT INTO ge_keywords (keyword, keyword_type, service_id, city_id, industry_id, landing_page_id, is_auto_generated, status)
+                    VALUES (?, ?, NULLIF(?, 0), NULLIF(?, 0), NULLIF(?, 0), NULLIF(?, 0), ?, ?)";
+            self::execute($sql, 'ssiiiiis', [
+                $data['keyword'],
+                $data['keyword_type'] ?? 'primary',
+                $sid, $cid, $iid, $lpid,
+                (int)($data['is_auto_generated'] ?? 0),
+                $data['status'] ?? 'active',
+            ]);
+        } else {
+            $sql = "INSERT INTO ge_keywords (keyword, keyword_type, service_id, city_id, is_auto_generated, status) VALUES (?, ?, NULLIF(?, 0), NULLIF(?, 0), ?, ?)";
+            self::execute($sql, 'ssiiis', [
+                $data['keyword'],
+                $data['keyword_type'] ?? 'primary',
+                $sid, $cid,
+                (int)($data['is_auto_generated'] ?? 0),
+                $data['status'] ?? 'active',
+            ]);
+        }
         return self::lastId();
     }
 

@@ -3,10 +3,10 @@ namespace Growth\Engines;
 
 class ContentEngine
 {
-    public static function buildContext(array $service, array $city): array
+    public static function buildContext(array $service, array $city, ?array $industry = null): array
     {
-        $seed = (int)$service['id'] * 10000 + (int)$city['id'];
-        return [
+        $seed = (int)$service['id'] * 10000 + (int)$city['id'] + ((int)($industry['id'] ?? 0) * 1000000);
+        $ctx = [
             'service_name' => $service['name'],
             'service_slug' => $service['slug'],
             'url_prefix' => $service['url_prefix'],
@@ -17,6 +17,8 @@ class ContentEngine
             'population' => ge_format_population((int)($city['population'] ?? 0)),
             'population_raw' => (int)($city['population'] ?? 0),
             'city_description' => $city['city_description'] ?? '',
+            'industry_name' => $industry['name'] ?? '',
+            'industry_slug' => $industry['slug'] ?? '',
             'founder_name' => ge_setting('founder_name', 'Ravindra Kumar Chauhan'),
             'founder_title' => ge_setting('founder_title', 'Founder & CEO'),
             'founder_experience' => ge_setting('founder_experience', '5+ Years'),
@@ -25,11 +27,12 @@ class ContentEngine
             'year' => date('Y'),
             'seed' => $seed,
         ];
+        return $ctx;
     }
 
-    public static function generateContent(array $service, array $city): array
+    public static function generateContent(array $service, array $city, ?array $industry = null): array
     {
-        $ctx = self::buildContext($service, $city);
+        $ctx = self::buildContext($service, $city, $industry);
         $seed = $ctx['seed'];
 
         $introVariants = [
@@ -80,6 +83,25 @@ class ContentEngine
             ? ge_replace_tokens($service['h2_template'], $ctx)
             : "Professional {$ctx['service_name']} Services in {$ctx['state']}";
 
-        return compact('content', 'metaTitle', 'metaDesc', 'h1', 'h2', 'ctx');
+        $h3 = '';
+        if ($industry) {
+            $h3 = $industry['meta_title_template']
+                ? ge_replace_tokens($industry['meta_title_template'], $ctx)
+                : "{$ctx['service_name']} for {$ctx['industry_name']} in {$ctx['city_name']}";
+            if ($industry['description']) {
+                $content .= "<h3>{$ctx['industry_name']} Focus</h3><p>" . ge_replace_tokens($industry['description'], $ctx) . "</p>";
+            }
+        } else {
+            $h3 = "Why Choose Nectra Digital for {$ctx['service_name']} in {$ctx['city_name']}";
+        }
+
+        if ($industry && $industry['meta_title_template']) {
+            $metaTitle = ge_replace_tokens($industry['meta_title_template'], $ctx);
+        }
+        if ($industry && !empty($industry['meta_description_template'])) {
+            $metaDesc = ge_replace_tokens($industry['meta_description_template'], $ctx);
+        }
+
+        return compact('content', 'metaTitle', 'metaDesc', 'h1', 'h2', 'h3', 'ctx');
     }
 }

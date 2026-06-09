@@ -22,6 +22,12 @@ RewriteRule ^rss\.xml$ rss.php [L]
 RewriteRule ^news-sitemap\.xml$ news-sitemap.php [L]
 
 # ========================================================
+# 3C. TOOLS MARKETPLACE
+# ========================================================
+RewriteRule ^tools/?$ tools/index.php [L]
+RewriteRule ^tools/([a-z0-9-]+)/?$ tools/tool.php?slug=$1 [L,QSA]
+
+# ========================================================
 # 3B. CITY LANDING PAGES
 # ========================================================
 RewriteRule ^digital-agency-([a-z]+)$ city-page.php?city=$1 [L,QSA]
