@@ -7,8 +7,10 @@ function ge_admin_page_title(string $title): string {
 
 function ge_admin_nav(): array {
     return [
+        ['section' => 'Main Admin'],
+        ['url' => '../dashboard.php?page=home', 'icon' => 'fa-home', 'label' => 'NECTRAOS Dashboard', 'page' => 'nectraos'],
         ['section' => 'Overview'],
-        ['url' => 'index.php', 'icon' => 'fa-chart-line', 'label' => 'Dashboard', 'page' => 'dashboard'],
+        ['url' => '../dashboard.php?page=home', 'icon' => 'fa-chart-line', 'label' => 'Growth Overview', 'page' => 'dashboard'],
         ['section' => 'Programmatic SEO'],
         ['url' => 'services.php', 'icon' => 'fa-cogs', 'label' => 'Services', 'page' => 'services'],
         ['url' => 'cities.php', 'icon' => 'fa-map-marker-alt', 'label' => 'Cities', 'page' => 'cities'],
@@ -62,7 +64,7 @@ function ge_admin_layout_start(string $title, string $activePage = ''): void {
             <?php endif; ?>
             <?php endforeach; ?>
             <hr class="border-secondary my-2">
-            <a href="../dashboard.php" class="ge-nav-link"><i class="fas fa-arrow-left"></i> Legacy Admin</a>
+            <a href="../dashboard.php?page=home" class="ge-nav-link"><i class="fas fa-arrow-left"></i> NECTRAOS Admin</a>
             <a href="../logout.php" class="ge-nav-link text-danger"><i class="fas fa-power-off"></i> Logout</a>
         </nav>
     </aside>

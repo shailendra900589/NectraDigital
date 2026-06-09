@@ -3,6 +3,15 @@ session_start();
 if (!isset($_SESSION['admin_logged_in'])) { header("Location: login.php"); exit; }
 include '../includes/db.php';
 
+$growthMsg = null;
+$growthStats = ['ready' => false];
+if (is_file(__DIR__ . '/includes/admin-growth.php')) {
+    require_once __DIR__ . '/includes/admin-growth.php';
+    $pageForPost = $_GET['page'] ?? 'home';
+    $growthMsg = admin_handle_growth_post($pageForPost);
+    $growthStats = admin_growth_stats();
+}
+
 // --- HELPER: IMAGE UPLOAD FUNCTION ---
 function upload_ad_image($file) {
     $target_dir = "../assets/uploads/";
@@ -74,6 +83,10 @@ if (isset($_POST['update_hire_status'])) {
         .form-control, .form-select { background-color: #222; border-color: #444; color: #fff; }
         .form-control:focus, .form-select:focus { background-color: #333; color: #fff; border-color: #00E5FF; }
         img.ad-preview { object-fit: cover; border: 1px solid #444; }
+        .stat-box { background: #0d1117; border: 1px solid #333; border-radius: 8px; padding: 1rem; text-align: center; }
+        .stat-val { font-size: 1.75rem; font-weight: bold; color: #00E5FF; }
+        .stat-lbl { font-size: 0.75rem; color: #888; text-transform: uppercase; }
+        .section-title { color: #666; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 15px 5px; }
     </style>
 </head>
 <body>
@@ -81,26 +94,159 @@ if (isset($_POST['update_hire_status'])) {
 <div class="sidebar d-flex flex-column">
     <div class="p-4 text-center border-bottom border-secondary">
         <h4 class="text-white m-0">NECTRA<span class="text-info">OS</span></h4>
+        <small class="text-muted">Admin Control Center</small>
     </div>
-    <a href="?page=leads" class="nav-link <?php echo (!isset($_GET['page']) || $_GET['page']=='leads')?'active':''; ?>"><i class="fas fa-satellite-dish me-2"></i> Leads</a>
-    <a href="?page=blog" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='blog')?'active':''; ?>"><i class="fas fa-edit me-2"></i> Blog Ops</a>
-    <a href="?page=ads" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='ads')?'active':''; ?>"><i class="fas fa-ad me-2"></i> Ad Engine</a>
-    <a href="?page=comments" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='comments')?'active':''; ?>"><i class="fas fa-comments me-2"></i> Comments</a>
-    <a href="?page=careers" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='careers')?'active':''; ?>"><i class="fas fa-briefcase me-2"></i> Careers</a>
+
+    <div class="section-title">Overview</div>
+    <a href="?page=home" class="nav-link <?php echo (!isset($_GET['page']) || $_GET['page']=='home')?'active':''; ?>"><i class="fas fa-home me-2"></i> Dashboard Home</a>
+
+    <div class="section-title">Growth & SEO</div>
+    <a href="?page=cities" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='cities')?'active':''; ?>"><i class="fas fa-map-marker-alt me-2"></i> Cities</a>
+    <a href="?page=seo" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='seo')?'active':''; ?>"><i class="fas fa-search-plus me-2"></i> Auto Indexing</a>
+    <a href="growth/services.php" class="nav-link"><i class="fas fa-cogs me-2"></i> Services</a>
+    <a href="growth/generate.php" class="nav-link"><i class="fas fa-magic me-2"></i> Generate Pages</a>
+    <a href="growth/landing-pages.php" class="nav-link"><i class="fas fa-file-alt me-2"></i> Landing Pages</a>
+    <a href="growth/leads.php" class="nav-link"><i class="fas fa-user-plus me-2"></i> CRM Leads</a>
+    <a href="growth/settings.php" class="nav-link"><i class="fas fa-sliders-h me-2"></i> Growth Settings</a>
+
+    <div class="section-title">Inbound</div>
+    <a href="?page=leads" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='leads')?'active':''; ?>"><i class="fas fa-satellite-dish me-2"></i> Contact Leads</a>
     <a href="?page=hire_requests" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='hire_requests')?'active':''; ?>"><i class="fas fa-user-tie me-2"></i> Hire Requests</a>
-    <a href="growth/index.php" class="nav-link text-info"><i class="fas fa-rocket me-2"></i> Growth Engine</a>
-    
+
+    <div class="section-title">Content</div>
+    <a href="?page=blog" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='blog')?'active':''; ?>"><i class="fas fa-edit me-2"></i> Blog Ops</a>
+    <a href="?page=comments" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='comments')?'active':''; ?>"><i class="fas fa-comments me-2"></i> Comments</a>
+
+    <div class="section-title">Monetization & HR</div>
+    <a href="?page=ads" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='ads')?'active':''; ?>"><i class="fas fa-ad me-2"></i> Ad Engine</a>
+    <a href="?page=careers" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='careers')?'active':''; ?>"><i class="fas fa-briefcase me-2"></i> Careers</a>
+
+    <a href="<?php echo defined('SITE_URL') ? SITE_URL : 'https://www.nectradigital.com'; ?>" target="_blank" class="nav-link"><i class="fas fa-external-link-alt me-2"></i> View Site</a>
     <a href="logout.php" class="nav-link mt-auto text-danger"><i class="fas fa-power-off me-2"></i> Terminate</a>
 </div>
 
 <div class="content">
     <?php
-    $page = isset($_GET['page']) ? $_GET['page'] : 'leads';
+    if ($growthMsg) echo "<div class='alert alert-success alert-dismissible fade show'>".htmlspecialchars($growthMsg)."<button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
+    if (!empty($growthStats['error'])) echo "<div class='alert alert-warning'>Growth Engine: ".htmlspecialchars($growthStats['error'])."</div>";
+    if (!$growthStats['ready']) echo "<div class='alert alert-warning'><strong>Growth DB not ready.</strong> Run <a href='../database/migrate.php' target='_blank' class='alert-link'>database/migrate.php</a> or import SQL via phpMyAdmin to enable Cities & Auto Indexing.</div>";
+
+    $page = isset($_GET['page']) ? $_GET['page'] : 'home';
+
+    // ==========================================
+    // HOME — Unified Dashboard Overview
+    // ==========================================
+    if ($page == 'home') {
+        $leadCount = $conn->query("SELECT COUNT(*) AS c FROM leads")->fetch_assoc()['c'] ?? 0;
+        $hireCount = $conn->query("SELECT COUNT(*) AS c FROM hire_requests WHERE status='new'")->fetch_assoc()['c'] ?? 0;
+        echo '<h2 class="mb-4"><i class="fas fa-tachometer-alt text-info"></i> Command Center</h2>';
+        echo '<div class="row g-3 mb-4">';
+        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val">'.$leadCount.'</div><div class="stat-lbl">Contact Leads</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val">'.$hireCount.'</div><div class="stat-lbl">New Hire Requests</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val">'.number_format($growthStats['cities']).'</div><div class="stat-lbl">Active Cities</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val">'.number_format($growthStats['pages']).'</div><div class="stat-lbl">Landing Pages</div></div></div>';
+        echo '</div>';
+
+        echo '<div class="row g-4">';
+        echo '<div class="col-lg-6"><div class="card p-4"><h5 class="text-info mb-3"><i class="fas fa-map-marker-alt"></i> Quick Add City</h5>';
+        echo '<form method="POST" action="?page=cities"><input type="hidden" name="growth_action" value="add_city">';
+        echo '<div class="row g-2"><div class="col-md-6"><input type="text" name="name" class="form-control" placeholder="City Name *" required></div>';
+        echo '<div class="col-md-6"><input type="text" name="state" class="form-control" placeholder="State"></div>';
+        echo '<div class="col-md-6"><input type="text" name="country" class="form-control" value="India" placeholder="Country"></div>';
+        echo '<div class="col-md-6"><input type="number" name="population" class="form-control" placeholder="Population"></div>';
+        echo '<div class="col-12"><button type="submit" class="btn btn-info w-100">Add City</button></div></div></form>';
+        echo '<p class="small text-muted mt-2 mb-0"><a href="?page=cities">Manage all cities →</a> · <a href="growth/cities.php?action=import">Bulk import</a></p></div></div>';
+
+        echo '<div class="col-lg-6"><div class="card p-4"><h5 class="text-info mb-3"><i class="fas fa-rocket"></i> Auto Indexing Status</h5>';
+        echo '<div class="d-flex justify-content-between mb-2"><span class="text-white-50">Indexed</span><strong class="text-success">'.number_format($growthStats['indexed']).'</strong></div>';
+        echo '<div class="d-flex justify-content-between mb-2"><span class="text-white-50">Pending</span><strong class="text-warning">'.number_format($growthStats['pending_index']).'</strong></div>';
+        echo '<div class="d-flex justify-content-between mb-3"><span class="text-white-50">Queue</span><strong>'.number_format($growthStats['queue_pending']).'</strong></div>';
+        echo '<form method="POST" action="?page=seo" class="d-grid gap-2"><input type="hidden" name="growth_action" value="queue_and_process">';
+        echo '<button type="submit" class="btn btn-success"><i class="fas fa-bolt"></i> Queue & Submit (IndexNow + Bing + DDG)</button></form>';
+        echo '<p class="small text-muted mt-2 mb-0"><a href="?page=seo">Full indexing panel →</a></p></div></div>';
+        echo '</div>';
+
+        if ($growthStats['ready']) {
+            $pct = $growthStats['potential'] > 0 ? min(100, round(($growthStats['pages'] / $growthStats['potential']) * 100)) : 0;
+            echo '<div class="card p-4 mt-4"><h5 class="text-info mb-3">Programmatic SEO Matrix</h5>';
+            echo '<p class="text-white-50 small">Services × Cities × Industries = '.$growthStats['services'].' × '.$growthStats['cities'].' × '.max(1,$growthStats['industries']+1).' = <strong>'.number_format($growthStats['potential']).'</strong> possible pages</p>';
+            echo '<div class="progress mb-2" style="height:10px;background:#333;"><div class="progress-bar bg-info" style="width:'.$pct.'%"></div></div>';
+            echo '<p class="small text-muted">'.$pct.'% generated ('.number_format($growthStats['pages']).' / '.number_format($growthStats['potential']).')</p>';
+            echo '<a href="growth/generate.php" class="btn btn-sm btn-info me-2">Generate Pages</a>';
+            echo '<a href="growth/services.php" class="btn btn-sm btn-outline-secondary me-2">Services</a>';
+            echo '<a href="growth/industries.php" class="btn btn-sm btn-outline-secondary">Industries</a></div>';
+        }
+    }
+
+    // ==========================================
+    // CITIES MANAGEMENT
+    // ==========================================
+    elseif ($page == 'cities') {
+        $cities = admin_growth_cities();
+        echo '<div class="d-flex justify-content-between align-items-center mb-4"><h2><i class="fas fa-map-marker-alt text-info"></i> City Manager</h2>';
+        echo '<div><a href="growth/cities.php?action=import" class="btn btn-outline-secondary me-2"><i class="fas fa-file-import"></i> Bulk Import</a>';
+        echo '<a href="growth/cities.php?action=add" class="btn btn-info"><i class="fas fa-plus"></i> Advanced Add</a></div></div>';
+
+        echo '<div class="card p-4 mb-4"><h5>Add New City</h5><form method="POST"><input type="hidden" name="growth_action" value="add_city">';
+        echo '<div class="row g-3"><div class="col-md-3"><input type="text" name="name" class="form-control" placeholder="City Name *" required></div>';
+        echo '<div class="col-md-2"><input type="text" name="slug" class="form-control" placeholder="Slug (auto)"></div>';
+        echo '<div class="col-md-2"><input type="text" name="state" class="form-control" placeholder="State"></div>';
+        echo '<div class="col-md-2"><input type="text" name="country" class="form-control" value="India"></div>';
+        echo '<div class="col-md-2"><input type="number" name="population" class="form-control" placeholder="Population"></div>';
+        echo '<div class="col-md-1"><button type="submit" class="btn btn-success w-100">Add</button></div></div></form></div>';
+
+        echo '<div class="card p-3"><div class="table-responsive"><table class="table table-dark table-hover table-sm mb-0"><thead><tr><th>City</th><th>State</th><th>Population</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+        foreach ($cities as $c) {
+            echo '<tr><td><strong>'.htmlspecialchars($c['name']).'</strong><br><code class="small">'.htmlspecialchars($c['slug']).'</code></td>';
+            echo '<td>'.htmlspecialchars($c['state']).'</td><td>'.number_format($c['population']).'</td><td>'.$c['status'].'</td><td>';
+            echo '<a href="growth/cities.php?action=edit&id='.$c['id'].'" class="btn btn-sm btn-outline-warning me-1"><i class="fas fa-edit"></i></a>';
+            echo '<form method="POST" class="d-inline" onsubmit="return confirm(\'Delete city?\')"><input type="hidden" name="growth_action" value="delete_city"><input type="hidden" name="city_id" value="'.$c['id'].'"><button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button></form>';
+            echo '</td></tr>';
+        }
+        if (empty($cities)) echo '<tr><td colspan="5" class="text-center text-muted py-4">No cities yet. Add above or run migration.</td></tr>';
+        echo '</tbody></table></div><p class="small text-muted mt-2 mb-0">'.count($cities).' cities · Used for programmatic landing pages</p></div>';
+    }
+
+    // ==========================================
+    // AUTO INDEXING (IndexNow, Bing, DuckDuckGo, Google)
+    // ==========================================
+    elseif ($page == 'seo') {
+        $idxInfo = function_exists('admin_indexnow_info') ? admin_indexnow_info() : ['key'=>'','key_url'=>'','host'=>''];
+        $queue = function_exists('admin_index_queue') ? admin_index_queue(15) : [];
+        echo '<h2 class="mb-4"><i class="fas fa-search-plus text-info"></i> Auto Indexing Engine</h2>';
+
+        echo '<div class="row g-3 mb-4">';
+        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val text-success">'.number_format($growthStats['indexed']).'</div><div class="stat-lbl">Indexed</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val text-warning">'.number_format($growthStats['pending_index']).'</div><div class="stat-lbl">Pending</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val">'.number_format($growthStats['submitted_index']).'</div><div class="stat-lbl">Submitted</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val text-danger">'.number_format($growthStats['failed_index']).'</div><div class="stat-lbl">Failed</div></div></div>';
+        echo '</div>';
+
+        echo '<div class="row g-4"><div class="col-lg-5"><div class="card p-4"><h5 class="text-info">Indexing Actions</h5>';
+        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="queue_pending"><button class="btn btn-info">Queue All Pending (500)</button></form>';
+        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="process_queue"><button class="btn btn-success">Process Queue → IndexNow + Bing + Yandex</button></form>';
+        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="ping_sitemap"><button class="btn btn-outline-light">Ping Sitemap (Google + Bing)</button></form>';
+        echo '<form method="POST" class="d-grid gap-2"><input type="hidden" name="growth_action" value="queue_and_process"><button class="btn btn-warning text-dark">Queue + Submit All (One Click)</button></form>';
+        echo '<hr><p class="small text-muted mb-1"><strong>Search engines:</strong> IndexNow API, Bing, Yandex, DuckDuckGo (via IndexNow), Google sitemap ping</p>';
+        echo '<p class="small text-muted mb-0">Cron: <code>php cron/process-indexing.php</code></p></div></div>';
+
+        echo '<div class="col-lg-7"><div class="card p-4 mb-3"><h5 class="text-info">IndexNow Configuration</h5>';
+        echo '<p class="small text-white-50 mb-1">API Key: <code>'.htmlspecialchars($idxInfo['key']).'</code></p>';
+        echo '<p class="small text-white-50 mb-1">Key file: <a href="'.htmlspecialchars($idxInfo['key_url']).'" target="_blank" class="text-info">'.htmlspecialchars($idxInfo['key_url']).'</a></p>';
+        echo '<p class="small text-white-50 mb-0">Sitemap: <code>'.(defined('SITE_URL')?SITE_URL:'').'/sitemap.xml</code> · <a href="growth/settings.php">Edit settings</a></p></div>';
+
+        echo '<div class="card p-3"><h6>Recent Index Queue</h6><div class="table-responsive"><table class="table table-dark table-sm mb-0"><thead><tr><th>URL</th><th>Status</th><th>Date</th></tr></thead><tbody>';
+        foreach ($queue as $q) {
+            echo '<tr><td class="small"><code>'.htmlspecialchars(parse_url($q['url'], PHP_URL_PATH) ?? $q['url']).'</code></td><td>'.$q['status'].'</td><td class="small text-muted">'.$q['created_at'].'</td></tr>';
+        }
+        if (empty($queue)) echo '<tr><td colspan="3" class="text-muted text-center">No queue items yet</td></tr>';
+        echo '</tbody></table></div></div></div></div>';
+    }
 
     // ==========================================
     // 1. BLOG MANAGEMENT
     // ==========================================
-    if ($page == 'blog') {
+    elseif ($page == 'blog') {
         echo '<div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="fas fa-layer-group text-info"></i> Intel Management</h2>
                 <a href="create_post.php" class="btn btn-info"><i class="fas fa-plus"></i> New Protocol</a>
@@ -313,9 +459,9 @@ if (isset($_POST['update_hire_status'])) {
     }
 
     // ==========================================
-    // 6. LEADS (DEFAULT)
+    // LEADS
     // ==========================================
-    else {
+    elseif ($page == 'leads') {
         echo '<h2><i class="fas fa-inbox text-info"></i> Incoming Transmissions</h2><hr class="border-secondary mb-4">';
         $sql = "SELECT * FROM leads ORDER BY created_at DESC";
         $result = $conn->query($sql);
@@ -326,9 +472,15 @@ if (isset($_POST['update_hire_status'])) {
         }
         echo '</tbody></table></div>';
     }
+
+    else {
+        header('Location: dashboard.php?page=home');
+        exit;
+    }
     ?>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function toggleDetails(id) {
         var row = document.getElementById('details-' + id);

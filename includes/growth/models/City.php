@@ -48,7 +48,7 @@ class City extends BaseModel
         $sql = "UPDATE ge_cities SET name=?, slug=?, state=?, country=?, population=?, latitude=?, longitude=?, city_description=?, status=? WHERE id=?";
         $lat = !empty($data['latitude']) ? (float)$data['latitude'] : 0.0;
         $lng = !empty($data['longitude']) ? (float)$data['longitude'] : 0.0;
-        return self::execute($sql, 'ssssidddssi', [
+        return self::execute($sql, 'ssssidddsi', [
             $data['name'], $data['slug'], $data['state'] ?? null,
             $data['country'] ?? 'India',
             (int)($data['population'] ?? 0),
