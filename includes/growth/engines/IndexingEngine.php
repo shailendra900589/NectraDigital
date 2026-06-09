@@ -264,7 +264,8 @@ class IndexingEngine
                 CURLOPT_POSTFIELDS => $body,
                 CURLOPT_HTTPHEADER => $headers,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 20,
+                CURLOPT_TIMEOUT => 8,
+                CURLOPT_CONNECTTIMEOUT => 5,
                 CURLOPT_FOLLOWLOCATION => true,
             ]);
             $response = curl_exec($ch);

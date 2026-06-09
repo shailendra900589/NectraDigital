@@ -13,11 +13,18 @@ if (php_sapi_name() !== 'cli') {
     die("CLI only\n");
 }
 
+// Show progress immediately (no output buffering hang)
+while (ob_get_level() > 0) {
+    ob_end_flush();
+}
+ob_implicit_flush(true);
+
 require_once __DIR__ . '/../includes/growth/bootstrap.php';
 
 use Growth\Engines\CatalogSyncEngine;
 use Growth\Models\Service;
 use Growth\Models\City;
+use Growth\Models\LandingPage;
 use Growth\LandingPageGenerator;
 
 if (!ge_is_ready()) {
@@ -32,9 +39,15 @@ foreach ($argv as $arg) {
     }
 }
 
+$existing = LandingPage::count('published');
+echo "Existing published pages: {$existing}\n";
+
 echo "Syncing catalog from website...\n";
 $sync = CatalogSyncEngine::syncAll();
-echo "Synced {$sync['services']} services, {$sync['cities']} cities\n\n";
+echo "Synced {$sync['services']} services, {$sync['cities']} cities\n";
+echo "Expected matrix: " . ($sync['services'] * $sync['cities']) . " pages\n\n";
+
+$started = microtime(true);
 
 if ($serviceSlug) {
     $service = Service::findBySlug($serviceSlug);
@@ -49,11 +62,19 @@ if ($serviceSlug) {
         $regenerate
     );
 } else {
-    echo "Generating full service × city matrix...\n";
+    echo "Generating full service × city matrix (no live IndexNow per page — fast mode)...\n";
     $result = LandingPageGenerator::generateFullMatrix(false, $regenerate);
 }
 
-echo "Done: {$result['processed']} processed, {$result['failed']} failed\n";
+$elapsed = round(microtime(true) - $started, 1);
+$totalNow = LandingPage::count('published');
+
+echo "\nDone in {$elapsed}s: {$result['processed']} processed, {$result['failed']} failed";
+if (!empty($result['skipped'])) {
+    echo ", {$result['skipped']} skipped (already existed)";
+}
+echo "\nPublished pages now: {$totalNow}\n";
+
 if (!empty($result['slugs'])) {
     echo "Sample URLs:\n";
     foreach ($result['slugs'] as $slug) {
@@ -62,7 +83,9 @@ if (!empty($result['slugs'])) {
 }
 
 if (class_exists(\Growth\Engines\DiscoveryEngine::class)) {
-    echo "\nSubmitting to search engines (IndexNow + sitemap pings)...\n";
+    echo "\nSubmitting to search engines (batch IndexNow + sitemap)...\n";
     $pub = \Growth\Engines\DiscoveryEngine::publishAll(500, 100);
-    echo "Queued: {$pub['queued']}, Processed: {$pub['processed']}\n";
+    echo "Queued: {$pub['queued']}, IndexNow batch processed: {$pub['processed']}\n";
 }
+
+echo "Complete.\n";

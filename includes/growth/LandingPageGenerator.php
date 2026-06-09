@@ -90,9 +90,6 @@ class LandingPageGenerator
 
         if (ge_setting('auto_index_queue', '1') === '1') {
             IndexingQueue::enqueue(SITE_URL . $urlPath, $pageId);
-            if (class_exists(\Growth\Engines\DiscoveryEngine::class)) {
-                \Growth\Engines\DiscoveryEngine::signalUrls([SITE_URL . $urlPath]);
-            }
         }
 
         return ['success' => true, 'id' => $pageId, 'slug' => $slug];
@@ -102,6 +99,9 @@ class LandingPageGenerator
     {
         $db = ge_conn();
         $db->query("DELETE FROM ge_keyword_mappings WHERE landing_page_id = " . (int)$pageId);
+
+        // Limit DB keyword rows per page (meta tag list is separate, capped at 20)
+        $keywords = array_slice($keywords, 0, 20);
 
         $pos = 0;
         foreach ($keywords as $kw) {
@@ -165,23 +165,43 @@ class LandingPageGenerator
 
         $processed = 0;
         $failed = 0;
+        $skipped = 0;
         $created = [];
         $batchSize = (int)ge_setting('batch_size', 50);
+        $isCli = php_sapi_name() === 'cli';
 
+        if ($isCli) {
+            echo "Processing {$total} page combinations...\n";
+        }
+
+        $done = 0;
         foreach ($serviceIds as $sid) {
             foreach ($cityIds as $cid) {
                 foreach ($industryIds as $iid) {
+                    $done++;
                     $result = self::generateOne((int)$sid, (int)$cid, (int)$iid, $regenerate);
                     if ($result['success'] ?? false) {
                         $processed++;
                         $created[] = $result['slug'];
                     } elseif (!empty($result['skipped'])) {
                         $processed++;
+                        $skipped++;
                     } else {
                         $failed++;
+                        if ($isCli) {
+                            echo "FAIL [{$done}/{$total}]: " . ($result['error'] ?? 'unknown') . "\n";
+                        }
                     }
 
-                    if (($processed + $failed) % $batchSize === 0) {
+                    if ($isCli && ($done % 10 === 0 || $done === $total)) {
+                        echo "Progress: {$done}/{$total} (created: " . ($processed - $skipped) . ", skipped: {$skipped}, failed: {$failed})\n";
+                        if (function_exists('ob_flush')) {
+                            @ob_flush();
+                        }
+                        flush();
+                    }
+
+                    if ($done % $batchSize === 0) {
                         GenerationJob::progress($jobId, $processed, $failed);
                     }
                 }
@@ -196,6 +216,7 @@ class LandingPageGenerator
             'total' => $total,
             'processed' => $processed,
             'failed' => $failed,
+            'skipped' => $skipped,
             'slugs' => array_slice($created, 0, 10),
         ];
     }
