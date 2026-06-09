@@ -55,7 +55,7 @@ class LandingPageGenerator
             'page_type' => $pageType,
             'slug' => $slug,
             'url_path' => $urlPath,
-            'meta_title' => mb_substr($content['metaTitle'], 0, 255),
+            'meta_title' => ge_trim_seo_title($content['metaTitle']),
             'meta_description' => $content['metaDesc'],
             'h1' => $content['h1'],
             'h2' => $content['h2'],

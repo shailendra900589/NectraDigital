@@ -122,7 +122,7 @@ class IntentKeywordEngine
         if ($title === '' || stripos($title, $primaryPhrase) === false) {
             $title = $primaryPhrase . ' | ' . $brand;
         }
-        return ge_trim_seo_title($title, $brand, 60);
+        return ge_trim_seo_title($title, $brand, 50, 55);
     }
 
     public static function optimizeMetaDescription(string $desc, array $service, array $city, ?array $industry = null): string

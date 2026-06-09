@@ -2,7 +2,7 @@
 require_once 'includes/seo-data.php';
 require_once 'includes/seo-components.php';
 
-$page_title = "Best SEO Company India | Nectra Digital";
+$page_title = "Best SEO & Digital Marketing in India | Nectra Digital";
 $page_desc = "Best SEO company in India — search engine optimization, AI automation, digital marketing & software development. 200+ projects. Free audit.";
 $page_keys = "SEO Company India, search engine optimization India, SEO services India, digital marketing agency India, AI automation, software development company India";
 

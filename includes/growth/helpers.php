@@ -119,33 +119,127 @@ function ge_default_ctas(): array {
     ];
 }
 
-/** Trim title to SEO audit range (~50–60 chars). */
-function ge_trim_seo_title(string $title, string $brand = 'Nectra Digital', int $max = 60): string
+/** Format title to strict SEO range (default 50–55 characters). */
+function ge_trim_seo_title(string $title, string $brand = 'Nectra Digital', int $min = 50, int $max = 55): string
 {
     $title = trim(preg_replace('/\s+/u', ' ', $title));
     if ($title === '') {
-        return $brand;
+        $title = 'Best SEO Company India';
     }
 
     $suffix = ' | ' . $brand;
     $hasBrand = stripos($title, $brand) !== false;
 
-    if (mb_strlen($title) <= $max) {
-        return $title;
-    }
-
-    if ($hasBrand && str_ends_with($title, $suffix)) {
-        $coreMax = $max - mb_strlen($suffix);
-        if ($coreMax >= 24) {
-            return ge_trim_at_word_boundary($title, $coreMax, false) . $suffix;
+    if (!$hasBrand && !str_ends_with($title, $suffix)) {
+        if (mb_strlen($title . $suffix) <= $max) {
+            $title .= $suffix;
+        } else {
+            $title = ge_trim_at_word_boundary($title, max(18, $max - mb_strlen($suffix)), false) . $suffix;
         }
     }
 
-    if (!$hasBrand && mb_strlen($title) + mb_strlen($suffix) <= $max) {
-        return $title . $suffix;
+    if (mb_strlen($title) > $max) {
+        if (str_ends_with($title, $suffix)) {
+            $core = rtrim(mb_substr($title, 0, -mb_strlen($suffix)), ' |');
+            $title = ge_trim_at_word_boundary($core, max(18, $max - mb_strlen($suffix)), false) . $suffix;
+        } else {
+            $title = ge_trim_at_word_boundary($title, $max, false);
+        }
     }
 
-    return ge_trim_at_word_boundary($title, $max, false);
+    if (mb_strlen($title) < $min) {
+        $title = ge_expand_seo_title($title, $brand, $min, $max);
+    }
+
+    if (mb_strlen($title) > $max) {
+        if (str_ends_with($title, $suffix)) {
+            $core = rtrim(mb_substr($title, 0, -mb_strlen($suffix)), ' |');
+            $title = ge_trim_at_word_boundary($core, max(18, $max - mb_strlen($suffix)), false) . $suffix;
+        } else {
+            $title = ge_trim_at_word_boundary($title, $max, false);
+        }
+    }
+
+    return $title;
+}
+
+function ge_expand_seo_title(string $title, string $brand, int $min, int $max): string
+{
+    $suffix = ' | ' . $brand;
+    $candidates = [$title];
+
+    if (str_ends_with($title, $suffix)) {
+        $core = rtrim(mb_substr($title, 0, -mb_strlen($suffix)), ' |');
+        $candidates = array_merge($candidates, ge_seo_title_variants($core));
+        foreach ($candidates as $coreVariant) {
+            $coreVariant = trim(preg_replace('/\s+/u', ' ', $coreVariant));
+            if (stripos($coreVariant, $brand) !== false) {
+                $try = $coreVariant;
+            } else {
+                $try = $coreVariant . $suffix;
+            }
+            if (mb_strlen($try) >= $min && mb_strlen($try) <= $max) {
+                return $try;
+            }
+            if (mb_strlen($try) > $max && stripos($coreVariant, $brand) === false) {
+                $trimmed = ge_trim_at_word_boundary($coreVariant, $max - mb_strlen($suffix), false) . $suffix;
+                if (mb_strlen($trimmed) >= $min && mb_strlen($trimmed) <= $max) {
+                    return $trimmed;
+                }
+            } elseif (mb_strlen($try) > $max) {
+                $trimmed = ge_trim_at_word_boundary($try, $max, false);
+                if (mb_strlen($trimmed) >= $min) {
+                    return $trimmed;
+                }
+            }
+        }
+    }
+
+    $candidates = array_merge($candidates, ge_seo_title_variants($title));
+    foreach ($candidates as $variant) {
+        $variant = trim(preg_replace('/\s+/u', ' ', $variant));
+        if (mb_strlen($variant) >= $min && mb_strlen($variant) <= $max) {
+            return $variant;
+        }
+    }
+
+    return $title;
+}
+
+function ge_seo_title_variants(string $core): array
+{
+    $variants = [
+        'Best SEO & Digital Marketing in India',
+        'Best SEO Company in India Agency',
+        'Top SEO Agency India · Digital Marketing',
+        'Best SEO Services Company India',
+        $core . ' India',
+        $core . ' Agency',
+        $core . ' Services',
+        $core . ' Co',
+    ];
+
+    if (preg_match('/\bin\s+([A-Za-z][A-Za-z\s]{1,24})$/u', $core, $m)) {
+        $city = trim($m[1]);
+        $variants = array_merge([
+            "Best SEO Company in {$city} India",
+            "Best SEO Agency in {$city} India",
+            "Top SEO Services in {$city} India",
+            "Best SEO in {$city} India Agency",
+        ], $variants);
+    }
+
+    if (stripos($core, 'contact') !== false) {
+        $variants[] = 'Contact Nectra Digital SEO India HQ';
+        $variants[] = 'Contact Nectra Digital · SEO India';
+    }
+
+    return array_unique($variants);
+}
+
+function ge_pad_seo_title(string $title, string $brand, int $min, int $max): string
+{
+    return ge_expand_seo_title($title, $brand, $min, $max);
 }
 
 /** Trim description to 120–160 chars for meta tags. */

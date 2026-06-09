@@ -14,9 +14,9 @@ if (!empty($canonical_url)) {
     $final_url = trim(SITE_URL . $clean_uri, '/'); 
 }
 
-$default_title = "Best SEO Company India | Nectra Digital";
+$default_title = "Best SEO & Digital Marketing in India | Nectra Digital";
 $default_desc  = "Best SEO company in India — search engine optimization, AI automation, digital marketing & software development. 200+ projects. Free audit.";
-$default_img   = SITE_URL . "/assets/images/logo.png"; 
+$default_img   = SITE_URL . "/assets/images/logo.png";
 
 $site_name_safe = defined('SITE_NAME') ? SITE_NAME : 'Nectra Digital';
 
@@ -33,9 +33,9 @@ if (isset($page_img) && !empty($page_img)) {
 }
 
 if (!empty($page_title)) {
-    $meta_title = ge_trim_seo_title(trim($page_title), $site_name_safe, 60);
+    $meta_title = ge_trim_seo_title(trim($page_title), $site_name_safe, 50, 55);
 } else {
-    $meta_title = $default_title;
+    $meta_title = ge_trim_seo_title($default_title, $site_name_safe, 50, 55);
 }
 
 $meta_desc = ge_trim_seo_description((!empty($page_desc)) ? $page_desc : $default_desc, 120, 160);
