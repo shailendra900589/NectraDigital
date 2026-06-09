@@ -2,6 +2,10 @@
 /**
  * Run database migrations (v1 + v2)
  */
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
+
+require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
 
 header('Content-Type: text/plain; charset=utf-8');
@@ -37,6 +41,9 @@ function run_sql_file(mysqli $conn, string $path): array {
     $out .= "Done: $ok ok, $fail failed\n\n";
     return ['ok' => $ok, 'fail' => $fail, 'msg' => $out];
 }
+
+echo "Nectra Digital — Database Migration\n";
+echo "DB connected OK\n\n";
 
 $r1 = run_sql_file($conn, __DIR__ . '/schema.sql');
 $r2 = run_sql_file($conn, __DIR__ . '/schema-v2.sql');

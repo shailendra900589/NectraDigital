@@ -9,9 +9,10 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Environment & secrets (use db.example.php for templates)
+# Environment & secrets (use db.local.php.example for templates)
 .env
 .env.local
+includes/db.local.php
 
 # Uploads (optional — remove if you want uploads in repo)
 assets/uploads/*
