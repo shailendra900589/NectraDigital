@@ -221,7 +221,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
     .card-img-top-wrapper { height: 200px; overflow: hidden; position: relative; }
     .card-img-top-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
     .hover-neon-border:hover img { transform: scale(1.05); }
-    .hover-neon-border:hover { border-color: #00f2ff !important; box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
+    .recent-intel-section { width: 100%; background: rgba(0, 0, 0, 0.35); }
+    .recent-intel-section .card-img-top-wrapper { height: 180px; }
+    @media (min-width: 992px) {
+        .recent-intel-section .card-img-top-wrapper { height: 200px; }
+    }
 </style>
 
 <main>
@@ -313,49 +317,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                         </a>
                         <a href="/contact" class="btn btn-nectra btn-sm">Get Free SEO Audit</a>
                     </div>
-                    
-                    <div class="mt-5 pt-5">
-                        <h3 class="h4 mb-4 border-start border-4 border-info ps-3 text-white">Recent Intel</h3>
-                        <div class="row g-4">
-                            <?php
-                            $pid = $post['id'];
-                            
-                            // NEW: Fetches the 8 most recent posts, entirely ignoring categories
-                            $sql = "SELECT * FROM blog_posts WHERE id != ? ORDER BY created_at DESC LIMIT 8";
-                            $stmt = $conn->prepare($sql);
-                            $stmt->bind_param("i", $pid);
-                            $stmt->execute();
-                            $result = $stmt->get_result();
-
-                            if($result->num_rows > 0) {
-                                while($row = $result->fetch_assoc()) {
-                                    $rel_title = htmlspecialchars_decode($row['title'], ENT_QUOTES);
-                                    $img = $row['image'];
-                                    if(strpos($img, 'http') === false) $img = SITE_URL . '/' . ltrim($img, '/');
-                                    if(empty($img)) $img = SITE_URL . '/assets/images/logo.png';
-
-                                    echo '
-                                    <div class="col-md-6">
-                                        <div class="card h-100 border-secondary bg-transparent overflow-hidden hover-neon-border" style="transition:0.3s;">
-                                            <div class="card-img-top-wrapper">
-                                                <img src="'.$img.'" class="img-fluid w-100 h-100 object-fit-cover" alt="'.$rel_title.'" style="border:none; border-radius:0;">
-                                            </div>
-                                            
-                                            <div class="card-body d-flex flex-column justify-content-center" style="background: rgba(20,20,20,0.6);">
-                                                <h5 class="card-title text-white mb-0 h6" style="line-height: 1.5; font-weight: 600;">
-                                                    <a href="/'.$row['slug'].'" class="text-white text-decoration-none stretched-link">'.$rel_title.'</a>
-                                                </h5>
-                                            </div>
-                                            
-                                        </div>
-                                    </div>';
-                                }
-                            } else {
-                                echo '<p class="text-white-50 small col-12">System Update: Additional intel not yet declassified.</p>';
-                            }
-                            ?>
-                        </div>
-                    </div>
 
                     <div class="mt-5 pt-5">
                         <h3 class="h4 mb-4 border-start border-4 border-info ps-3 text-white">Discussions</h3>
@@ -410,6 +371,54 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
 
             </div>
         </div>
+
+        <section class="recent-intel-section mt-5 py-5 border-top border-secondary">
+            <div class="container-fluid px-3 px-lg-4 px-xl-5">
+                <h3 class="h4 mb-4 border-start border-4 border-info ps-3 text-white">Recent Intel</h3>
+                <div class="row g-4">
+                    <?php
+                    $pid = $post['id'];
+                    $sql = "SELECT * FROM blog_posts WHERE id != ? ORDER BY created_at DESC LIMIT 9";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param("i", $pid);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            $rel_title = $row['title'];
+                            for ($d = 0; $d < 4; $d++) {
+                                $rel_title = html_entity_decode($rel_title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                            }
+                            $rel_title = htmlspecialchars($rel_title, ENT_QUOTES, 'UTF-8');
+                            $img = $row['image'];
+                            if (strpos($img, 'http') === false) {
+                                $img = SITE_URL . '/' . ltrim($img, '/');
+                            }
+                            if (empty($img)) {
+                                $img = SITE_URL . '/assets/images/logo.png';
+                            }
+                            echo '
+                            <div class="col-lg-4 col-md-6">
+                                <div class="card h-100 border-secondary bg-transparent overflow-hidden hover-neon-border" style="transition:0.3s;">
+                                    <div class="card-img-top-wrapper">
+                                        <img src="' . htmlspecialchars($img) . '" class="img-fluid w-100 h-100 object-fit-cover" alt="' . $rel_title . '" style="border:none; border-radius:0;">
+                                    </div>
+                                    <div class="card-body d-flex flex-column justify-content-center" style="background: rgba(20,20,20,0.6);">
+                                        <h5 class="card-title text-white mb-0 h6" style="line-height: 1.5; font-weight: 600;">
+                                            <a href="/' . htmlspecialchars($row['slug']) . '" class="text-white text-decoration-none stretched-link">' . $rel_title . '</a>
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>';
+                        }
+                    } else {
+                        echo '<p class="text-white-50 small col-12">System Update: Additional intel not yet declassified.</p>';
+                    }
+                    ?>
+                </div>
+            </div>
+        </section>
     </article>
 </main>
 
