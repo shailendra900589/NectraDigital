@@ -38,7 +38,7 @@ class SitemapEngine
             $res = @$conn->query("SELECT slug, created_at FROM blog_posts ORDER BY created_at DESC");
             if ($res) {
                 while ($row = $res->fetch_assoc()) {
-                    $xml .= self::urlEntry($base . '/' . $row['slug'], date('c', strtotime($row['created_at'])), 'monthly', '0.75');
+                    $xml .= self::urlEntry($base . '/' . $row['slug'], date('c', strtotime($row['created_at'])), 'weekly', '0.8', false);
                 }
             }
         }
@@ -60,10 +60,10 @@ class SitemapEngine
         return $xml;
     }
 
-    private static function urlEntry(string $loc, string $lastmod, string $freq, string $priority): string
+    private static function urlEntry(string $loc, string $lastmod, string $freq, string $priority, bool $withHreflang = true): string
     {
         $entry = "  <url><loc>" . htmlspecialchars($loc) . "</loc><lastmod>{$lastmod}</lastmod><changefreq>{$freq}</changefreq><priority>{$priority}</priority>";
-        if (function_exists('nectra_supported_languages')) {
+        if ($withHreflang && function_exists('nectra_supported_languages')) {
             foreach (nectra_supported_languages() as $code => $meta) {
                 $href = nectra_lang_url($loc, $code);
                 $hl = htmlspecialchars($meta['hreflang'] ?? $code);

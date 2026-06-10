@@ -88,6 +88,16 @@ if (isset($_GET['toggle_orphan'])) {
     }
     header("Location: dashboard.php?page=blog&msg=orphan_toggled"); exit;
 }
+if (isset($_GET['index_post'])) {
+    $oid = (int)$_GET['index_post'];
+    if ($oid > 0) {
+        $res = $conn->query("SELECT slug, created_at FROM blog_posts WHERE id = {$oid} LIMIT 1");
+        if ($res && ($row = $res->fetch_assoc())) {
+            blog_signal_post_indexed($row['slug'], $row['created_at']);
+        }
+    }
+    header("Location: dashboard.php?page=blog&msg=index_sent"); exit;
+}
 if (isset($_GET['del_ad'])) {
     $conn->query("DELETE FROM ads WHERE id=".intval($_GET['del_ad']));
     header("Location: dashboard.php?page=ads&msg=ad_deleted"); exit;
@@ -353,6 +363,7 @@ if (isset($_POST['update_hire_status'])) {
               </div>';
         if(isset($_GET['msg']) && $_GET['msg'] == 'deleted') echo "<div class='alert alert-danger'>Protocol Deleted.</div>";
         if(isset($_GET['msg']) && $_GET['msg'] == 'orphan_toggled') echo "<div class='alert alert-info'>Visibility updated. Orphan posts stay live + indexed but hidden from site listings.</div>";
+        if(isset($_GET['msg']) && $_GET['msg'] == 'index_sent') echo "<div class='alert alert-success'>URL sent to Bing via IndexNow + Bing API. Re-check Bing Webmaster in a few hours.</div>";
 
         $sql = "SELECT * FROM blog_posts ORDER BY created_at DESC";
         $result = $conn->query($sql);
@@ -368,7 +379,6 @@ if (isset($_POST['update_hire_status'])) {
             $toggleIcon = $isOrphan ? 'fa-eye' : 'fa-eye-slash';
             $postUrl = $siteBase . '/' . ltrim((string)($row['slug'] ?? ''), '/');
             $postUrlAttr = htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8');
-            $postUrlJs = htmlspecialchars(json_encode($postUrl), ENT_NOQUOTES, 'UTF-8');
             echo "<tr>
                     <td class='text-white-50 small'>".date('M d', strtotime($row['created_at']))."</td>
                     <td class='fw-bold text-white'><a href='{$postUrlAttr}' target='_blank' rel='noopener' class='text-white text-decoration-none'>" . nectra_display_text($row['title']) . " <i class='fas fa-external-link-alt small text-info'></i></a></td>
@@ -381,6 +391,7 @@ if (isset($_POST['update_hire_status'])) {
                         </div>
                     </td>
                     <td>
+                        <a href='?page=blog&index_post={$row['id']}' class='btn btn-sm btn-outline-success me-2' title='Send to Bing (IndexNow + API)'><i class='fab fa-microsoft'></i></a>
                         <a href='?page=blog&toggle_orphan={$row['id']}' class='btn btn-sm btn-outline-info me-2' title='" . htmlspecialchars($toggleTitle) . "' onclick='return confirm(\"" . ($isOrphan ? 'Show this post on Insights and site listings?' : 'Make orphan? Post stays live + indexed but hidden from all listings.') . "\")'><i class='fas {$toggleIcon}'></i></a>
                         <a href='edit_post.php?id={$row['id']}' class='btn btn-sm btn-outline-warning me-2'><i class='fas fa-pen'></i></a>
                         <a href='?page=blog&delete_post={$row['id']}' class='btn btn-sm btn-outline-danger' onclick='return confirm(\"Purge this protocol?\")'><i class='fas fa-trash'></i></a>

@@ -108,6 +108,11 @@ if (!empty($display_img) && strpos($display_img, 'http') === false) {
 }
 $page_img = $display_img;
 $og_type = 'article';
+$canonical_url = rtrim(SITE_URL, '/') . '/' . $post['slug'];
+
+if (!headers_sent()) {
+    header('X-Robots-Tag: index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+}
 
 $post_date = date('c', strtotime($post['created_at']));
 $post_modified = !empty($post['updated_at']) ? date('c', strtotime($post['updated_at'])) : $post_date;

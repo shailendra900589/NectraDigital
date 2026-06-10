@@ -40,7 +40,7 @@ if (!function_exists('blog_is_orphan')) {
 }
 
 if (!function_exists('blog_signal_post_indexed')) {
-    /** Queue URL for indexing after publish/update (never blocks admin save). */
+    /** Notify Bing/IndexNow immediately after publish (queue is backup only). */
     function blog_signal_post_indexed(string $slug, ?string $publishAt = null): void
     {
         $slug = trim($slug);
@@ -64,12 +64,30 @@ if (!function_exists('blog_signal_post_indexed')) {
 
             require_once $bootstrap;
 
-            if (!function_exists('ge_table_exists') || !ge_table_exists('ge_indexing_queue')) {
-                return;
+            $url = rtrim(SITE_URL, '/') . '/' . $slug;
+            $urls = [$url];
+
+            try {
+                \Growth\Engines\IndexingEngine::submitIndexNow($urls, false);
+            } catch (\Throwable $e) {
+                error_log('blog_signal IndexNow: ' . $e->getMessage());
             }
 
-            $url = rtrim(SITE_URL, '/') . '/' . $slug;
-            \Growth\Engines\DiscoveryEngine::enqueueUrl($url, 0, false);
+            try {
+                \Growth\Engines\IndexingEngine::submitBingWebmasterUrls($urls, false);
+            } catch (\Throwable $e) {
+                error_log('blog_signal Bing API: ' . $e->getMessage());
+            }
+
+            try {
+                \Growth\Engines\IndexingEngine::pingSitemapLegacy();
+            } catch (\Throwable $e) {
+                error_log('blog_signal sitemap ping: ' . $e->getMessage());
+            }
+
+            if (function_exists('ge_table_exists') && ge_table_exists('ge_indexing_queue')) {
+                \Growth\Engines\DiscoveryEngine::enqueueUrl($url, 0, false);
+            }
         } catch (\Throwable $e) {
             error_log('blog_signal_post_indexed: ' . $e->getMessage());
         }
