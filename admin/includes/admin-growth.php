@@ -2,7 +2,32 @@
 /**
  * Growth Engine helpers for legacy NECTRAOS dashboard.
  */
-require_once __DIR__ . '/../../includes/growth/bootstrap.php';
+$geAdminBootstrapOk = false;
+try {
+    require_once __DIR__ . '/../../includes/growth/bootstrap.php';
+    $geAdminBootstrapOk = defined('GE_BOOTSTRAP_LOADED');
+} catch (Throwable $e) {
+    error_log('admin-growth bootstrap: ' . $e->getMessage());
+}
+
+if (!$geAdminBootstrapOk) {
+    if (!function_exists('admin_growth_ready')) {
+        function admin_growth_ready(): bool { return false; }
+        function admin_growth_stats(): array {
+            return ['ready' => false, 'services' => 0, 'cities' => 0, 'industries' => 0, 'keywords' => 0, 'pages' => 0, 'leads_crm' => 0, 'potential' => 0, 'indexed' => 0, 'pending_index' => 0, 'submitted_index' => 0, 'failed_index' => 0, 'queue_pending' => 0, 'error' => 'Growth bootstrap failed'];
+        }
+        function admin_handle_growth_post(string $page): ?string { return null; }
+        function admin_growth_cities(): array { return []; }
+        function admin_recent_jobs(int $limit = 5): array { return []; }
+        function admin_index_queue(int $limit = 20): array { return []; }
+        function admin_indexnow_info(): array { return ['key' => '', 'key_url' => '', 'host' => '']; }
+        function admin_queue_path_label(?string $url): string { return trim((string)$url) ?: '—'; }
+        function admin_city_hub_urls(): array { return []; }
+        function admin_landing_page_urls(int $limit = 5000): array { return []; }
+        function admin_all_indexable_urls(): array { return []; }
+    }
+    return;
+}
 
 use Growth\Models\Service;
 use Growth\Models\City;

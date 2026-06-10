@@ -73,6 +73,9 @@ class LandingPage extends BaseModel
                 $params[] = (int)$filters[$f];
             }
         }
+        if (!empty($filters['index_status']) && !self::columnExists('index_status')) {
+            unset($filters['index_status']);
+        }
         if (!empty($filters['index_status'])) {
             $where[] = 'lp.index_status = ?';
             $types .= 's';

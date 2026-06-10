@@ -102,7 +102,7 @@ ge_admin_layout_start('Settings', 'settings');
             <div class="col-12"><hr><h2 class="h6">Automation</h2></div>
             <div class="col-md-6"><label class="form-label">Auto-update Sitemap</label><select name="auto_sitemap" class="form-select"><option value="1" <?php echo ge_setting('auto_sitemap')==='1'?'selected':''; ?>>Enabled</option><option value="0">Disabled</option></select></div>
             <div class="col-md-6"><label class="form-label">Auto Index Queue on Generate</label><select name="auto_index_queue" class="form-select"><option value="1" <?php echo ge_setting('auto_index_queue')==='1'?'selected':''; ?>>Enabled</option><option value="0">Disabled</option></select></div>
-            <div class="col-12"><button type="submit" class="btn btn-ge-primary">Save Settings</button> <a href="../dashboard.php?page=seo" class="btn btn-outline-secondary ms-2">Open Indexing Panel</a></div>
+            <div class="col-12"><button type="submit" class="btn btn-ge-primary">Save Settings</button> <a href="indexing.php" class="btn btn-outline-secondary ms-2">Open Indexing Panel</a></div>
         </div>
     </form>
 </div>

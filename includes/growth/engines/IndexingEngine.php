@@ -202,6 +202,7 @@ class IndexingEngine
             'ok' => $ok,
             'urls' => count($urls),
             'urls_submitted' => $submitted,
+            'message' => $ok ? 'Bing API accepted URLs' : ('Bing API HTTP ' . ($last['code'] ?? 0) . ': ' . substr((string)($last['body'] ?? ''), 0, 200)),
             'engines' => ['bing_webmaster_api' => $last],
         ];
     }

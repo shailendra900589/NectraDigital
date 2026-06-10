@@ -1,22 +1,55 @@
 <?php
 session_start();
 if (!isset($_SESSION['admin_logged_in'])) { header("Location: login.php"); exit; }
-include '../includes/db.php';
-require_once '../includes/db.php';
-require_once '../includes/blog_orphan.php';
+
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/blog_orphan.php';
 try {
     blog_orphan_ensure_schema($conn);
 } catch (Throwable $e) {
     error_log('blog_orphan schema: ' . $e->getMessage());
 }
 
+/** Auto Indexing lives in Growth Engine (stable init + error handling). */
+$pageReq = isset($_GET['page']) ? (string)$_GET['page'] : 'home';
+if ($pageReq === 'seo') {
+    if (is_file(__DIR__ . '/includes/admin-growth.php')) {
+        require_once __DIR__ . '/includes/admin-growth.php';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['growth_action'])) {
+            $seoMsg = admin_handle_growth_post('seo');
+            if ($seoMsg !== null && $seoMsg !== '') {
+                $_SESSION['ge_flash'] = ['type' => 'success', 'message' => $seoMsg];
+            }
+        }
+    }
+    header('Location: growth/indexing.php');
+    exit;
+}
+
 $growthMsg = null;
-$growthStats = ['ready' => false];
+$growthStats = [
+    'ready' => false,
+    'services' => 0,
+    'cities' => 0,
+    'industries' => 0,
+    'keywords' => 0,
+    'pages' => 0,
+    'indexed' => 0,
+    'pending_index' => 0,
+    'submitted_index' => 0,
+    'failed_index' => 0,
+    'queue_pending' => 0,
+];
 if (is_file(__DIR__ . '/includes/admin-growth.php')) {
-    require_once __DIR__ . '/includes/admin-growth.php';
-    $pageForPost = $_GET['page'] ?? 'home';
-    $growthMsg = admin_handle_growth_post($pageForPost);
-    $growthStats = admin_growth_stats();
+    try {
+        require_once __DIR__ . '/includes/admin-growth.php';
+        $pageForPost = $_GET['page'] ?? 'home';
+        $growthMsg = admin_handle_growth_post($pageForPost);
+        $growthStats = admin_growth_stats();
+    } catch (Throwable $e) {
+        error_log('admin dashboard growth: ' . $e->getMessage());
+        $growthStats['error'] = $e->getMessage();
+    }
 }
 
 // --- HELPER: IMAGE UPLOAD FUNCTION ---
@@ -148,7 +181,7 @@ if (isset($_POST['update_hire_status'])) {
 
     <div class="section-title">Growth & SEO</div>
     <a href="?page=cities" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='cities')?'active':''; ?>"><i class="fas fa-map-marker-alt me-2"></i> Cities</a>
-    <a href="?page=seo" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='seo')?'active':''; ?>"><i class="fas fa-search-plus me-2"></i> Auto Indexing</a>
+    <a href="growth/indexing.php" class="nav-link"><i class="fas fa-search-plus me-2"></i> Auto Indexing</a>
     <a href="export-urls.php?type=all" class="nav-link"><i class="fas fa-download me-2"></i> Export URLs</a>
     <a href="growth/services.php" class="nav-link"><i class="fas fa-cogs me-2"></i> Services</a>
     <a href="growth/generate.php" class="nav-link"><i class="fas fa-magic me-2"></i> Generate Pages</a>
@@ -211,11 +244,11 @@ if (isset($_POST['update_hire_status'])) {
         echo '<div class="d-flex justify-content-between mb-2"><span class="text-white-50">Indexed</span><strong class="text-success">'.number_format($growthStats['indexed']).'</strong></div>';
         echo '<div class="d-flex justify-content-between mb-2"><span class="text-white-50">Pending</span><strong class="text-warning">'.number_format($growthStats['pending_index']).'</strong></div>';
         echo '<div class="d-flex justify-content-between mb-3"><span class="text-white-50">Queue</span><strong>'.number_format($growthStats['queue_pending']).'</strong></div>';
-        echo '<form method="POST" action="?page=seo" class="d-grid gap-2"><input type="hidden" name="growth_action" value="submit_all_indexnow">';
+        echo '<form method="POST" action="growth/indexing.php" class="d-grid gap-2"><input type="hidden" name="action" value="submit_all_indexnow">';
         echo '<button type="submit" class="btn btn-warning text-dark"><i class="fas fa-paper-plane"></i> Submit ALL URLs to IndexNow</button></form>';
-        echo '<form method="POST" action="?page=seo" class="d-grid gap-2 mt-2"><input type="hidden" name="growth_action" value="queue_and_process">';
+        echo '<form method="POST" action="growth/indexing.php" class="d-grid gap-2 mt-2"><input type="hidden" name="action" value="queue_and_process">';
         echo '<button type="submit" class="btn btn-success"><i class="fas fa-bolt"></i> Queue & Submit (IndexNow + Bing + DDG)</button></form>';
-        echo '<p class="small text-muted mt-2 mb-0"><a href="?page=seo">Full indexing panel →</a> · <a href="export-urls.php?type=all">Download all URLs</a></p></div></div>';
+        echo '<p class="small text-muted mt-2 mb-0"><a href="growth/indexing.php">Full indexing panel →</a> · <a href="export-urls.php?type=all">Download all URLs</a></p></div></div>';
         echo '</div>';
 
         if ($growthStats['ready']) {
@@ -303,72 +336,6 @@ if (isset($_POST['update_hire_status'])) {
             }
             echo '</tbody></table></div></div>';
         }
-    }
-
-    // ==========================================
-    // AUTO INDEXING (IndexNow, Bing, DuckDuckGo, Google)
-    // ==========================================
-    elseif ($page == 'seo') {
-        $idxInfo = ['key' => '', 'key_url' => '', 'host' => ''];
-        $queue = [];
-        $seoError = null;
-        try {
-            if (function_exists('admin_indexnow_info')) {
-                $idxInfo = admin_indexnow_info();
-            }
-            if (function_exists('admin_index_queue')) {
-                $queue = admin_index_queue(15);
-            }
-            if (!is_array($idxInfo)) {
-                $idxInfo = ['key' => '', 'key_url' => '', 'host' => ''];
-            }
-            if (!is_array($queue)) {
-                $queue = [];
-            }
-        } catch (Throwable $e) {
-            $seoError = $e->getMessage();
-            error_log('dashboard seo page: ' . $e->getMessage());
-        }
-
-        echo '<h2 class="mb-4"><i class="fas fa-search-plus text-info"></i> Auto Indexing Engine</h2>';
-        if ($seoError) {
-            echo '<div class="alert alert-danger">Indexing panel error: '.htmlspecialchars($seoError).'. Check Growth Settings or run database/migrate.php.</div>';
-        }
-
-        echo '<div class="row g-3 mb-4">';
-        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val text-success">'.number_format($growthStats['indexed']).'</div><div class="stat-lbl">Indexed</div></div></div>';
-        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val text-warning">'.number_format($growthStats['pending_index']).'</div><div class="stat-lbl">Pending</div></div></div>';
-        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val">'.number_format($growthStats['submitted_index']).'</div><div class="stat-lbl">Submitted</div></div></div>';
-        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val text-danger">'.number_format($growthStats['failed_index']).'</div><div class="stat-lbl">Failed</div></div></div>';
-        echo '</div>';
-
-        echo '<div class="row g-4"><div class="col-lg-5"><div class="card p-4"><h5 class="text-info">Indexing Actions</h5>';
-        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="submit_all_indexnow"><button class="btn btn-warning text-dark"><i class="fas fa-paper-plane"></i> Submit ALL URLs to IndexNow</button></form>';
-        echo '<p class="small text-muted mb-3">Sends all '.number_format($growthStats['pages']).'+ landing pages + city hubs + core pages in one batch.</p>';
-        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="queue_pending"><button class="btn btn-info">Queue Pending Only</button></form>';
-        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="process_queue"><button class="btn btn-success">Process Full Queue → IndexNow</button></form>';
-        echo '<form method="POST" class="d-grid gap-2 mb-2"><input type="hidden" name="growth_action" value="ping_sitemap"><button class="btn btn-outline-light">Ping Sitemap (Google + Bing)</button></form>';
-        echo '<form method="POST" class="d-grid gap-2"><input type="hidden" name="growth_action" value="queue_and_process"><button class="btn btn-outline-success">Queue + Submit All (One Click)</button></form>';
-        echo '<hr><p class="small text-muted mb-1"><a href="export-urls.php?type=all" class="text-info"><i class="fas fa-download"></i> Download all URLs for Google</a></p>';
-        echo '<p class="small text-muted mb-1"><strong>Search engines:</strong> IndexNow API, Bing, Yandex, DuckDuckGo (via IndexNow)</p>';
-        echo '<p class="small text-muted mb-0">Cron: <code>php cron/process-indexing.php</code> (auto batch)</p></div></div>';
-
-        echo '<div class="col-lg-7"><div class="card p-4 mb-3"><h5 class="text-info">IndexNow Configuration</h5>';
-        echo '<p class="small text-white-50 mb-1">API Key: <code>'.htmlspecialchars($idxInfo['key']).'</code></p>';
-        echo '<p class="small text-white-50 mb-1">Key file: <a href="'.htmlspecialchars($idxInfo['key_url']).'" target="_blank" class="text-info">'.htmlspecialchars($idxInfo['key_url']).'</a></p>';
-        echo '<p class="small text-white-50 mb-0">Sitemap: <code>'.(defined('SITE_URL')?SITE_URL:'').'/sitemap.xml</code> · <a href="growth/settings.php">Edit settings</a></p></div>';
-
-        echo '<div class="card p-3"><h6>Recent Index Queue</h6><div class="table-responsive"><table class="table table-dark table-sm mb-0"><thead><tr><th>URL</th><th>Status</th><th>Date</th></tr></thead><tbody>';
-        foreach ($queue as $q) {
-            $pathLabel = function_exists('admin_queue_path_label')
-                ? admin_queue_path_label($q['url'] ?? '')
-                : ($q['url'] ?? '—');
-            $status = htmlspecialchars((string)($q['status'] ?? 'unknown'));
-            $created = htmlspecialchars((string)($q['created_at'] ?? ''));
-            echo '<tr><td class="small"><code>'.htmlspecialchars($pathLabel).'</code></td><td>'.$status.'</td><td class="small text-muted">'.$created.'</td></tr>';
-        }
-        if (empty($queue)) echo '<tr><td colspan="3" class="text-muted text-center">No queue items yet</td></tr>';
-        echo '</tbody></table></div></div></div></div>';
     }
 
     // ==========================================
