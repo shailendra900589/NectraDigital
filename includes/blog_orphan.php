@@ -88,6 +88,11 @@ if (!function_exists('blog_signal_post_indexed')) {
             if (function_exists('ge_table_exists') && ge_table_exists('ge_indexing_queue')) {
                 \Growth\Engines\DiscoveryEngine::enqueueUrl($url, 0, false);
             }
+
+            if (is_file(__DIR__ . '/blog_static.php')) {
+                require_once __DIR__ . '/blog_static.php';
+                blog_static_publish($slug);
+            }
         } catch (\Throwable $e) {
             error_log('blog_signal_post_indexed: ' . $e->getMessage());
         }

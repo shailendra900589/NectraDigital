@@ -9,6 +9,8 @@ if (is_file(__DIR__ . '/config.local.php')) {
     require __DIR__ . '/config.local.php';
 }
 
+require_once __DIR__ . '/text-utils.php';
+
 if (php_sapi_name() !== 'cli') {
     header('X-Frame-Options: DENY');
     header('X-XSS-Protection: 1; mode=block');
@@ -17,10 +19,10 @@ if (php_sapi_name() !== 'cli') {
     header('Referrer-Policy: no-referrer-when-downgrade');
 }
 
-if (php_sapi_name() !== 'cli' && session_status() === PHP_SESSION_NONE) {
+if (php_sapi_name() !== 'cli' && session_status() === PHP_SESSION_NONE && !nectra_is_search_bot()) {
     session_start();
 }
-if (php_sapi_name() !== 'cli' && empty($_SESSION['csrf_token'])) {
+if (php_sapi_name() !== 'cli' && !nectra_is_search_bot() && empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 

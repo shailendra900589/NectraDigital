@@ -15,7 +15,15 @@ RewriteBase /
 
 # Allow verified search-engine crawlers (prevents Hostinger hCDN/WAF false 403 blocks)
 <IfModule mod_setenvif.c>
-  SetEnvIfNoCase User-Agent "bingbot|BingPreview|msnbot|Googlebot|Googlebot-Image|AdsBot-Google|Mediapartners-Google|Slurp|DuckDuckBot|YandexBot|Applebot|facebookexternalhit|Twitterbot|LinkedInBot|SemrushBot|AhrefsBot|PetalBot|Bytespider" search_engine_bot=1
+  SetEnvIfNoCase User-Agent "bingbot|BingPreview|msnbot|Googlebot|Google-InspectionTool|Googlebot-Image|AdsBot-Google|Mediapartners-Google|Slurp|DuckDuckBot|YandexBot|Applebot|facebookexternalhit|Twitterbot|LinkedInBot|SemrushBot|AhrefsBot|PetalBot|Bytespider" search_engine_bot=1
+  SetEnvIf Remote_Addr "^40\.77\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^157\.5[56]\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^207\.46\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^13\.6[67]\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^52\.167\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^66\.249\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^64\.233\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^72\.14\." search_engine_bot=1
 </IfModule>
 
 # ========================================================
@@ -54,6 +62,14 @@ RewriteRule ^(.*)$ https://www.nectradigital.com/$1 [L,R=301]
 # ========================================================
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)/$ /$1 [L,R=301]
+
+# ========================================================
+# 5B. CRAWLER STATIC BLOG SNAPSHOTS (bypass Hostinger hCDN/WAF 403)
+# ========================================================
+RewriteCond %{ENV:search_engine_bot} =1 [OR]
+RewriteCond %{HTTP_USER_AGENT} (bingbot|BingPreview|msnbot|Googlebot|Google-InspectionTool|Googlebot-Image|AdsBot-Google|Mediapartners-Google|Slurp|DuckDuckBot|YandexBot|Applebot|SemrushBot|AhrefsBot|PetalBot|Bytespider) [NC]
+RewriteCond %{DOCUMENT_ROOT}/storage/blog-static/$1.html -f
+RewriteRule ^([a-zA-Z0-9-]+)$ storage/blog-static/$1.html [L]
 
 # ========================================================
 # 6. PRIORITY 1: REAL PAGES (Clean URLs)

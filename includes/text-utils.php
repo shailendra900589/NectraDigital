@@ -33,3 +33,23 @@ function sanitize_db_text(?string $data): string
 {
     return stripslashes(nectra_decode_entities(trim((string) $data)));
 }
+
+function nectra_is_search_bot(): bool
+{
+    $ua = strtolower((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
+    if ($ua === '') {
+        return false;
+    }
+    foreach ([
+        'bingbot', 'bingpreview', 'msnbot', 'googlebot', 'google-inspectiontool',
+        'googlebot-image', 'adsbot-google', 'mediapartners-google', 'slurp',
+        'duckduckbot', 'yandexbot', 'applebot', 'baiduspider', 'facebot',
+        'facebookexternalhit', 'twitterbot', 'linkedinbot', 'semrushbot',
+        'ahrefsbot', 'petalbot', 'bytespider',
+    ] as $bot) {
+        if (strpos($ua, $bot) !== false) {
+            return true;
+        }
+    }
+    return false;
+}

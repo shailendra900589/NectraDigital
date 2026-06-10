@@ -74,7 +74,13 @@ function upload_ad_image($file) {
 
 // --- GLOBAL ACTIONS ---
 if (isset($_GET['delete_post'])) {
-    $conn->query("DELETE FROM blog_posts WHERE id=".intval($_GET['delete_post']));
+    $delId = intval($_GET['delete_post']);
+    $res = $conn->query("SELECT slug FROM blog_posts WHERE id={$delId} LIMIT 1");
+    if ($res && ($row = $res->fetch_assoc()) && !empty($row['slug'])) {
+        require_once __DIR__ . '/../includes/blog_static.php';
+        blog_static_delete((string)$row['slug']);
+    }
+    $conn->query("DELETE FROM blog_posts WHERE id={$delId}");
     header("Location: dashboard.php?page=blog&msg=deleted"); exit;
 }
 if (isset($_GET['toggle_orphan'])) {
@@ -97,6 +103,11 @@ if (isset($_GET['index_post'])) {
         }
     }
     header("Location: dashboard.php?page=blog&msg=index_sent"); exit;
+}
+if (isset($_GET['rebuild_blog_static'])) {
+    require_once __DIR__ . '/../includes/blog_static.php';
+    $built = blog_static_rebuild_all($conn);
+    header("Location: dashboard.php?page=blog&msg=static_rebuilt&count={$built}"); exit;
 }
 if (isset($_GET['del_ad'])) {
     $conn->query("DELETE FROM ads WHERE id=".intval($_GET['del_ad']));
@@ -359,11 +370,15 @@ if (isset($_POST['update_hire_status'])) {
 
         echo '<div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="fas fa-layer-group text-info"></i> Intel Management</h2>
+                <div class="d-flex gap-2">
+                <a href="?page=blog&rebuild_blog_static=1" class="btn btn-outline-light btn-sm" title="Rebuild static HTML for Bing/Google crawlers">Rebuild Crawler Snapshots</a>
                 <a href="create_post.php" class="btn btn-info"><i class="fas fa-plus"></i> New Protocol</a>
+                </div>
               </div>';
         if(isset($_GET['msg']) && $_GET['msg'] == 'deleted') echo "<div class='alert alert-danger'>Protocol Deleted.</div>";
         if(isset($_GET['msg']) && $_GET['msg'] == 'orphan_toggled') echo "<div class='alert alert-info'>Visibility updated. Orphan posts stay live + indexed but hidden from site listings.</div>";
         if(isset($_GET['msg']) && $_GET['msg'] == 'index_sent') echo "<div class='alert alert-success'>URL sent to Bing via IndexNow + Bing API. Re-check Bing Webmaster in a few hours.</div>";
+        if(isset($_GET['msg']) && $_GET['msg'] == 'static_rebuilt') echo "<div class='alert alert-success'>Crawler snapshots rebuilt for " . intval($_GET['count'] ?? 0) . " blog post(s). Test again in Bing URL Inspection.</div>";
 
         $sql = "SELECT * FROM blog_posts ORDER BY created_at DESC";
         $result = $conn->query($sql);
