@@ -40,7 +40,7 @@ if (!function_exists('blog_is_orphan')) {
 }
 
 if (!function_exists('blog_signal_post_indexed')) {
-    /** Queue IndexNow + Bing URL submission after publish/update. */
+    /** Queue URL for indexing after publish/update (never blocks admin save). */
     function blog_signal_post_indexed(string $slug, ?string $publishAt = null): void
     {
         $slug = trim($slug);
@@ -48,24 +48,28 @@ if (!function_exists('blog_signal_post_indexed')) {
             return;
         }
 
-        if ($publishAt !== null && strtotime($publishAt) > time()) {
+        if ($publishAt !== null && strtotime(str_replace('T', ' ', $publishAt)) > time()) {
             return;
         }
 
-        if (!defined('SITE_URL')) {
-            require_once __DIR__ . '/config.php';
-        }
-
-        $bootstrap = __DIR__ . '/growth/bootstrap.php';
-        if (!is_file($bootstrap)) {
-            return;
-        }
-
-        require_once $bootstrap;
-
-        $url = rtrim(SITE_URL, '/') . '/' . $slug;
         try {
-            \Growth\Engines\DiscoveryEngine::enqueueUrl($url);
+            if (!defined('SITE_URL')) {
+                require_once __DIR__ . '/config.php';
+            }
+
+            $bootstrap = __DIR__ . '/growth/bootstrap.php';
+            if (!is_file($bootstrap)) {
+                return;
+            }
+
+            require_once $bootstrap;
+
+            if (!function_exists('ge_table_exists') || !ge_table_exists('ge_indexing_queue')) {
+                return;
+            }
+
+            $url = rtrim(SITE_URL, '/') . '/' . $slug;
+            \Growth\Engines\DiscoveryEngine::enqueueUrl($url, 0, false);
         } catch (\Throwable $e) {
             error_log('blog_signal_post_indexed: ' . $e->getMessage());
         }

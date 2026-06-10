@@ -7,69 +7,80 @@ require_once '../includes/blog_orphan.php';
 require_once '../includes/blog_faq.php';
 require_once '../includes/blog_schema.php';
 
-blog_schema_ensure($conn);
-
 date_default_timezone_set('Asia/Kolkata');
 
 function upload_image($file) {
     $target_dir = "../assets/uploads/";
     if ($file["size"] > 512000) return ["error" => "Error: File too large (Max 500KB)."];
     $allowed_types = ['image/webp', 'image/svg+xml'];
-    if (!in_array(mime_content_type($file["tmp_name"]), $allowed_types)) return ["error" => "Error: Only WEBP or SVG."];
+    $mime = blog_admin_mime_type($file["tmp_name"]);
+    if ($mime === null || !in_array($mime, $allowed_types, true)) {
+        return ["error" => "Error: Only WEBP or SVG."];
+    }
     $new_name = uniqid("blog_", true) . "." . pathinfo($file["name"], PATHINFO_EXTENSION);
-    if (move_uploaded_file($file["tmp_name"], $target_dir . $new_name)) return ["success" => "assets/uploads/" . $new_name];
+    if (move_uploaded_file($file["tmp_name"], $target_dir . $new_name)) {
+        return ["success" => "assets/uploads/" . $new_name];
+    }
     return ["error" => "Upload failed."];
 }
 
 $error = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $title = sanitize_db_text($_POST['title']);
-    $cat = sanitize_db_text($_POST['category']);
-    $content = $_POST['content'];
-    $input_slug = sanitize_db_text($_POST['slug']);
-    $meta_desc = sanitize_db_text($_POST['meta_description']);
-    $is_orphan = !empty($_POST['is_orphan']) ? 1 : 0;
-    $faq_json = blog_faq_encode(blog_faq_parse_request());
-    $img_path = "";
-    $scheduled_time = !empty($_POST['scheduled_time']) ? clean_input($_POST['scheduled_time']) : date('Y-m-d H:i:s');
-    $raw_slug = !empty($input_slug) ? $input_slug : $title;
-    $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $raw_slug), '-'));
+    try {
+        $title = sanitize_db_text($_POST['title'] ?? '');
+        $cat = sanitize_db_text($_POST['category'] ?? '');
+        $content = $_POST['content'] ?? '';
+        $input_slug = sanitize_db_text($_POST['slug'] ?? '');
+        $meta_desc = sanitize_db_text($_POST['meta_description'] ?? '');
+        $is_orphan = !empty($_POST['is_orphan']) ? 1 : 0;
+        $faq_json = blog_faq_encode(blog_faq_parse_request());
+        $img_path = "";
+        $scheduled_time = blog_normalize_datetime(!empty($_POST['scheduled_time']) ? clean_input($_POST['scheduled_time']) : null);
+        $raw_slug = !empty($input_slug) ? $input_slug : $title;
+        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $raw_slug), '-'));
 
-    if ($slug === '') {
-        $error = 'Invalid slug — please enter a title or slug.';
-    }
-
-    if ($error === null && isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-        $upload = upload_image($_FILES['image']);
-        if (isset($upload['error'])) {
-            $error = $upload['error'];
-        } else {
-            $img_path = $upload['success'];
+        if ($slug === '') {
+            $error = 'Invalid slug — please enter a title or slug.';
         }
-    } elseif ($error === null) {
-        $error = "Featured Image is required.";
-    }
 
-    if ($error === null) {
-        $result = blog_insert_post($conn, [
-            'title' => $title,
-            'category' => $cat,
-            'image' => $img_path,
-            'content' => $content,
-            'slug' => $slug,
-            'meta_description' => $meta_desc,
-            'faq_json' => $faq_json,
-            'created_at' => $scheduled_time,
-            'is_orphan' => $is_orphan,
-        ]);
-
-        if (!empty($result['ok'])) {
-            blog_signal_post_indexed($slug, $scheduled_time);
-            header("Location: dashboard.php?page=blog");
-            exit;
+        if ($error === null && isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+            $upload = upload_image($_FILES['image']);
+            if (isset($upload['error'])) {
+                $error = $upload['error'];
+            } else {
+                $img_path = $upload['success'];
+            }
+        } elseif ($error === null) {
+            $error = "Featured Image is required.";
         }
-        $error = 'Could not save post: ' . ($result['error'] ?? 'Unknown database error');
+
+        if ($error === null) {
+            $result = blog_insert_post($conn, [
+                'title' => $title,
+                'category' => $cat,
+                'image' => $img_path,
+                'content' => $content,
+                'slug' => $slug,
+                'meta_description' => $meta_desc,
+                'faq_json' => $faq_json,
+                'created_at' => $scheduled_time,
+                'is_orphan' => $is_orphan,
+            ]);
+
+            if (!empty($result['ok'])) {
+                header("Location: dashboard.php?page=blog");
+                if (function_exists('fastcgi_finish_request')) {
+                    fastcgi_finish_request();
+                }
+                blog_signal_post_indexed($slug, $scheduled_time);
+                exit;
+            }
+            $error = 'Could not save post: ' . ($result['error'] ?? 'Unknown database error');
+        }
+    } catch (Throwable $e) {
+        error_log('create_post POST: ' . $e->getMessage());
+        $error = 'Server error while saving. Please try again. (' . $e->getMessage() . ')';
     }
 }
 ?>
@@ -101,7 +112,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="col-md-6 mb-3">
                     <label>Featured Image (Max 500KB - WebP/SVG)</label>
-                    <input type="file" name="image" class="form-control bg-dark text-white" accept=".webp, .svg" required>
+                    <input type="file" name="image" class="form-control bg-dark text-white" accept=".webp,.svg,image/webp,image/svg+xml" required>
                 </div>
                 <div class="col-md-3 mb-3">
                     <label>Schedule (Optional)</label>

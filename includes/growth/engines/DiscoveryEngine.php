@@ -55,14 +55,24 @@ class DiscoveryEngine
         return array_map(fn($p) => $base . $p, $paths);
     }
 
-    public static function enqueueUrl(string $url, int $landingPageId = 0): void
+    public static function enqueueUrl(string $url, int $landingPageId = 0, bool $expandLanguages = true): void
     {
         if (ge_setting('auto_index_queue', '1') !== '1') {
             return;
         }
-        require_once __DIR__ . '/../../i18n.php';
-        foreach (nectra_language_url_variants($url) as $variant) {
-            IndexingQueue::enqueue($variant, $landingPageId);
+
+        $urls = [$url];
+        if ($expandLanguages) {
+            require_once __DIR__ . '/../../i18n.php';
+            $urls = nectra_language_url_variants($url);
+        }
+
+        foreach ($urls as $variant) {
+            try {
+                IndexingQueue::enqueue($variant, $landingPageId);
+            } catch (\Throwable $e) {
+                error_log('DiscoveryEngine::enqueueUrl: ' . $e->getMessage());
+            }
         }
     }
 }
