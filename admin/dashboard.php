@@ -234,9 +234,6 @@ if (isset($_POST['update_hire_status'])) {
     if ($growthMsg) echo "<div class='alert alert-success alert-dismissible fade show'>".htmlspecialchars($growthMsg)."<button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
     if (!empty($growthStats['error'])) echo "<div class='alert alert-warning'>Growth Engine: ".htmlspecialchars($growthStats['error'])."</div>";
     if (!$growthStats['ready']) echo "<div class='alert alert-warning'><strong>Growth DB not ready.</strong> Run <a href='../database/migrate.php' target='_blank' class='alert-link'>database/migrate.php</a> or import SQL via phpMyAdmin to enable Cities & Auto Indexing.</div>";
-    if (function_exists('nectra_crawler_access_alert_html')) {
-        echo nectra_crawler_access_alert_html();
-    }
 
     $page = isset($_GET['page']) ? $_GET['page'] : 'home';
 
