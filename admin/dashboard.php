@@ -342,6 +342,11 @@ if (isset($_POST['update_hire_status'])) {
     // 1. BLOG MANAGEMENT
     // ==========================================
     elseif ($page == 'blog') {
+        if (!defined('SITE_URL')) {
+            require_once __DIR__ . '/../includes/config.php';
+        }
+        $siteBase = rtrim(SITE_URL, '/');
+
         echo '<div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="fas fa-layer-group text-info"></i> Intel Management</h2>
                 <a href="create_post.php" class="btn btn-info"><i class="fas fa-plus"></i> New Protocol</a>
@@ -353,7 +358,7 @@ if (isset($_POST['update_hire_status'])) {
         $result = $conn->query($sql);
 
         echo '<div class="table-responsive"><table class="table table-dark table-hover align-middle">
-                <thead><tr><th>Date</th><th>Title</th><th>Category</th><th>Visibility</th><th>Actions</th></tr></thead><tbody>';
+                <thead><tr><th>Date</th><th>Title</th><th>Category</th><th>Visibility</th><th>Post URL</th><th>Actions</th></tr></thead><tbody>';
         while($row = $result->fetch_assoc()) {
             $isOrphan = blog_is_orphan($row);
             $visBadge = $isOrphan
@@ -361,11 +366,20 @@ if (isset($_POST['update_hire_status'])) {
                 : '<span class="badge bg-success"><i class="fas fa-list me-1"></i>Listed</span>';
             $toggleTitle = $isOrphan ? 'Show on website listings' : 'Make orphan (direct link only)';
             $toggleIcon = $isOrphan ? 'fa-eye' : 'fa-eye-slash';
+            $postUrl = $siteBase . '/' . ltrim((string)($row['slug'] ?? ''), '/');
+            $postUrlAttr = htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8');
+            $postUrlJs = htmlspecialchars(json_encode($postUrl), ENT_NOQUOTES, 'UTF-8');
             echo "<tr>
                     <td class='text-white-50 small'>".date('M d', strtotime($row['created_at']))."</td>
-                    <td class='fw-bold text-white'>" . nectra_display_text($row['title']) . "</td>
+                    <td class='fw-bold text-white'><a href='{$postUrlAttr}' target='_blank' rel='noopener' class='text-white text-decoration-none'>" . nectra_display_text($row['title']) . " <i class='fas fa-external-link-alt small text-info'></i></a></td>
                     <td><span class='badge bg-secondary'>" . nectra_display_text($row['category']) . "</span></td>
                     <td>{$visBadge}</td>
+                    <td class='small' style='max-width:220px;'>
+                        <div class='d-flex align-items-center gap-1'>
+                            <a href='{$postUrlAttr}' target='_blank' rel='noopener' class='text-info text-truncate text-decoration-none' title='{$postUrlAttr}'>{$postUrlAttr}</a>
+                            <button type='button' class='btn btn-sm btn-outline-secondary flex-shrink-0 blog-copy-url' data-url='{$postUrlAttr}' title='Copy URL for Google Search Console'><i class='fas fa-copy'></i></button>
+                        </div>
+                    </td>
                     <td>
                         <a href='?page=blog&toggle_orphan={$row['id']}' class='btn btn-sm btn-outline-info me-2' title='" . htmlspecialchars($toggleTitle) . "' onclick='return confirm(\"" . ($isOrphan ? 'Show this post on Insights and site listings?' : 'Make orphan? Post stays live + indexed but hidden from all listings.') . "\")'><i class='fas {$toggleIcon}'></i></a>
                         <a href='edit_post.php?id={$row['id']}' class='btn btn-sm btn-outline-warning me-2'><i class='fas fa-pen'></i></a>
@@ -374,6 +388,31 @@ if (isset($_POST['update_hire_status'])) {
                   </tr>";
         }
         echo '</tbody></table></div>';
+        echo "<script>
+        document.querySelectorAll('.blog-copy-url').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var url = btn.getAttribute('data-url') || '';
+                if (!url) return;
+                var done = function() {
+                    btn.classList.add('btn-success');
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.title = 'Copied!';
+                    setTimeout(function() {
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-outline-secondary');
+                        btn.title = 'Copy URL for Google Search Console';
+                    }, 1500);
+                };
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url).then(done).catch(function() {
+                        window.prompt('Copy this URL:', url);
+                    });
+                } else {
+                    window.prompt('Copy this URL:', url);
+                }
+            });
+        });
+        </script>";
     } 
 
     // ==========================================
