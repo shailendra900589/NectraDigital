@@ -16,14 +16,21 @@ class IndexingEngine
 
     public static function apiKey(): string
     {
-        $key = trim((string)ge_setting('indexnow_api_key', ''));
-        if ($key === '') {
-            $key = trim((string)ge_setting('indexnow_key', ''));
-        }
+        $key = self::readApiKey();
         if ($key === '') {
             $key = self::generateAndStoreKey();
         }
         self::ensureKeyFile($key);
+        return $key;
+    }
+
+    /** Read IndexNow key from settings only (no file I/O) — safe for admin page display. */
+    public static function readApiKey(): string
+    {
+        $key = trim((string)ge_setting('indexnow_api_key', ''));
+        if ($key === '') {
+            $key = trim((string)ge_setting('indexnow_key', ''));
+        }
         return $key;
     }
 
@@ -99,10 +106,12 @@ class IndexingEngine
     }
 
     /** Submit one or many URLs via IndexNow to all enabled endpoints. */
-    public static function submitIndexNow(array $urls): array
+    public static function submitIndexNow(array $urls, bool $expandI18n = true): array
     {
-        require_once __DIR__ . '/../../i18n.php';
-        $urls = nectra_expand_urls_for_languages($urls);
+        if ($expandI18n) {
+            require_once __DIR__ . '/../../i18n.php';
+            $urls = nectra_expand_urls_for_languages($urls);
+        }
         $urls = array_values(array_unique(array_filter($urls)));
         if (empty($urls)) {
             return ['ok' => false, 'message' => 'No URLs provided', 'engines' => []];
@@ -162,7 +171,7 @@ class IndexingEngine
     }
 
     /** Submit URLs via Bing Webmaster Tools URL Submission API (requires API key). */
-    public static function submitBingWebmasterUrls(array $urls): array
+    public static function submitBingWebmasterUrls(array $urls, bool $expandI18n = false): array
     {
         if (ge_setting('index_engine_bing_api', '1') !== '1') {
             return ['ok' => false, 'skipped' => true, 'message' => 'Bing API disabled'];
@@ -173,8 +182,10 @@ class IndexingEngine
             return ['ok' => false, 'skipped' => true, 'message' => 'No Bing Webmaster API key'];
         }
 
-        require_once __DIR__ . '/../../i18n.php';
-        $urls = nectra_expand_urls_for_languages($urls);
+        if ($expandI18n) {
+            require_once __DIR__ . '/../../i18n.php';
+            $urls = nectra_expand_urls_for_languages($urls);
+        }
         $urls = array_values(array_unique(array_filter($urls)));
         if (empty($urls)) {
             return ['ok' => false, 'message' => 'No URLs provided'];
@@ -276,7 +287,7 @@ class IndexingEngine
         $batches = 0;
 
         while ($batches < $maxBatches) {
-            $r = self::processQueue($batchSize);
+            $r = self::processQueue($batchSize, false);
             $totalProcessed += (int)($r['processed'] ?? 0);
             $totalFailed += (int)($r['failed'] ?? 0);
             $batches++;
@@ -291,6 +302,14 @@ class IndexingEngine
             'failed' => $totalFailed,
             'batches' => $batches,
         ];
+    }
+
+    /** Process one admin-safe batch (web UI — avoids gateway timeout). */
+    public static function processWebBatch(?int $batchSize = null): array
+    {
+        $batchSize = $batchSize ?? (int)ge_setting('index_batch_size', 50);
+        $batchSize = max(10, min(100, $batchSize));
+        return self::processQueue($batchSize, false);
     }
 
     /**
@@ -337,18 +356,21 @@ class IndexingEngine
         $lastBatch = ['ok' => false];
 
         foreach (array_chunk($urls, 500) as $chunk) {
-            $lastBatch = self::submitIndexNow($chunk);
+            $lastBatch = self::submitIndexNow($chunk, true);
             $batchCount++;
             if (!empty($lastBatch['ok'])) {
                 $submitted += (int)($lastBatch['urls_submitted'] ?? count($chunk));
             }
+            if ($batchCount >= 3) {
+                break;
+            }
         }
 
         if ($submitted > 0) {
-            ge_conn()->query("UPDATE ge_landing_pages SET index_status='submitted', index_submitted_at=NOW() WHERE status='published'");
+            ge_conn()->query("UPDATE ge_landing_pages SET index_status='submitted', index_submitted_at=NOW() WHERE status='published' AND index_status IN ('pending','failed') LIMIT 5000");
         }
 
-        $sitemap = self::pingAllSitemaps();
+        $sitemap = ($batchCount <= 2) ? self::pingAllSitemaps() : ['ok' => true, 'skipped' => true, 'note' => 'Sitemap ping skipped after large batch — use Ping Sitemap button'];
 
         return [
             'ok' => $submitted > 0,
@@ -362,21 +384,22 @@ class IndexingEngine
     }
 
     /** Process pending ge_indexing_queue items with real HTTP submissions. */
-    public static function processQueue(int $limit = 50): array
+    public static function processQueue(int $limit = 50, bool $pingSitemap = false): array
     {
         if (!ge_table_exists('ge_indexing_queue')) {
             return ['processed' => 0, 'failed' => 0, 'message' => 'Indexing queue table missing'];
         }
 
+        $limit = max(1, min(100, $limit));
         $pending = IndexingQueue::pending($limit);
         if (empty($pending)) {
             return ['processed' => 0, 'failed' => 0, 'message' => 'Queue empty'];
         }
 
         $urls = array_column($pending, 'url');
-        $batch = self::submitIndexNow($urls);
-        $bingApi = self::submitBingWebmasterUrls($urls);
-        $sitemap = self::pingSitemap();
+        $batch = self::submitIndexNow($urls, true);
+        $bingApi = self::submitBingWebmasterUrls($urls, false);
+        $sitemap = $pingSitemap ? self::pingSitemap() : ['skipped' => true];
 
         $processed = 0;
         $failed = 0;
@@ -434,7 +457,7 @@ class IndexingEngine
 
         $batchSize = (int)ge_setting('index_batch_size', 100);
         $processResult = $processNow
-            ? self::processAllQueue($batchSize, 100)
+            ? self::processAllQueue(min($batchSize, 50), 2)
             : ['processed' => 0, 'failed' => 0];
 
         return ['queued' => $queued, 'process' => $processResult];
@@ -458,7 +481,7 @@ class IndexingEngine
             }
         }
 
-        $process = self::processAllQueue($batchSize, 100);
+        $process = self::processAllQueue(min($batchSize, 50), 2);
         $direct = self::submitAllPublishedUrls(true, false);
 
         return [
@@ -520,7 +543,7 @@ class IndexingEngine
     {
         if (function_exists('curl_init')) {
             $ch = curl_init($url);
-            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 20, CURLOPT_FOLLOWLOCATION => true]);
+            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_FOLLOWLOCATION => true]);
             $response = curl_exec($ch);
             $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);

@@ -279,23 +279,70 @@ class LandingPage extends BaseModel
 
     public static function indexStats(): array
     {
-        $db = self::db();
+        return self::indexStatsFast();
+    }
+
+    /** Fast stats for admin UI — no JOINs, optional session cache. */
+    public static function indexStatsFast(bool $useCache = true): array
+    {
+        $defaults = ['total' => 0, 'indexed' => 0, 'pending' => 0, 'submitted' => 0, 'failed' => 0];
+        if (!ge_table_exists('ge_landing_pages')) {
+            return $defaults;
+        }
+
+        if ($useCache && session_status() === PHP_SESSION_ACTIVE) {
+            $cached = $_SESSION['ge_landing_index_stats'] ?? null;
+            $cachedAt = (int)($_SESSION['ge_landing_index_stats_at'] ?? 0);
+            if (is_array($cached) && (time() - $cachedAt) < 300) {
+                return $cached;
+            }
+        }
+
         $hasIndexStatus = self::columnExists('index_status');
         $hasIsIndexed = self::columnExists('is_indexed');
 
-        if ($hasIndexStatus && $hasIsIndexed) {
-            return self::fetchOne(
+        if ($hasIndexStatus) {
+            $indexedExpr = $hasIsIndexed
+                ? "SUM(CASE WHEN index_status = 'indexed' OR is_indexed = 1 THEN 1 ELSE 0 END)"
+                : "SUM(CASE WHEN index_status = 'indexed' THEN 1 ELSE 0 END)";
+            $stats = self::fetchOne(
                 "SELECT COUNT(*) AS total,
-                        SUM(CASE WHEN index_status = 'indexed' OR is_indexed = 1 THEN 1 ELSE 0 END) AS indexed,
+                        {$indexedExpr} AS indexed,
                         SUM(CASE WHEN index_status = 'pending' THEN 1 ELSE 0 END) AS pending,
                         SUM(CASE WHEN index_status = 'submitted' THEN 1 ELSE 0 END) AS submitted,
                         SUM(CASE WHEN index_status = 'failed' THEN 1 ELSE 0 END) AS failed
                  FROM ge_landing_pages WHERE status = 'published'"
-            ) ?? ['total' => 0, 'indexed' => 0, 'pending' => 0, 'submitted' => 0, 'failed' => 0];
+            ) ?? $defaults;
+        } else {
+            $total = (int)(self::fetchOne("SELECT COUNT(*) AS total FROM ge_landing_pages WHERE status = 'published'")['total'] ?? 0);
+            $stats = ['total' => $total, 'indexed' => 0, 'pending' => $total, 'submitted' => 0, 'failed' => 0];
         }
 
-        $total = (int)(self::fetchOne("SELECT COUNT(*) AS total FROM ge_landing_pages WHERE status = 'published'")['total'] ?? 0);
-        return ['total' => $total, 'indexed' => 0, 'pending' => $total, 'submitted' => 0, 'failed' => 0];
+        foreach (array_keys($defaults) as $k) {
+            $stats[$k] = (int)($stats[$k] ?? 0);
+        }
+
+        if ($useCache && session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['ge_landing_index_stats'] = $stats;
+            $_SESSION['ge_landing_index_stats_at'] = time();
+        }
+
+        return $stats;
+    }
+
+    /** Lightweight pending list for admin (no COUNT/JOIN pagination). */
+    public static function pendingSample(int $limit = 20): array
+    {
+        if (!ge_table_exists('ge_landing_pages') || !self::columnExists('index_status')) {
+            return [];
+        }
+        $limit = max(1, min(50, $limit));
+        return self::fetchAll(
+            "SELECT id, slug FROM ge_landing_pages
+             WHERE status = 'published' AND index_status = 'pending'
+             ORDER BY id DESC LIMIT ?",
+            'i', [$limit]
+        );
     }
 
     private static function columnExists(string $col): bool

@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $idxKey = ge_setting('indexnow_api_key', '');
 if ($idxKey === '' && class_exists(\Growth\Engines\IndexingEngine::class)) {
-    $idxKey = \Growth\Engines\IndexingEngine::apiKey();
+    $idxKey = \Growth\Engines\IndexingEngine::readApiKey();
 }
 $cronToken = ge_ensure_cron_token();
 $cronUrls = ge_cron_urls();

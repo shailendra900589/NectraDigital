@@ -64,10 +64,15 @@ function ge_setting(string $key, $default = null) {
 }
 
 function ge_table_exists(string $table): bool {
+    static $cache = [];
+    if (isset($cache[$table])) {
+        return $cache[$table];
+    }
     $db = ge_conn();
     $table = $db->real_escape_string($table);
     $r = $db->query("SHOW TABLES LIKE '$table'");
-    return $r && $r->num_rows > 0;
+    $cache[$table] = $r && $r->num_rows > 0;
+    return $cache[$table];
 }
 
 function ge_is_ready(): bool {

@@ -61,6 +61,6 @@ if (!function_exists('blog_signal_post_indexed')) {
         $url = rtrim(SITE_URL, '/') . '/' . $slug;
         \Growth\Engines\DiscoveryEngine::enqueueUrl($url);
         \Growth\Engines\DiscoveryEngine::signalUrls([$url]);
-        \Growth\Engines\IndexingEngine::submitBingWebmasterUrls([$url]);
+        \Growth\Engines\IndexingEngine::submitBingWebmasterUrls([$url], false);
     }
 }

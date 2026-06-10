@@ -133,8 +133,8 @@ function admin_handle_growth_post(string $page): ?string
     }
 
     if ($page === 'seo' && $action === 'process_queue') {
-        $r = IndexingEngine::processAllQueue((int)ge_setting('index_batch_size', 100));
-        return "Submitted {$r['processed']} URLs via IndexNow. Failed: {$r['failed']}. ({$r['batches']} batches)";
+        $r = IndexingEngine::processWebBatch();
+        return "Submitted {$r['processed']} URLs (one batch). Failed: {$r['failed']}. Use cron for full queue.";
     }
 
     if ($page === 'seo' && $action === 'ping_sitemap') {
@@ -194,7 +194,10 @@ function admin_indexnow_info(): array
     ];
 
     try {
-        $key = IndexingEngine::apiKey();
+        $key = IndexingEngine::readApiKey();
+        if ($key === '') {
+            $key = IndexingEngine::apiKey();
+        }
         return [
             'key' => $key,
             'key_url' => IndexingEngine::keyFileUrl($key),
