@@ -16,10 +16,15 @@ abstract class BaseModel
             return $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
         }
         $stmt = $db->prepare($sql);
-        if (!$stmt) return [];
+        if (!$stmt) {
+            return [];
+        }
         $stmt->bind_param($types, ...$params);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        if (!$stmt->execute()) {
+            return [];
+        }
+        $res = $stmt->get_result();
+        return ($res instanceof \mysqli_result) ? $res->fetch_all(MYSQLI_ASSOC) : [];
     }
 
     protected static function fetchOne(string $sql, string $types = '', array $params = []): ?array

@@ -149,16 +149,46 @@ function admin_recent_jobs(int $limit = 5): array
 
 function admin_index_queue(int $limit = 20): array
 {
-    return (ge_table_exists('ge_indexing_queue')) ? IndexingQueue::all($limit) : [];
+    if (!ge_table_exists('ge_indexing_queue')) {
+        return [];
+    }
+    try {
+        return IndexingQueue::all($limit);
+    } catch (Throwable $e) {
+        error_log('admin_index_queue: ' . $e->getMessage());
+        return [];
+    }
 }
 
 function admin_indexnow_info(): array
 {
-    return [
-        'key' => IndexingEngine::apiKey(),
-        'key_url' => IndexingEngine::keyFileUrl(),
-        'host' => IndexingEngine::host(),
+    $defaults = [
+        'key' => '',
+        'key_url' => '',
+        'host' => defined('SITE_URL') ? (parse_url(SITE_URL, PHP_URL_HOST) ?: 'www.nectradigital.com') : 'www.nectradigital.com',
     ];
+
+    try {
+        $key = IndexingEngine::apiKey();
+        return [
+            'key' => $key,
+            'key_url' => IndexingEngine::keyFileUrl($key),
+            'host' => IndexingEngine::host(),
+        ];
+    } catch (Throwable $e) {
+        error_log('admin_indexnow_info: ' . $e->getMessage());
+        return $defaults;
+    }
+}
+
+function admin_queue_path_label(?string $url): string
+{
+    $url = trim((string)$url);
+    if ($url === '') {
+        return '—';
+    }
+    $path = parse_url($url, PHP_URL_PATH);
+    return ($path !== null && $path !== false && $path !== '') ? $path : $url;
 }
 
 /** City hub URLs for Google listing / Search Console. */

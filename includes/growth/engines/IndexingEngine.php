@@ -33,9 +33,10 @@ class IndexingEngine
         return $host ?: 'www.nectradigital.com';
     }
 
-    public static function keyFileUrl(): string
+    public static function keyFileUrl(?string $key = null): string
     {
-        return SITE_URL . '/' . self::apiKey() . '.txt';
+        $key = $key ?? self::apiKey();
+        return rtrim(SITE_URL, '/') . '/' . $key . '.txt';
     }
 
     private static function generateAndStoreKey(): string
@@ -54,17 +55,42 @@ class IndexingEngine
 
     public static function siteRoot(): string
     {
+        if (php_sapi_name() !== 'cli' && !empty($_SERVER['DOCUMENT_ROOT'])) {
+            $root = realpath($_SERVER['DOCUMENT_ROOT']);
+            if ($root !== false) {
+                return $root;
+            }
+        }
         return dirname(__DIR__, 3);
     }
 
     public static function ensureKeyFile(?string $key = null): bool
     {
-        $key = $key ?: self::apiKey();
-        $path = self::siteRoot() . '/' . $key . '.txt';
-        if (is_file($path)) {
-            return true;
+        if ($key === null || trim((string)$key) === '') {
+            return false;
         }
-        return (bool)file_put_contents($path, $key);
+
+        $key = trim((string)$key);
+        if (!preg_match('/^[a-zA-Z0-9_-]{8,128}$/', $key)) {
+            return false;
+        }
+
+        try {
+            $root = self::siteRoot();
+            if ($root === '' || !is_dir($root) || !is_writable($root)) {
+                return false;
+            }
+
+            $path = $root . DIRECTORY_SEPARATOR . $key . '.txt';
+            if (is_file($path)) {
+                return true;
+            }
+
+            return @file_put_contents($path, $key) !== false;
+        } catch (\Throwable $e) {
+            error_log('IndexNow ensureKeyFile: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public static function isEngineEnabled(string $engine): bool

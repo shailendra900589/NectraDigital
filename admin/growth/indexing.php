@@ -65,9 +65,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $stats = ge_is_ready() ? LandingPage::indexStats() : ['total'=>0,'indexed'=>0,'pending'=>0,'submitted'=>0,'failed'=>0];
-$queue = ge_is_ready() ? IndexingQueue::all(30) : [];
+$queue = ge_table_exists('ge_indexing_queue') ? IndexingQueue::all(30) : [];
 $recentPages = ge_is_ready() ? LandingPage::paginated(1, 20, ['index_status' => 'pending']) : ['data'=>[]];
-$idxInfo = ['key' => IndexingEngine::apiKey(), 'key_url' => IndexingEngine::keyFileUrl()];
+$idxInfo = ['key' => '', 'key_url' => '', 'host' => parse_url(SITE_URL, PHP_URL_HOST) ?: ''];
+try {
+    $key = IndexingEngine::apiKey();
+    $idxInfo = ['key' => $key, 'key_url' => IndexingEngine::keyFileUrl($key), 'host' => IndexingEngine::host()];
+} catch (Throwable $e) {
+    error_log('growth/indexing idxInfo: ' . $e->getMessage());
+}
 
 ge_admin_layout();
 ge_admin_layout_start('Indexing Manager', 'indexing');
@@ -143,8 +149,18 @@ ge_admin_layout_start('Indexing Manager', 'indexing');
         <div class="ge-card">
             <h2 class="h6 mb-3">Index Queue Log</h2>
             <div class="table-responsive"><table class="table ge-table table-sm"><thead><tr><th>URL</th><th>Status</th><th>Date</th></tr></thead><tbody>
-            <?php foreach ($queue as $q): ?>
-            <tr><td class="small"><code><?php echo htmlspecialchars(parse_url($q['url'], PHP_URL_PATH) ?? $q['url']); ?></code></td><td><?php echo $q['status']; ?></td><td class="small text-muted"><?php echo $q['created_at']; ?></td></tr>
+            <?php foreach ($queue as $q):
+                $pathLabel = trim((string)($q['url'] ?? ''));
+                if ($pathLabel !== '') {
+                    $parsed = parse_url($pathLabel, PHP_URL_PATH);
+                    if ($parsed !== null && $parsed !== false && $parsed !== '') {
+                        $pathLabel = $parsed;
+                    }
+                } else {
+                    $pathLabel = '—';
+                }
+            ?>
+            <tr><td class="small"><code><?php echo htmlspecialchars($pathLabel); ?></code></td><td><?php echo htmlspecialchars((string)($q['status'] ?? '')); ?></td><td class="small text-muted"><?php echo htmlspecialchars((string)($q['created_at'] ?? '')); ?></td></tr>
             <?php endforeach; ?>
             </tbody></table></div>
         </div>

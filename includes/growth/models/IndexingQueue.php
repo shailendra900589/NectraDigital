@@ -48,10 +48,21 @@ class IndexingQueue extends BaseModel
 
     public static function all(int $limit = 50): array
     {
+        if (!function_exists('ge_table_exists') || !ge_table_exists('ge_indexing_queue')) {
+            return [];
+        }
+
+        if (function_exists('ge_table_exists') && ge_table_exists('ge_landing_pages')) {
+            return self::fetchAll(
+                "SELECT q.*, lp.slug FROM ge_indexing_queue q
+                 LEFT JOIN ge_landing_pages lp ON lp.id = q.landing_page_id
+                 ORDER BY q.id DESC LIMIT ?",
+                'i', [$limit]
+            );
+        }
+
         return self::fetchAll(
-            "SELECT q.*, lp.slug FROM ge_indexing_queue q
-             LEFT JOIN ge_landing_pages lp ON lp.id = q.landing_page_id
-             ORDER BY q.id DESC LIMIT ?",
+            "SELECT * FROM ge_indexing_queue ORDER BY id DESC LIMIT ?",
             'i', [$limit]
         );
     }

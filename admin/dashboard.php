@@ -2,8 +2,13 @@
 session_start();
 if (!isset($_SESSION['admin_logged_in'])) { header("Location: login.php"); exit; }
 include '../includes/db.php';
+require_once '../includes/db.php';
 require_once '../includes/blog_orphan.php';
-blog_orphan_ensure_schema($conn);
+try {
+    blog_orphan_ensure_schema($conn);
+} catch (Throwable $e) {
+    error_log('blog_orphan schema: ' . $e->getMessage());
+}
 
 $growthMsg = null;
 $growthStats = ['ready' => false];
@@ -304,9 +309,31 @@ if (isset($_POST['update_hire_status'])) {
     // AUTO INDEXING (IndexNow, Bing, DuckDuckGo, Google)
     // ==========================================
     elseif ($page == 'seo') {
-        $idxInfo = function_exists('admin_indexnow_info') ? admin_indexnow_info() : ['key'=>'','key_url'=>'','host'=>''];
-        $queue = function_exists('admin_index_queue') ? admin_index_queue(15) : [];
+        $idxInfo = ['key' => '', 'key_url' => '', 'host' => ''];
+        $queue = [];
+        $seoError = null;
+        try {
+            if (function_exists('admin_indexnow_info')) {
+                $idxInfo = admin_indexnow_info();
+            }
+            if (function_exists('admin_index_queue')) {
+                $queue = admin_index_queue(15);
+            }
+            if (!is_array($idxInfo)) {
+                $idxInfo = ['key' => '', 'key_url' => '', 'host' => ''];
+            }
+            if (!is_array($queue)) {
+                $queue = [];
+            }
+        } catch (Throwable $e) {
+            $seoError = $e->getMessage();
+            error_log('dashboard seo page: ' . $e->getMessage());
+        }
+
         echo '<h2 class="mb-4"><i class="fas fa-search-plus text-info"></i> Auto Indexing Engine</h2>';
+        if ($seoError) {
+            echo '<div class="alert alert-danger">Indexing panel error: '.htmlspecialchars($seoError).'. Check Growth Settings or run database/migrate.php.</div>';
+        }
 
         echo '<div class="row g-3 mb-4">';
         echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val text-success">'.number_format($growthStats['indexed']).'</div><div class="stat-lbl">Indexed</div></div></div>';
@@ -333,7 +360,12 @@ if (isset($_POST['update_hire_status'])) {
 
         echo '<div class="card p-3"><h6>Recent Index Queue</h6><div class="table-responsive"><table class="table table-dark table-sm mb-0"><thead><tr><th>URL</th><th>Status</th><th>Date</th></tr></thead><tbody>';
         foreach ($queue as $q) {
-            echo '<tr><td class="small"><code>'.htmlspecialchars(parse_url($q['url'], PHP_URL_PATH) ?? $q['url']).'</code></td><td>'.$q['status'].'</td><td class="small text-muted">'.$q['created_at'].'</td></tr>';
+            $pathLabel = function_exists('admin_queue_path_label')
+                ? admin_queue_path_label($q['url'] ?? '')
+                : ($q['url'] ?? '—');
+            $status = htmlspecialchars((string)($q['status'] ?? 'unknown'));
+            $created = htmlspecialchars((string)($q['created_at'] ?? ''));
+            echo '<tr><td class="small"><code>'.htmlspecialchars($pathLabel).'</code></td><td>'.$status.'</td><td class="small text-muted">'.$created.'</td></tr>';
         }
         if (empty($queue)) echo '<tr><td colspan="3" class="text-muted text-center">No queue items yet</td></tr>';
         echo '</tbody></table></div></div></div></div>';
