@@ -4,7 +4,9 @@ if (!isset($_SESSION['admin_logged_in'])) exit;
 include '../includes/db.php';
 require_once '../includes/ckeditor.php';
 require_once '../includes/blog_orphan.php';
+require_once '../includes/blog_faq.php';
 blog_orphan_ensure_schema($conn);
+blog_faq_ensure_schema($conn);
 
 $id = intval($_GET['id']);
 $result = $conn->query("SELECT * FROM blog_posts WHERE id=$id");
@@ -27,6 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $input_slug = sanitize_db_text($_POST['slug']);
     $meta_desc = sanitize_db_text($_POST['meta_description']);
     $is_orphan = !empty($_POST['is_orphan']) ? 1 : 0;
+    $faq_json = blog_faq_encode(blog_faq_parse_request());
     $img_path = $post['image'];
     $raw_slug = !empty($input_slug) ? $input_slug : $title;
     $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $raw_slug), '-'));
@@ -41,8 +44,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (!isset($error)) {
-        $stmt = $conn->prepare("UPDATE blog_posts SET title=?, category=?, image=?, content=?, slug=?, meta_description=?, is_orphan=? WHERE id=?");
-        $stmt->bind_param("ssssssii", $title, $cat, $img_path, $content, $slug, $meta_desc, $is_orphan, $id);
+        $stmt = $conn->prepare("UPDATE blog_posts SET title=?, category=?, image=?, content=?, slug=?, meta_description=?, faq_json=?, is_orphan=? WHERE id=?");
+        $stmt->bind_param("sssssssii", $title, $cat, $img_path, $content, $slug, $meta_desc, $faq_json, $is_orphan, $id);
         if ($stmt->execute()) {
             blog_signal_post_indexed($slug, $post['created_at'] ?? null);
             header("Location: dashboard.php?page=blog");
@@ -50,6 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 $post_is_orphan = blog_is_orphan($post);
+$blog_faqs = blog_faq_decode($post['faq_json'] ?? null);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -101,6 +105,7 @@ $post_is_orphan = blog_is_orphan($post);
                     <label>Content Protocol</label>
                     <textarea id="post_content" name="content" class="ckeditor-full"><?php echo $post['content']; ?></textarea>
                 </div>
+                <?php include __DIR__ . '/includes/blog-faq-form.php'; ?>
             </div>
             <button type="submit" class="btn btn-warning">UPDATE</button>
             <a href="dashboard.php?page=blog" class="btn btn-outline-secondary ms-2">CANCEL</a>

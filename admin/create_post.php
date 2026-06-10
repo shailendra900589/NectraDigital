@@ -4,7 +4,9 @@ if (!isset($_SESSION['admin_logged_in'])) exit;
 include '../includes/db.php';
 require_once '../includes/ckeditor.php';
 require_once '../includes/blog_orphan.php';
+require_once '../includes/blog_faq.php';
 blog_orphan_ensure_schema($conn);
+blog_faq_ensure_schema($conn);
 
 date_default_timezone_set('Asia/Kolkata');
 
@@ -25,6 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $input_slug = sanitize_db_text($_POST['slug']);
     $meta_desc = sanitize_db_text($_POST['meta_description']);
     $is_orphan = !empty($_POST['is_orphan']) ? 1 : 0;
+    $faq_json = blog_faq_encode(blog_faq_parse_request());
     $img_path = "";
     $scheduled_time = !empty($_POST['scheduled_time']) ? clean_input($_POST['scheduled_time']) : date('Y-m-d H:i:s');
     $raw_slug = !empty($input_slug) ? $input_slug : $title;
@@ -42,8 +45,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (!isset($error)) {
-        $stmt = $conn->prepare("INSERT INTO blog_posts (title, category, image, content, slug, meta_description, created_at, is_orphan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssssssi", $title, $cat, $img_path, $content, $slug, $meta_desc, $scheduled_time, $is_orphan);
+        $stmt = $conn->prepare("INSERT INTO blog_posts (title, category, image, content, slug, meta_description, faq_json, created_at, is_orphan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssssssi", $title, $cat, $img_path, $content, $slug, $meta_desc, $faq_json, $scheduled_time, $is_orphan);
         if ($stmt->execute()) {
             blog_signal_post_indexed($slug, $scheduled_time);
             header("Location: dashboard.php?page=blog");
@@ -101,6 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label>Content Protocol</label>
                     <textarea id="post_content" name="content" class="ckeditor-full"></textarea>
                 </div>
+                <?php $blog_faqs = []; include __DIR__ . '/includes/blog-faq-form.php'; ?>
             </div>
             <button type="submit" class="btn btn-info">PUBLISH / SCHEDULE</button>
             <a href="dashboard.php?page=blog" class="btn btn-outline-secondary ms-2">CANCEL</a>

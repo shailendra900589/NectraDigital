@@ -5,7 +5,9 @@ header('Content-Type: text/html; charset=utf-8');
 
 require_once 'includes/db.php';
 require_once 'includes/blog_orphan.php';
+require_once 'includes/blog_faq.php';
 blog_orphan_ensure_schema($conn);
+blog_faq_ensure_schema($conn);
 
 // FORCE DB CHARSET
 if(isset($conn)) {
@@ -546,12 +548,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                     <?php 
                         render_geo_summary($decoded_title);
                         render_author_bio();
-                        
-                        $post_faqs = [
-                            ['q' => 'Who wrote this article?', 'a' => 'This article was authored and verified by ' . FOUNDER_NAME . ', ' . FOUNDER_TITLE . ' at Nectra Digital, with ' . FOUNDER_EXPERIENCE . ' of industry experience.'],
-                            ['q' => 'Is this information up to date?', 'a' => 'We review and update our content regularly to reflect current SEO best practices, algorithm changes, and industry standards. Published: ' . date('F j, Y', strtotime($post['created_at'])) . '.'],
-                            ['q' => 'Can Nectra Digital help implement these strategies?', 'a' => 'Yes. Nectra Digital offers full-service SEO, digital marketing, AI automation, and web development. Book a free consultation at nectradigital.com/contact.']
-                        ];
+
+                        $post_faqs = blog_faq_for_post($post);
                         render_faq_section($post_faqs, 'Article FAQ');
                         
                         render_post_internal_links($conn, $post, $decoded_category);
