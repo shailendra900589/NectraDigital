@@ -194,7 +194,8 @@ function render_ad_unit(array $ad, string $variant = 'banner'): bool
         return false;
     }
 
-    $stateClass = $isImageAd ? 'nectra-ad-slot--filled' : 'nectra-ad-slot--pending';
+    $isAdsense = !$isImageAd && nectra_is_adsense_markup($ad['ad_code'] ?? '');
+    $stateClass = $isImageAd ? 'nectra-ad-slot--filled' : ($isAdsense ? 'nectra-ad-slot--adsense' : 'nectra-ad-slot--filled');
 
     if ($isSidebar) {
         echo '<div class="sidebar-ad-card nectra-ad-slot ' . $stateClass . ' border border-secondary rounded overflow-hidden bg-dark hover-neon-border">';
@@ -334,7 +335,15 @@ function render_sidebar_ads($conn, int $target = 20): int
 
     echo '<div class="sidebar-ad-stack">';
     $rendered = 0;
+    $adsenseCount = 0;
     foreach ($ads as $ad) {
+        $code = $ad['ad_code'] ?? '';
+        if (($ad['type'] ?? '') === 'code' && nectra_is_adsense_markup($code)) {
+            if ($adsenseCount >= 3) {
+                continue;
+            }
+            $adsenseCount++;
+        }
         if (render_ad_unit($ad, 'sidebar')) {
             $rendered++;
         }
@@ -476,27 +485,42 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
     .sidebar-ad-caption { background: rgba(20, 20, 20, 0.9); }
     .sidebar-ad-code { color: #fff; font-size: 0.875rem; overflow: hidden; }
     .sidebar-ad-card.hover-neon-border:hover { border-color: #00f2ff !important; box-shadow: 0 0 15px rgba(0, 242, 255, 0.15); }
-    /* Collapse empty ad slots — keep width for AdSense measure (no display:none) */
-    .nectra-ad-slot--pending {
-        max-height: 0 !important;
-        overflow: hidden !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-        min-height: 0 !important;
-    }
+    /* AdSense: visible while loading so Google can fill the slot */
+    .nectra-ad-slot--adsense,
     .nectra-ad-slot--filled {
         display: block;
+        width: 100%;
         background: rgba(10, 10, 10, 0.85);
         backdrop-filter: blur(5px);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     }
-    .nectra-ad-slot--filled.ad-container { z-index: 5; }
+    .nectra-ad-slot--adsense {
+        min-height: 90px;
+    }
+    .nectra-ad-slot--adsense ins.adsbygoogle,
+    .nectra-ad-code-inner,
+    .sidebar-ad-code {
+        display: block;
+        width: 100%;
+        min-height: 90px;
+    }
+    .nectra-ad-slot--filled.ad-container,
+    .nectra-ad-slot--adsense.ad-container { z-index: 5; }
     .nectra-ad-label { font-size: 10px; opacity: 0.8; }
+    /* Hide only confirmed empty / unfilled slots */
+    .nectra-ad-slot--hidden {
+        display: none !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        overflow: hidden !important;
+    }
     @media (max-width: 991.98px) {
-        .sidebar-ad-column:not(:has(.nectra-ad-slot--filled)) { display: none !important; }
+        .sidebar-ad-column:not(:has(.nectra-ad-slot--filled, .nectra-ad-slot--adsense:not(.nectra-ad-slot--hidden))) {
+            display: none !important;
+        }
     }
 </style>
 
@@ -757,124 +781,6 @@ function animate() {
 animate();
 </script>
 
-<?php nectra_output_adsense_loader(); ?>
-
-<script>
-(function () {
-    'use strict';
-
-    var pushed = {};
-
-    function revealSlot(slot) {
-        slot.classList.remove('nectra-ad-slot--pending');
-        slot.classList.add('nectra-ad-slot--filled');
-    }
-
-    function hideSlot(slot) {
-        slot.classList.remove('nectra-ad-slot--filled');
-        slot.classList.add('nectra-ad-slot--pending');
-    }
-
-    function slotHasImage(slot) {
-        var img = slot.querySelector('img.nectra-ad-img, img.sidebar-ad-img');
-        if (!img) return false;
-        return (img.complete && img.naturalHeight > 10) || img.offsetHeight > 10;
-    }
-
-    function pushAdsense(ins) {
-        if (!ins || ins.getAttribute('data-nectra-pushed') === '1') return false;
-        var slot = ins.closest('.nectra-ad-slot');
-        if (!slot || slot.getBoundingClientRect().width < 50) return false;
-        if (typeof window.adsbygoogle === 'undefined') return false;
-
-        try {
-            ins.setAttribute('data-nectra-pushed', '1');
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
-            return true;
-        } catch (e) {
-            ins.removeAttribute('data-nectra-pushed');
-            if (slot) hideSlot(slot);
-            return false;
-        }
-    }
-
-    function initAdsenseSlots() {
-        document.querySelectorAll('ins.adsbygoogle[data-nectra-adsense]').forEach(function (ins) {
-            pushAdsense(ins);
-        });
-    }
-
-    function checkAdSlots() {
-        document.querySelectorAll('.nectra-ad-slot').forEach(function (slot) {
-            var ins = slot.querySelector('ins.adsbygoogle');
-
-            if (ins) {
-                var status = ins.getAttribute('data-ad-status');
-                if (status === 'filled') {
-                    revealSlot(slot);
-                } else if (status === 'unfilled') {
-                    hideSlot(slot);
-                } else {
-                    slot.classList.add('nectra-ad-slot--pending');
-                }
-                return;
-            }
-
-            if (slotHasImage(slot)) {
-                revealSlot(slot);
-            }
-        });
-
-        document.querySelectorAll('.sidebar-ad-column').forEach(function (col) {
-            col.style.display = col.querySelector('.nectra-ad-slot--filled') ? '' : 'none';
-        });
-    }
-
-    document.querySelectorAll('img.nectra-ad-img, img.sidebar-ad-img').forEach(function (img) {
-        img.addEventListener('load', checkAdSlots);
-        img.addEventListener('error', function () {
-            var slot = img.closest('.nectra-ad-slot');
-            if (slot) hideSlot(slot);
-        });
-    });
-
-    function boot() {
-        initAdsenseSlots();
-        checkAdSlots();
-    }
-
-    if (document.readyState === 'complete') {
-        boot();
-    } else {
-        window.addEventListener('load', boot);
-    }
-
-    [400, 1200, 2500, 5000].forEach(function (ms) {
-        setTimeout(function () {
-            initAdsenseSlots();
-            checkAdSlots();
-        }, ms);
-    });
-
-    if (window.MutationObserver) {
-        var debounce;
-        var obs = new MutationObserver(function (mutations) {
-            var adChanged = mutations.some(function (m) {
-                return m.target && m.target.getAttribute && (
-                    m.attributeName === 'data-ad-status' ||
-                    m.target.classList && m.target.classList.contains('adsbygoogle')
-                );
-            });
-            clearTimeout(debounce);
-            debounce = setTimeout(function () {
-                if (adChanged) checkAdSlots();
-            }, 200);
-        });
-        document.querySelectorAll('.nectra-ad-slot').forEach(function (slot) {
-            obs.observe(slot, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-ad-status', 'style'] });
-        });
-    }
-})();
-</script>
+<?php nectra_output_ad_scripts(); ?>
 
 <?php include 'includes/footer.php'; ?>

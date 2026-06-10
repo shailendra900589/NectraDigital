@@ -72,3 +72,10 @@ function nectra_output_adsense_loader(): void
         . htmlspecialchars($client, ENT_QUOTES)
         . '" crossorigin="anonymous" id="nectra-adsense-loader"></script>' . "\n";
 }
+
+function nectra_output_ad_scripts(): void
+{
+    nectra_output_adsense_loader();
+    $base = defined('SITE_URL') ? SITE_URL : '';
+    echo '<script src="' . htmlspecialchars($base, ENT_QUOTES) . '/assets/js/nectra-ads.js?v=2" defer></script>' . "\n";
+}
