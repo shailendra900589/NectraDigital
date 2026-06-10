@@ -6,6 +6,12 @@ Disallow: /process.php
 Disallow: /thank-you
 Disallow: /cron/
 
+User-agent: Bingbot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
 # Search engine discovery
 Sitemap: https://www.nectradigital.com/sitemap.xml
 Sitemap: https://www.nectradigital.com/news-sitemap.xml

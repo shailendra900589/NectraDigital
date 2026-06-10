@@ -13,6 +13,11 @@ DirectoryIndex index.php index.html
 RewriteEngine On
 RewriteBase /
 
+# Allow verified search-engine crawlers (prevents Hostinger hCDN/WAF false 403 blocks)
+<IfModule mod_setenvif.c>
+  SetEnvIfNoCase User-Agent "bingbot|BingPreview|msnbot|Googlebot|Googlebot-Image|AdsBot-Google|Mediapartners-Google|Slurp|DuckDuckBot|YandexBot|Applebot|facebookexternalhit|Twitterbot|LinkedInBot|SemrushBot|AhrefsBot|PetalBot|Bytespider" search_engine_bot=1
+</IfModule>
+
 # ========================================================
 # 3. SITEMAP, LLMS & RSS REWRITE
 # ========================================================

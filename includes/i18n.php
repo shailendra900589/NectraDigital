@@ -95,10 +95,29 @@ function nectra_clear_googtrans_cookies(): void
     unset($_COOKIE['googtrans']);
 }
 
+function nectra_is_search_bot(): bool
+{
+    $ua = strtolower((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
+    if ($ua === '') {
+        return false;
+    }
+    foreach ([
+        'bingbot', 'bingpreview', 'googlebot', 'adsbot-google', 'mediapartners-google',
+        'slurp', 'duckduckbot', 'yandexbot', 'applebot', 'baiduspider', 'facebot',
+        'facebookexternalhit', 'twitterbot', 'linkedinbot', 'semrushbot', 'ahrefsbot',
+        'petalbot', 'bytespider', 'msnbot',
+    ] as $bot) {
+        if (strpos($ua, $bot) !== false) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /** Apply ?lang= from URL to cookies before HTML output (full-page Google Translate). */
 function nectra_handle_lang_request(): void
 {
-    if (php_sapi_name() === 'cli' || headers_sent()) {
+    if (php_sapi_name() === 'cli' || headers_sent() || nectra_is_search_bot()) {
         return;
     }
 
@@ -140,6 +159,10 @@ function nectra_handle_lang_request(): void
 function nectra_get_user_lang(): string
 {
     $supported = nectra_supported_languages();
+
+    if (nectra_is_search_bot()) {
+        return 'en';
+    }
 
     if (!empty($_GET['lang']) && isset($supported[$_GET['lang']])) {
         return (string)$_GET['lang'];

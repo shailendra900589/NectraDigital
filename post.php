@@ -6,8 +6,6 @@ header('Content-Type: text/html; charset=utf-8');
 require_once 'includes/db.php';
 require_once 'includes/blog_orphan.php';
 require_once 'includes/blog_faq.php';
-blog_orphan_ensure_schema($conn);
-blog_faq_ensure_schema($conn);
 
 // FORCE DB CHARSET
 if(isset($conn)) {
