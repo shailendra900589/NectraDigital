@@ -386,7 +386,7 @@ if (isset($_POST['update_hire_status'])) {
         
         echo "<div class='card p-4 mb-4'>
             <h5>Create New Ad Unit</h5>
-            <p class='text-muted small mb-3'>Tip: Sidebar shows up to <strong>20 ad cards</strong> (minimum 15) on blog posts — sidebar ads first, then header/content ads if needed. Set placement <strong>Sidebar</strong> for priority. For Google AdSense paste only your <code>&lt;ins class="adsbygoogle"&gt;</code> block — duplicate script tags are removed automatically.</p>
+            <p class='text-muted small mb-3'>Tip: Sidebar shows up to <strong>20 ad cards</strong> (minimum 15) on blog posts — sidebar ads first, then header/content ads if needed. Set placement <strong>Sidebar</strong> for priority. For Google AdSense paste the <strong>full code snippet</strong> from your AdSense dashboard (script + ins + push).</p>
             <form method='POST' enctype='multipart/form-data'>
                 <div class='row g-3'>
                     <div class='col-md-4'><input type='text' name='title' class='form-control' placeholder='Ad Name' required></div>

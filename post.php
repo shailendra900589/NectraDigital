@@ -111,7 +111,6 @@ $post_date = date('c', strtotime($post['created_at']));
 $post_modified = !empty($post['updated_at']) ? date('c', strtotime($post['updated_at'])) : $post_date;
 
 require_once 'includes/seo-data.php';
-require_once 'includes/ad-engine.php';
 
 $page_schema = [
     get_breadcrumb_schema([
@@ -179,14 +178,10 @@ function render_ad_unit(array $ad, string $variant = 'banner'): bool
             }
         }
     } elseif (trim($ad['ad_code'] ?? '') !== '') {
-        $prepared = nectra_prepare_ad_code_html($ad['ad_code'] ?? '');
-        if ($prepared === '') {
-            return false;
-        }
         if ($isSidebar) {
-            $html .= '<div class="sidebar-ad-code">' . $prepared . '</div>';
+            $html .= '<div class="sidebar-ad-code p-3">' . ($ad['ad_code'] ?? '') . '</div>';
         } else {
-            $html .= '<div class="nectra-ad-code-inner">' . $prepared . '</div>';
+            $html .= '<div class="mt-3" style="margin-top:15px; color:#fff;">' . ($ad['ad_code'] ?? '') . '</div>';
         }
     }
 
@@ -194,17 +189,14 @@ function render_ad_unit(array $ad, string $variant = 'banner'): bool
         return false;
     }
 
-    $isAdsense = !$isImageAd && nectra_is_adsense_markup($ad['ad_code'] ?? '');
-    $stateClass = $isImageAd ? 'nectra-ad-slot--filled' : ($isAdsense ? 'nectra-ad-slot--adsense' : 'nectra-ad-slot--filled');
-
     if ($isSidebar) {
-        echo '<div class="sidebar-ad-card nectra-ad-slot ' . $stateClass . ' border border-secondary rounded overflow-hidden bg-dark hover-neon-border">';
+        echo '<div class="sidebar-ad-card border border-secondary rounded overflow-hidden bg-dark hover-neon-border" style="transition:0.3s;">';
         echo '<span class="badge bg-secondary sidebar-ad-badge">SPONSORED</span>';
         echo $html;
         echo '</div>';
     } else {
-        echo '<div class="ad-container nectra-ad-slot ' . $stateClass . ' my-4 position-relative p-3 border border-secondary rounded">';
-        echo '<span class="position-absolute top-0 start-0 badge bg-secondary nectra-ad-label">SPONSORED</span>';
+        echo '<div class="ad-container my-5 position-relative p-3 border border-secondary rounded" style="background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(5px); z-index: 5; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">';
+        echo '<span class="position-absolute top-0 start-0 badge bg-secondary" style="font-size:10px; opacity:0.8;">SPONSORED</span>';
         echo $html;
         echo '</div>';
     }
@@ -335,15 +327,7 @@ function render_sidebar_ads($conn, int $target = 20): int
 
     echo '<div class="sidebar-ad-stack">';
     $rendered = 0;
-    $adsenseCount = 0;
     foreach ($ads as $ad) {
-        $code = $ad['ad_code'] ?? '';
-        if (($ad['type'] ?? '') === 'code' && nectra_is_adsense_markup($code)) {
-            if ($adsenseCount >= 3) {
-                continue;
-            }
-            $adsenseCount++;
-        }
         if (render_ad_unit($ad, 'sidebar')) {
             $rendered++;
         }
@@ -353,17 +337,13 @@ function render_sidebar_ads($conn, int $target = 20): int
     return $rendered;
 }
 
-function count_displayable_sidebar_ads(mysqli $conn, int $target = 20): int
-{
-    $check = $conn->query("SHOW TABLES LIKE 'ads'");
-    if (!$check || $check->num_rows === 0) {
-        return 0;
-    }
-    return count(build_sidebar_ad_slots($conn, $target));
+$check_tables = $conn->query("SHOW TABLES LIKE 'ads'");
+if ($check_tables && $check_tables->num_rows > 0) {
+    $check_sidebar = $conn->query("SELECT id FROM ads WHERE (status='active' OR status IS NULL OR status='')");
+    $has_sidebar = ($check_sidebar && $check_sidebar->num_rows > 0);
+} else {
+    $has_sidebar = false;
 }
-
-$sidebar_ad_count = count_displayable_sidebar_ads($conn, 20);
-$has_sidebar = $sidebar_ad_count > 0;
 $col_class = $has_sidebar ? "col-lg-8" : "col-lg-10 mx-auto";
 
 // 7. COMMENT LOGIC
@@ -483,45 +463,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
         background: #0a0a0a;
     }
     .sidebar-ad-caption { background: rgba(20, 20, 20, 0.9); }
-    .sidebar-ad-code { color: #fff; font-size: 0.875rem; overflow: hidden; }
+    .sidebar-ad-code { color: #fff; font-size: 0.875rem; overflow: hidden; min-height: 0; }
     .sidebar-ad-card.hover-neon-border:hover { border-color: #00f2ff !important; box-shadow: 0 0 15px rgba(0, 242, 255, 0.15); }
-    /* AdSense: visible while loading so Google can fill the slot */
-    .nectra-ad-slot--adsense,
-    .nectra-ad-slot--filled {
-        display: block;
-        width: 100%;
-        background: rgba(10, 10, 10, 0.85);
-        backdrop-filter: blur(5px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    }
-    .nectra-ad-slot--adsense {
-        min-height: 90px;
-    }
-    .nectra-ad-slot--adsense ins.adsbygoogle,
-    .nectra-ad-code-inner,
-    .sidebar-ad-code {
-        display: block;
-        width: 100%;
-        min-height: 90px;
-    }
-    .nectra-ad-slot--filled.ad-container,
-    .nectra-ad-slot--adsense.ad-container { z-index: 5; }
-    .nectra-ad-label { font-size: 10px; opacity: 0.8; }
-    /* Hide only confirmed empty / unfilled slots */
-    .nectra-ad-slot--hidden {
-        display: none !important;
-        height: 0 !important;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        overflow: hidden !important;
-    }
-    @media (max-width: 991.98px) {
-        .sidebar-ad-column:not(:has(.nectra-ad-slot--filled, .nectra-ad-slot--adsense:not(.nectra-ad-slot--hidden))) {
-            display: none !important;
-        }
-    }
+    .ad-container ins.adsbygoogle { display: block; min-height: 90px; }
+    .sidebar-ad-code ins.adsbygoogle { display: block; min-height: 90px; }
 </style>
 
 <main>
@@ -657,19 +602,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                     </div>
                 </div>
 
-                <?php if($has_sidebar):
-                    ob_start();
-                    $rendered_sidebar = render_sidebar_ads($conn, 20);
-                    $sidebar_html = ob_get_clean();
-                ?>
-                <?php if ($rendered_sidebar > 0 && trim($sidebar_html) !== ''): ?>
+                <?php if($has_sidebar): ?>
                 <div class="col-lg-4 mt-5 mt-lg-0 ps-lg-5">
                     <aside class="sidebar-ad-column" aria-label="Sponsored content">
                         <h6 class="text-white-50 text-uppercase small mb-3 border-bottom border-secondary pb-2 text-center">Sponsored Intel</h6>
-                        <?php echo $sidebar_html; ?>
+                        <?php render_sidebar_ads($conn, 20); ?>
                     </aside>
                 </div>
-                <?php endif; ?>
                 <?php endif; ?>
 
             </div>
@@ -780,7 +719,5 @@ function animate() {
 }
 animate();
 </script>
-
-<?php nectra_output_ad_scripts(); ?>
 
 <?php include 'includes/footer.php'; ?>
