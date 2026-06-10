@@ -8,6 +8,8 @@ if (defined('NECTRA_TEXT_UTILS_LOADED')) {
 }
 define('NECTRA_TEXT_UTILS_LOADED', true);
 
+require_once __DIR__ . '/crawler_access.php';
+
 function nectra_decode_entities(?string $text, int $maxPasses = 6): string
 {
     if ($text === null || $text === '') {
@@ -32,24 +34,4 @@ function nectra_display_text(?string $text): string
 function sanitize_db_text(?string $data): string
 {
     return stripslashes(nectra_decode_entities(trim((string) $data)));
-}
-
-function nectra_is_search_bot(): bool
-{
-    $ua = strtolower((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
-    if ($ua === '') {
-        return false;
-    }
-    foreach ([
-        'bingbot', 'bingpreview', 'msnbot', 'googlebot', 'google-inspectiontool',
-        'googlebot-image', 'adsbot-google', 'mediapartners-google', 'slurp',
-        'duckduckbot', 'yandexbot', 'applebot', 'baiduspider', 'facebot',
-        'facebookexternalhit', 'twitterbot', 'linkedinbot', 'semrushbot',
-        'ahrefsbot', 'petalbot', 'bytespider',
-    ] as $bot) {
-        if (strpos($ua, $bot) !== false) {
-            return true;
-        }
-    }
-    return false;
 }

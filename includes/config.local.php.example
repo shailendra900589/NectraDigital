@@ -13,3 +13,5 @@ if (!defined('SITE_URL')) {
 //     define('GOOGLE_TRANSLATE_API_KEY', 'YOUR_GOOGLE_CLOUD_API_KEY');
 // }
 // DNS (Hostinger/cPanel): add SPF TXT record, e.g. v=spf1 include:_spf.google.com ~all
+// Hostinger CDN: do NOT enable "Allow only specific countries" (India-only blocks Bing/Yahoo/Google from US).
+// hPanel → Websites → CDN → Traffic blocking → remove all country rules for search indexing.

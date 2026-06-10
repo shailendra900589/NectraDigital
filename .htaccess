@@ -13,17 +13,39 @@ DirectoryIndex index.php index.html
 RewriteEngine On
 RewriteBase /
 
-# Allow verified search-engine crawlers (prevents Hostinger hCDN/WAF false 403 blocks)
+# ========================================================
+# HOSTINGER CDN: Search crawlers must NOT be geo-blocked.
+# If Bing/Yahoo show "Your country is not allowed" → hPanel → CDN → Traffic blocking → remove country rules.
+# ========================================================
+
+# Allow verified search-engine crawlers (Apache/LiteSpeed layer + IP ranges)
 <IfModule mod_setenvif.c>
-  SetEnvIfNoCase User-Agent "bingbot|BingPreview|msnbot|Googlebot|Google-InspectionTool|Googlebot-Image|AdsBot-Google|Mediapartners-Google|Slurp|DuckDuckBot|YandexBot|Applebot|facebookexternalhit|Twitterbot|LinkedInBot|SemrushBot|AhrefsBot|PetalBot|Bytespider" search_engine_bot=1
-  SetEnvIf Remote_Addr "^40\.77\." search_engine_bot=1
+  SetEnvIfNoCase User-Agent "bingbot|BingPreview|msnbot|adidxbot|Googlebot|Google-InspectionTool|Googlebot-Image|AdsBot-Google|Mediapartners-Google|Storebot-Google|Slurp|Yahoo|YahooSeeker|YahooBot|DuckDuckBot|YandexBot|Applebot|Baiduspider|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Pinterestbot|SemrushBot|AhrefsBot|PetalBot|Bytespider|MJ12bot|DotBot" search_engine_bot=1
+  SetEnvIf Remote_Addr "^40\.7[7-9]\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^40\.8[0-9]\." search_engine_bot=1
   SetEnvIf Remote_Addr "^157\.5[56]\." search_engine_bot=1
   SetEnvIf Remote_Addr "^207\.46\." search_engine_bot=1
-  SetEnvIf Remote_Addr "^13\.6[67]\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^13\.6[6-9]\." search_engine_bot=1
   SetEnvIf Remote_Addr "^52\.167\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^65\.5[25]\." search_engine_bot=1
   SetEnvIf Remote_Addr "^66\.249\." search_engine_bot=1
   SetEnvIf Remote_Addr "^64\.233\." search_engine_bot=1
   SetEnvIf Remote_Addr "^72\.14\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^74\.125\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^209\.85\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^216\.(58|239)\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^66\.196\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^68\.142\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^72\.30\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^98\.13[6-9]\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^5\.255\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^87\.250\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^93\.158\." search_engine_bot=1
+  SetEnvIf Remote_Addr "^17\.(58|248)\." search_engine_bot=1
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "index, follow, max-image-preview:large" env=search_engine_bot
 </IfModule>
 
 # ========================================================
@@ -67,7 +89,7 @@ RewriteRule ^(.*)/$ /$1 [L,R=301]
 # 5B. CRAWLER STATIC BLOG SNAPSHOTS (bypass Hostinger hCDN/WAF 403)
 # ========================================================
 RewriteCond %{ENV:search_engine_bot} =1 [OR]
-RewriteCond %{HTTP_USER_AGENT} (bingbot|BingPreview|msnbot|Googlebot|Google-InspectionTool|Googlebot-Image|AdsBot-Google|Mediapartners-Google|Slurp|DuckDuckBot|YandexBot|Applebot|SemrushBot|AhrefsBot|PetalBot|Bytespider) [NC]
+RewriteCond %{HTTP_USER_AGENT} (bingbot|BingPreview|msnbot|adidxbot|Googlebot|Google-InspectionTool|Googlebot-Image|AdsBot-Google|Mediapartners-Google|Slurp|Yahoo|YahooSeeker|YahooBot|DuckDuckBot|YandexBot|Applebot|SemrushBot|AhrefsBot|PetalBot|Bytespider) [NC]
 RewriteCond %{DOCUMENT_ROOT}/storage/blog-static/$1.html -f
 RewriteRule ^([a-zA-Z0-9-]+)$ storage/blog-static/$1.html [L]
 
