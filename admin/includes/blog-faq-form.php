@@ -48,7 +48,7 @@ if (empty($blog_faqs)) {
 
     repeater.querySelectorAll('.blog-faq-remove').forEach(bindRemove);
 
-    document.getElementById('blogFaqAdd').addEventListener('click', function () {
+    document.getElementById('blogFaqAdd')?.addEventListener('click', function () {
         var row = document.createElement('div');
         row.className = 'row g-2 mb-3 blog-faq-row';
         row.innerHTML = '<div class="col-md-5"><input type="text" name="faq_q[]" class="form-control bg-dark text-white" placeholder="Question"></div>'

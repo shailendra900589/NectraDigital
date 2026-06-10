@@ -6,6 +6,11 @@
 if (!function_exists('blog_orphan_ensure_schema')) {
     function blog_orphan_ensure_schema($conn): void
     {
+        if (is_file(__DIR__ . '/blog_schema.php')) {
+            require_once __DIR__ . '/blog_schema.php';
+            blog_schema_ensure($conn);
+            return;
+        }
         static $done = false;
         if ($done) {
             return;
@@ -59,8 +64,10 @@ if (!function_exists('blog_signal_post_indexed')) {
         require_once $bootstrap;
 
         $url = rtrim(SITE_URL, '/') . '/' . $slug;
-        \Growth\Engines\DiscoveryEngine::enqueueUrl($url);
-        \Growth\Engines\DiscoveryEngine::signalUrls([$url]);
-        \Growth\Engines\IndexingEngine::submitBingWebmasterUrls([$url], false);
+        try {
+            \Growth\Engines\DiscoveryEngine::enqueueUrl($url);
+        } catch (\Throwable $e) {
+            error_log('blog_signal_post_indexed: ' . $e->getMessage());
+        }
     }
 }

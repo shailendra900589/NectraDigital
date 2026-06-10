@@ -1,16 +1,26 @@
 <?php
 session_start();
 if (!isset($_SESSION['admin_logged_in'])) exit;
-include '../includes/db.php';
+require_once '../includes/db.php';
 require_once '../includes/ckeditor.php';
 require_once '../includes/blog_orphan.php';
 require_once '../includes/blog_faq.php';
-blog_orphan_ensure_schema($conn);
-blog_faq_ensure_schema($conn);
+require_once '../includes/blog_schema.php';
 
-$id = intval($_GET['id']);
-$result = $conn->query("SELECT * FROM blog_posts WHERE id=$id");
-$post = $result->fetch_assoc();
+blog_schema_ensure($conn);
+
+$id = intval($_GET['id'] ?? 0);
+if ($id <= 0) {
+    header('Location: dashboard.php?page=blog');
+    exit;
+}
+
+$result = $conn->query("SELECT * FROM blog_posts WHERE id=" . $id);
+$post = $result ? $result->fetch_assoc() : null;
+if (!$post) {
+    header('Location: dashboard.php?page=blog');
+    exit;
+}
 
 function upload_image($file) {
     $target_dir = "../assets/uploads/";
@@ -21,6 +31,8 @@ function upload_image($file) {
     if (move_uploaded_file($file["tmp_name"], $target_dir . $new_name)) return ["success" => "assets/uploads/" . $new_name];
     return ["error" => "Upload failed."];
 }
+
+$error = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $title = sanitize_db_text($_POST['title']);
@@ -34,7 +46,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $raw_slug = !empty($input_slug) ? $input_slug : $title;
     $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $raw_slug), '-'));
 
-    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+    if ($slug === '') {
+        $error = 'Invalid slug — please enter a title or slug.';
+    }
+
+    if ($error === null && isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $upload = upload_image($_FILES['image']);
         if (isset($upload['error'])) {
             $error = $upload['error'];
@@ -43,15 +59,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    if (!isset($error)) {
-        $stmt = $conn->prepare("UPDATE blog_posts SET title=?, category=?, image=?, content=?, slug=?, meta_description=?, faq_json=?, is_orphan=? WHERE id=?");
-        $stmt->bind_param("sssssssii", $title, $cat, $img_path, $content, $slug, $meta_desc, $faq_json, $is_orphan, $id);
-        if ($stmt->execute()) {
+    if ($error === null) {
+        $result = blog_update_post($conn, $id, [
+            'title' => $title,
+            'category' => $cat,
+            'image' => $img_path,
+            'content' => $content,
+            'slug' => $slug,
+            'meta_description' => $meta_desc,
+            'faq_json' => $faq_json,
+            'is_orphan' => $is_orphan,
+        ]);
+
+        if (!empty($result['ok'])) {
             blog_signal_post_indexed($slug, $post['created_at'] ?? null);
             header("Location: dashboard.php?page=blog");
+            exit;
         }
+        $error = 'Could not update post: ' . ($result['error'] ?? 'Unknown database error');
     }
 }
+
 $post_is_orphan = blog_is_orphan($post);
 $blog_faqs = blog_faq_decode($post['faq_json'] ?? null);
 ?>
@@ -66,7 +94,7 @@ $blog_faqs = blog_faq_decode($post['faq_json'] ?? null);
 <body class="admin-editor p-5">
     <div class="container">
         <h3>Edit Intelligence: <span class="text-info"><?php echo nectra_display_text($post['title']); ?></span></h3>
-        <?php if(isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
+        <?php if($error): ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
         <form method="POST" class="mt-4" enctype="multipart/form-data">
             <div class="row">
                 <div class="col-md-6 mb-3">

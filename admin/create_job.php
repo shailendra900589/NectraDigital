@@ -1,8 +1,10 @@
 <?php
 session_start();
 if (!isset($_SESSION['admin_logged_in'])) exit;
-include '../includes/db.php';
+require_once '../includes/db.php';
 require_once '../includes/ckeditor.php';
+
+$error = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $title = clean_input($_POST['position']);
@@ -11,9 +13,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $desc = $_POST['description'];
 
     $stmt = $conn->prepare("INSERT INTO careers (position, stack, location, description) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $title, $stack, $loc, $desc);
-    if ($stmt->execute()) {
-        header("Location: dashboard.php?page=careers");
+    if (!$stmt) {
+        $error = 'Database error: ' . ($conn->error ?: 'Could not prepare statement. Check careers table exists.');
+    } else {
+        $stmt->bind_param("ssss", $title, $stack, $loc, $desc);
+        if ($stmt->execute()) {
+            header("Location: dashboard.php?page=careers");
+            exit;
+        }
+        $error = 'Could not save job: ' . ($stmt->error ?: 'Insert failed');
     }
 }
 ?>
@@ -28,6 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body class="admin-editor p-5">
     <div class="container">
         <h3 class="mb-4">Initialize Recruitment Protocol</h3>
+        <?php if($error): ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
         <form method="POST">
             <div class="row g-3">
                 <div class="col-md-6">

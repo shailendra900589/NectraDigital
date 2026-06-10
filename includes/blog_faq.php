@@ -6,13 +6,18 @@
 if (!function_exists('blog_faq_ensure_schema')) {
     function blog_faq_ensure_schema($conn): void
     {
+        if (is_file(__DIR__ . '/blog_schema.php')) {
+            require_once __DIR__ . '/blog_schema.php';
+            blog_schema_ensure($conn);
+            return;
+        }
         static $done = false;
         if ($done) {
             return;
         }
         $col = @$conn->query("SHOW COLUMNS FROM blog_posts LIKE 'faq_json'");
         if ($col && $col->num_rows === 0) {
-            @$conn->query('ALTER TABLE blog_posts ADD COLUMN faq_json TEXT NULL DEFAULT NULL AFTER meta_description');
+            @$conn->query('ALTER TABLE blog_posts ADD COLUMN faq_json TEXT NULL');
         }
         $done = true;
     }

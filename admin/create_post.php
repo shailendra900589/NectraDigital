@@ -1,12 +1,13 @@
 <?php
 session_start();
 if (!isset($_SESSION['admin_logged_in'])) exit;
-include '../includes/db.php';
+require_once '../includes/db.php';
 require_once '../includes/ckeditor.php';
 require_once '../includes/blog_orphan.php';
 require_once '../includes/blog_faq.php';
-blog_orphan_ensure_schema($conn);
-blog_faq_ensure_schema($conn);
+require_once '../includes/blog_schema.php';
+
+blog_schema_ensure($conn);
 
 date_default_timezone_set('Asia/Kolkata');
 
@@ -19,6 +20,8 @@ function upload_image($file) {
     if (move_uploaded_file($file["tmp_name"], $target_dir . $new_name)) return ["success" => "assets/uploads/" . $new_name];
     return ["error" => "Upload failed."];
 }
+
+$error = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $title = sanitize_db_text($_POST['title']);
@@ -33,24 +36,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $raw_slug = !empty($input_slug) ? $input_slug : $title;
     $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $raw_slug), '-'));
 
-    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+    if ($slug === '') {
+        $error = 'Invalid slug — please enter a title or slug.';
+    }
+
+    if ($error === null && isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $upload = upload_image($_FILES['image']);
         if (isset($upload['error'])) {
             $error = $upload['error'];
         } else {
             $img_path = $upload['success'];
         }
-    } else {
+    } elseif ($error === null) {
         $error = "Featured Image is required.";
     }
 
-    if (!isset($error)) {
-        $stmt = $conn->prepare("INSERT INTO blog_posts (title, category, image, content, slug, meta_description, faq_json, created_at, is_orphan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssssi", $title, $cat, $img_path, $content, $slug, $meta_desc, $faq_json, $scheduled_time, $is_orphan);
-        if ($stmt->execute()) {
+    if ($error === null) {
+        $result = blog_insert_post($conn, [
+            'title' => $title,
+            'category' => $cat,
+            'image' => $img_path,
+            'content' => $content,
+            'slug' => $slug,
+            'meta_description' => $meta_desc,
+            'faq_json' => $faq_json,
+            'created_at' => $scheduled_time,
+            'is_orphan' => $is_orphan,
+        ]);
+
+        if (!empty($result['ok'])) {
             blog_signal_post_indexed($slug, $scheduled_time);
             header("Location: dashboard.php?page=blog");
+            exit;
         }
+        $error = 'Could not save post: ' . ($result['error'] ?? 'Unknown database error');
     }
 }
 ?>
@@ -65,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body class="admin-editor p-5">
     <div class="container">
         <h3>Create New Intelligence</h3>
-        <?php if(isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
+        <?php if($error): ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
         <form method="POST" class="mt-4" enctype="multipart/form-data">
             <div class="row">
                 <div class="col-md-6 mb-3">
