@@ -147,10 +147,15 @@ echo $header_html;
 // 6. AD ENGINE
 function render_ad_unit(array $ad, string $variant = 'banner'): bool
 {
+    if (!ad_has_displayable_content($ad)) {
+        return false;
+    }
+
     $isSidebar = ($variant === 'sidebar');
     $html = '';
+    $isImageAd = (($ad['type'] ?? '') === 'image');
 
-    if ($ad['type'] === 'image') {
+    if ($isImageAd) {
         $ad_img = $ad['image_path'] ?? '';
         if ($ad_img && strpos($ad_img, 'http') === false) {
             $ad_img = SITE_URL . '/' . ltrim($ad_img, '/');
@@ -167,16 +172,16 @@ function render_ad_unit(array $ad, string $variant = 'banner'): bool
                 }
                 $html .= '</a>';
             } else {
-                $html .= '<a href="' . $link . '" target="_blank" rel="noopener sponsored" style="display:block; margin-top:15px;">';
-                $html .= '<img src="' . htmlspecialchars($ad_img) . '" class="img-fluid rounded" alt="' . $title . '">';
+                $html .= '<a href="' . $link . '" target="_blank" rel="noopener sponsored" class="d-block">';
+                $html .= '<img src="' . htmlspecialchars($ad_img) . '" class="img-fluid rounded nectra-ad-img" alt="' . $title . '" loading="lazy">';
                 $html .= '</a>';
             }
         }
     } elseif (trim($ad['ad_code'] ?? '') !== '') {
         if ($isSidebar) {
-            $html .= '<div class="sidebar-ad-code p-3">' . ($ad['ad_code'] ?? '') . '</div>';
+            $html .= '<div class="sidebar-ad-code">' . ($ad['ad_code'] ?? '') . '</div>';
         } else {
-            $html .= '<div class="mt-3" style="margin-top:15px; color:#fff;">' . ($ad['ad_code'] ?? '') . '</div>';
+            $html .= '<div class="nectra-ad-code-inner">' . ($ad['ad_code'] ?? '') . '</div>';
         }
     }
 
@@ -184,14 +189,16 @@ function render_ad_unit(array $ad, string $variant = 'banner'): bool
         return false;
     }
 
+    $stateClass = $isImageAd ? 'nectra-ad-slot--filled' : 'nectra-ad-slot--pending';
+
     if ($isSidebar) {
-        echo '<div class="sidebar-ad-card border border-secondary rounded overflow-hidden bg-dark hover-neon-border" style="transition:0.3s;">';
+        echo '<div class="sidebar-ad-card nectra-ad-slot ' . $stateClass . ' border border-secondary rounded overflow-hidden bg-dark hover-neon-border">';
         echo '<span class="badge bg-secondary sidebar-ad-badge">SPONSORED</span>';
         echo $html;
         echo '</div>';
     } else {
-        echo '<div class="ad-container my-5 position-relative p-3 border border-secondary rounded" style="background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(5px); z-index: 5; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">';
-        echo '<span class="position-absolute top-0 start-0 badge bg-secondary" style="font-size:10px; opacity:0.8;">SPONSORED</span>';
+        echo '<div class="ad-container nectra-ad-slot ' . $stateClass . ' my-4 position-relative p-3 border border-secondary rounded">';
+        echo '<span class="position-absolute top-0 start-0 badge bg-secondary nectra-ad-label">SPONSORED</span>';
         echo $html;
         echo '</div>';
     }
@@ -199,7 +206,7 @@ function render_ad_unit(array $ad, string $variant = 'banner'): bool
     return true;
 }
 
-function get_ad($placement, $conn)
+function get_ad($placement, $conn): bool
 {
     $check = $conn->query("SHOW TABLES LIKE 'ads'");
     if (!$check || $check->num_rows === 0) {
@@ -210,8 +217,8 @@ function get_ad($placement, $conn)
     $sql = "SELECT * FROM ads WHERE placement='$placement' AND (status='active' OR status IS NULL OR status='') ORDER BY RAND() LIMIT 1";
     $res = $conn->query($sql);
     if ($res && $res->num_rows > 0) {
-        render_ad_unit($res->fetch_assoc(), 'banner');
-        return true;
+        $ad = $res->fetch_assoc();
+        return render_ad_unit($ad, 'banner');
     }
     return false;
 }
@@ -332,13 +339,17 @@ function render_sidebar_ads($conn, int $target = 20): int
     return $rendered;
 }
 
-$check_tables = $conn->query("SHOW TABLES LIKE 'ads'");
-if($check_tables && $check_tables->num_rows > 0) {
-    $check_sidebar = $conn->query("SELECT id FROM ads WHERE (status='active' OR status IS NULL OR status='')");
-    $has_sidebar = ($check_sidebar && $check_sidebar->num_rows > 0);
-} else {
-    $has_sidebar = false;
+function count_displayable_sidebar_ads(mysqli $conn, int $target = 20): int
+{
+    $check = $conn->query("SHOW TABLES LIKE 'ads'");
+    if (!$check || $check->num_rows === 0) {
+        return 0;
+    }
+    return count(build_sidebar_ad_slots($conn, $target));
 }
+
+$sidebar_ad_count = count_displayable_sidebar_ads($conn, 20);
+$has_sidebar = $sidebar_ad_count > 0;
 $col_class = $has_sidebar ? "col-lg-8" : "col-lg-10 mx-auto";
 
 // 7. COMMENT LOGIC
@@ -460,6 +471,29 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
     .sidebar-ad-caption { background: rgba(20, 20, 20, 0.9); }
     .sidebar-ad-code { color: #fff; font-size: 0.875rem; overflow: hidden; }
     .sidebar-ad-card.hover-neon-border:hover { border-color: #00f2ff !important; box-shadow: 0 0 15px rgba(0, 242, 255, 0.15); }
+    /* Hide ad slots until content actually loads — no blank placeholders on mobile */
+    .nectra-ad-slot--pending {
+        display: none !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        overflow: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    .nectra-ad-slot--filled {
+        display: block;
+        background: rgba(10, 10, 10, 0.85);
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .nectra-ad-slot--filled.ad-container { z-index: 5; }
+    .nectra-ad-label { font-size: 10px; opacity: 0.8; }
+    @media (max-width: 991.98px) {
+        .sidebar-ad-column:not(:has(.nectra-ad-slot--filled)) { display: none !important; }
+    }
 </style>
 
 <main>
@@ -484,7 +518,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
 
     <article class="py-5">
         <div class="container">
-            <div class="row justify-content-center"><div class="col-12"><?php get_ad('header', $conn); ?></div></div>
+            <?php ob_start(); $header_ad_shown = get_ad('header', $conn); $header_ad_html = ob_get_clean(); ?>
+            <?php if ($header_ad_shown && trim($header_ad_html) !== ''): ?>
+            <div class="row justify-content-center"><div class="col-12"><?php echo $header_ad_html; ?></div></div>
+            <?php endif; ?>
 
             <div class="row justify-content-center mt-4 align-items-start">
                 <div class="<?php echo $col_class; ?>">
@@ -592,13 +629,19 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                     </div>
                 </div>
 
-                <?php if($has_sidebar): ?>
+                <?php if($has_sidebar):
+                    ob_start();
+                    $rendered_sidebar = render_sidebar_ads($conn, 20);
+                    $sidebar_html = ob_get_clean();
+                ?>
+                <?php if ($rendered_sidebar > 0 && trim($sidebar_html) !== ''): ?>
                 <div class="col-lg-4 mt-5 mt-lg-0 ps-lg-5">
                     <aside class="sidebar-ad-column" aria-label="Sponsored content">
                         <h6 class="text-white-50 text-uppercase small mb-3 border-bottom border-secondary pb-2 text-center">Sponsored Intel</h6>
-                        <?php render_sidebar_ads($conn, 20); ?>
+                        <?php echo $sidebar_html; ?>
                     </aside>
                 </div>
+                <?php endif; ?>
                 <?php endif; ?>
 
             </div>
@@ -708,6 +751,87 @@ function animate() {
     requestAnimationFrame(animate);
 }
 animate();
+</script>
+
+<script>
+(function () {
+    'use strict';
+
+    function slotHasContent(slot) {
+        var img = slot.querySelector('img.nectra-ad-img, img.sidebar-ad-img');
+        if (img) {
+            if (img.complete && img.naturalHeight > 10) return true;
+            if (img.offsetHeight > 10) return true;
+        }
+
+        var ins = slot.querySelector('ins.adsbygoogle');
+        if (ins) {
+            if (ins.offsetHeight > 40) return true;
+            var iframe = ins.querySelector('iframe');
+            if (iframe && iframe.offsetHeight > 40) return true;
+            if (ins.getAttribute('data-ad-status') === 'filled') return true;
+        }
+
+        var iframe = slot.querySelector('iframe');
+        if (iframe && iframe.offsetHeight > 40) return true;
+
+        var inner = slot.querySelector('.nectra-ad-code-inner, .sidebar-ad-code');
+        if (inner && !ins && inner.offsetHeight > 30 && inner.innerHTML.trim() !== '') {
+            return true;
+        }
+
+        return false;
+    }
+
+    function revealSlot(slot) {
+        slot.classList.remove('nectra-ad-slot--pending');
+        slot.classList.add('nectra-ad-slot--filled');
+    }
+
+    function hideSlot(slot) {
+        slot.classList.remove('nectra-ad-slot--filled');
+        slot.classList.add('nectra-ad-slot--pending');
+    }
+
+    function checkAdSlots() {
+        document.querySelectorAll('.nectra-ad-slot').forEach(function (slot) {
+            if (slotHasContent(slot)) {
+                revealSlot(slot);
+            } else if (slot.querySelector('ins.adsbygoogle') || slot.querySelector('.nectra-ad-code-inner, .sidebar-ad-code')) {
+                hideSlot(slot);
+            }
+        });
+
+        document.querySelectorAll('.sidebar-ad-column').forEach(function (col) {
+            if (!col.querySelector('.nectra-ad-slot--filled')) {
+                col.style.display = 'none';
+            }
+        });
+    }
+
+    document.querySelectorAll('img.nectra-ad-img, img.sidebar-ad-img').forEach(function (img) {
+        img.addEventListener('load', checkAdSlots);
+        img.addEventListener('error', function () {
+            var slot = img.closest('.nectra-ad-slot');
+            if (slot) hideSlot(slot);
+            checkAdSlots();
+        });
+    });
+
+    checkAdSlots();
+    [600, 1500, 3000, 6000].forEach(function (ms) { setTimeout(checkAdSlots, ms); });
+
+    if (window.MutationObserver) {
+        var debounce;
+        var obs = new MutationObserver(function () {
+            clearTimeout(debounce);
+            debounce = setTimeout(checkAdSlots, 300);
+        });
+        document.querySelectorAll('.nectra-ad-slot').forEach(function (slot) {
+            obs.observe(slot, { childList: true, subtree: true, attributes: true });
+        });
+    }
+})();
 </script>
 
 <?php include 'includes/footer.php'; ?>
