@@ -4,6 +4,8 @@ ob_start();
 header('Content-Type: text/html; charset=utf-8');
 
 require_once 'includes/db.php';
+require_once 'includes/blog_orphan.php';
+blog_orphan_ensure_schema($conn);
 
 // FORCE DB CHARSET
 if(isset($conn)) {
@@ -620,7 +622,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                 <div class="row g-4">
                     <?php
                     $pid = $post['id'];
-                    $sql = "SELECT * FROM blog_posts WHERE id != ? ORDER BY created_at DESC LIMIT 9";
+                    $listWhere = blog_listable_sql();
+                    $sql = "SELECT * FROM blog_posts WHERE id != ? AND {$listWhere} ORDER BY created_at DESC LIMIT 9";
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param("i", $pid);
                     $stmt->execute();

@@ -1,6 +1,10 @@
 <?php
 require_once 'includes/db.php';
 require_once 'includes/seo-data.php';
+require_once 'includes/blog_orphan.php';
+
+blog_orphan_ensure_schema($conn);
+$listWhere = blog_listable_sql();
 
 header('Content-Type: text/plain; charset=utf-8');
 
@@ -43,7 +47,7 @@ echo "- [Disclaimer](" . SITE_URL . "/disclaimer)\n";
 echo "- [Editorial Guidelines](" . SITE_URL . "/editorial-guidelines)\n\n";
 
 echo "## Blog Posts\n";
-$sql = "SELECT title, slug FROM blog_posts ORDER BY created_at DESC";
+$sql = "SELECT title, slug FROM blog_posts WHERE {$listWhere} ORDER BY created_at DESC";
 $result = $conn->query($sql);
 if($result && $result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {

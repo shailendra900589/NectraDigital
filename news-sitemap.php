@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/blog_orphan.php';
 require_once __DIR__ . '/includes/growth/bootstrap.php';
+
+blog_orphan_ensure_schema($conn);
+$listWhere = blog_listable_sql();
 
 header('Content-Type: application/xml; charset=utf-8');
 
@@ -10,7 +14,7 @@ echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="ht
 
 // Blog posts (Google News eligible content)
 if (isset($conn) && $conn instanceof mysqli) {
-    $res = @$conn->query("SELECT title, slug, created_at, category FROM blog_posts ORDER BY created_at DESC LIMIT 30");
+    $res = @$conn->query("SELECT title, slug, created_at, category FROM blog_posts WHERE {$listWhere} ORDER BY created_at DESC LIMIT 30");
     if ($res) {
         while ($row = $res->fetch_assoc()) {
             $post_url = $base . '/' . htmlspecialchars($row['slug']);

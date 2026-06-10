@@ -3,6 +3,8 @@ session_start();
 if (!isset($_SESSION['admin_logged_in'])) exit;
 include '../includes/db.php';
 require_once '../includes/ckeditor.php';
+require_once '../includes/blog_orphan.php';
+blog_orphan_ensure_schema($conn);
 
 date_default_timezone_set('Asia/Kolkata');
 
@@ -22,6 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $content = $_POST['content'];
     $input_slug = sanitize_db_text($_POST['slug']);
     $meta_desc = sanitize_db_text($_POST['meta_description']);
+    $is_orphan = !empty($_POST['is_orphan']) ? 1 : 0;
     $img_path = "";
     $scheduled_time = !empty($_POST['scheduled_time']) ? clean_input($_POST['scheduled_time']) : date('Y-m-d H:i:s');
     $raw_slug = !empty($input_slug) ? $input_slug : $title;
@@ -39,9 +42,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (!isset($error)) {
-        $stmt = $conn->prepare("INSERT INTO blog_posts (title, category, image, content, slug, meta_description, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssssss", $title, $cat, $img_path, $content, $slug, $meta_desc, $scheduled_time);
-        if ($stmt->execute()) header("Location: dashboard.php?page=blog");
+        $stmt = $conn->prepare("INSERT INTO blog_posts (title, category, image, content, slug, meta_description, created_at, is_orphan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssssi", $title, $cat, $img_path, $content, $slug, $meta_desc, $scheduled_time, $is_orphan);
+        if ($stmt->execute()) {
+            blog_signal_post_indexed($slug, $scheduled_time);
+            header("Location: dashboard.php?page=blog");
+        }
     }
 }
 ?>
@@ -82,6 +88,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="col-12 mb-3">
                     <label>SEO Meta Description (Max 160 chars)</label>
                     <textarea name="meta_description" class="form-control bg-dark text-white" rows="2" maxlength="160" placeholder="Plain text summary for search engines..."></textarea>
+                </div>
+                <div class="col-12 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" name="is_orphan" id="is_orphan" value="1">
+                        <label class="form-check-label" for="is_orphan">
+                            <strong>Orphan post</strong> — direct URL only, hidden from Insights &amp; site listings, still auto-indexed (sitemap + IndexNow)
+                        </label>
+                    </div>
                 </div>
                 <div class="col-12 mb-3">
                     <label>Content Protocol</label>

@@ -135,6 +135,51 @@ class IndexingEngine
         ];
     }
 
+    /** Submit URLs via Bing Webmaster Tools URL Submission API (requires API key). */
+    public static function submitBingWebmasterUrls(array $urls): array
+    {
+        if (ge_setting('index_engine_bing_api', '1') !== '1') {
+            return ['ok' => false, 'skipped' => true, 'message' => 'Bing API disabled'];
+        }
+
+        $apiKey = trim((string)ge_setting('bing_webmaster_api_key', ''));
+        if ($apiKey === '') {
+            return ['ok' => false, 'skipped' => true, 'message' => 'No Bing Webmaster API key'];
+        }
+
+        require_once __DIR__ . '/../../i18n.php';
+        $urls = nectra_expand_urls_for_languages($urls);
+        $urls = array_values(array_unique(array_filter($urls)));
+        if (empty($urls)) {
+            return ['ok' => false, 'message' => 'No URLs provided'];
+        }
+
+        $siteUrl = rtrim(trim((string)ge_setting('bing_webmaster_site_url', SITE_URL)), '/');
+        $endpoint = 'https://ssl.bing.com/webmaster/api.svc/json/SubmitUrlbatch?apikey=' . urlencode($apiKey);
+        $ok = false;
+        $submitted = 0;
+        $last = [];
+
+        foreach (array_chunk($urls, 500) as $chunk) {
+            $payload = json_encode([
+                'siteUrl' => $siteUrl,
+                'urlList' => $chunk,
+            ]);
+            $last = self::httpPost($endpoint, $payload, ['Content-Type: application/json; charset=utf-8']);
+            if (!empty($last['ok'])) {
+                $ok = true;
+                $submitted += count($chunk);
+            }
+        }
+
+        return [
+            'ok' => $ok,
+            'urls' => count($urls),
+            'urls_submitted' => $submitted,
+            'engines' => ['bing_webmaster_api' => $last],
+        ];
+    }
+
     /** Ping sitemap to Google and Bing webmaster endpoints. */
     public static function pingSitemap(): array
     {
@@ -303,11 +348,12 @@ class IndexingEngine
 
         $urls = array_column($pending, 'url');
         $batch = self::submitIndexNow($urls);
+        $bingApi = self::submitBingWebmasterUrls($urls);
         $sitemap = self::pingSitemap();
 
         $processed = 0;
         $failed = 0;
-        $responseLog = json_encode(['indexnow' => $batch, 'sitemap' => $sitemap], JSON_UNESCAPED_SLASHES);
+        $responseLog = json_encode(['indexnow' => $batch, 'bing_api' => $bingApi, 'sitemap' => $sitemap], JSON_UNESCAPED_SLASHES);
 
         foreach ($pending as $item) {
             $id = (int)$item['id'];

@@ -1,5 +1,7 @@
 <?php 
-require_once 'includes/db.php'; 
+require_once 'includes/db.php';
+require_once 'includes/blog_orphan.php';
+blog_orphan_ensure_schema($conn);
 $page_title = "Digital Intelligence & Insights";
 $page_desc = "Nectra Digital Insights. Deep dives into AI, Tech, and SEO protocols.";
 include 'includes/header.php'; 
@@ -13,14 +15,15 @@ if ($current_page < 1) $current_page = 1;
 
 $offset = ($current_page - 1) * $posts_per_page;
 
-// Count total posts
-$total_sql = "SELECT COUNT(*) as total FROM blog_posts";
+// Count total posts (listed only)
+$listWhere = blog_listable_sql();
+$total_sql = "SELECT COUNT(*) as total FROM blog_posts WHERE {$listWhere}";
 $total_result = $conn->query($total_sql);
 $total_rows = $total_result->fetch_assoc()['total'];
 $total_pages = ceil($total_rows / $posts_per_page);
 
-// FETCH POSTS (Using your exact original query logic, just adding the limit for pagination)
-$sql = "SELECT * FROM blog_posts ORDER BY created_at DESC LIMIT $posts_per_page OFFSET $offset";
+// FETCH POSTS — exclude orphan (direct-link-only) posts
+$sql = "SELECT * FROM blog_posts WHERE {$listWhere} ORDER BY created_at DESC LIMIT $posts_per_page OFFSET $offset";
 $result = $conn->query($sql);
 ?>
 

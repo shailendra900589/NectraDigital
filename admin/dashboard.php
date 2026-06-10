@@ -2,6 +2,8 @@
 session_start();
 if (!isset($_SESSION['admin_logged_in'])) { header("Location: login.php"); exit; }
 include '../includes/db.php';
+require_once '../includes/blog_orphan.php';
+blog_orphan_ensure_schema($conn);
 
 $growthMsg = null;
 $growthStats = ['ready' => false];
@@ -36,6 +38,17 @@ function upload_ad_image($file) {
 if (isset($_GET['delete_post'])) {
     $conn->query("DELETE FROM blog_posts WHERE id=".intval($_GET['delete_post']));
     header("Location: dashboard.php?page=blog&msg=deleted"); exit;
+}
+if (isset($_GET['toggle_orphan'])) {
+    $oid = (int)$_GET['toggle_orphan'];
+    if ($oid > 0) {
+        $conn->query("UPDATE blog_posts SET is_orphan = IF(COALESCE(is_orphan, 0) = 1, 0, 1) WHERE id = {$oid}");
+        $res = $conn->query("SELECT slug, created_at FROM blog_posts WHERE id = {$oid} LIMIT 1");
+        if ($res && ($row = $res->fetch_assoc())) {
+            blog_signal_post_indexed($row['slug'], $row['created_at']);
+        }
+    }
+    header("Location: dashboard.php?page=blog&msg=orphan_toggled"); exit;
 }
 if (isset($_GET['del_ad'])) {
     $conn->query("DELETE FROM ads WHERE id=".intval($_GET['del_ad']));
@@ -335,18 +348,27 @@ if (isset($_POST['update_hire_status'])) {
                 <a href="create_post.php" class="btn btn-info"><i class="fas fa-plus"></i> New Protocol</a>
               </div>';
         if(isset($_GET['msg']) && $_GET['msg'] == 'deleted') echo "<div class='alert alert-danger'>Protocol Deleted.</div>";
+        if(isset($_GET['msg']) && $_GET['msg'] == 'orphan_toggled') echo "<div class='alert alert-info'>Visibility updated. Orphan posts stay live + indexed but hidden from site listings.</div>";
 
         $sql = "SELECT * FROM blog_posts ORDER BY created_at DESC";
         $result = $conn->query($sql);
 
         echo '<div class="table-responsive"><table class="table table-dark table-hover align-middle">
-                <thead><tr><th>Date</th><th>Title</th><th>Category</th><th>Actions</th></tr></thead><tbody>';
+                <thead><tr><th>Date</th><th>Title</th><th>Category</th><th>Visibility</th><th>Actions</th></tr></thead><tbody>';
         while($row = $result->fetch_assoc()) {
+            $isOrphan = blog_is_orphan($row);
+            $visBadge = $isOrphan
+                ? '<span class="badge bg-warning text-dark"><i class="fas fa-unlink me-1"></i>Orphan</span>'
+                : '<span class="badge bg-success"><i class="fas fa-list me-1"></i>Listed</span>';
+            $toggleTitle = $isOrphan ? 'Show on website listings' : 'Make orphan (direct link only)';
+            $toggleIcon = $isOrphan ? 'fa-eye' : 'fa-eye-slash';
             echo "<tr>
                     <td class='text-white-50 small'>".date('M d', strtotime($row['created_at']))."</td>
                     <td class='fw-bold text-white'>" . nectra_display_text($row['title']) . "</td>
                     <td><span class='badge bg-secondary'>" . nectra_display_text($row['category']) . "</span></td>
+                    <td>{$visBadge}</td>
                     <td>
+                        <a href='?page=blog&toggle_orphan={$row['id']}' class='btn btn-sm btn-outline-info me-2' title='" . htmlspecialchars($toggleTitle) . "' onclick='return confirm(\"" . ($isOrphan ? 'Show this post on Insights and site listings?' : 'Make orphan? Post stays live + indexed but hidden from all listings.') . "\")'><i class='fas {$toggleIcon}'></i></a>
                         <a href='edit_post.php?id={$row['id']}' class='btn btn-sm btn-outline-warning me-2'><i class='fas fa-pen'></i></a>
                         <a href='?page=blog&delete_post={$row['id']}' class='btn btn-sm btn-outline-danger' onclick='return confirm(\"Purge this protocol?\")'><i class='fas fa-trash'></i></a>
                     </td>

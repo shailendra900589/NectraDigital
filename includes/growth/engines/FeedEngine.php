@@ -17,7 +17,10 @@ class FeedEngine
         $items = [];
 
         if (isset($conn) && $conn instanceof \mysqli) {
-            $res = @$conn->query("SELECT title, slug, content, category, created_at, image FROM blog_posts ORDER BY created_at DESC LIMIT " . (int)min($limit, 30));
+            require_once __DIR__ . '/../../blog_orphan.php';
+            blog_orphan_ensure_schema($conn);
+            $listWhere = blog_listable_sql();
+            $res = @$conn->query("SELECT title, slug, content, category, created_at, image FROM blog_posts WHERE {$listWhere} ORDER BY created_at DESC LIMIT " . (int)min($limit, 30));
             if ($res) {
                 while ($row = $res->fetch_assoc()) {
                     $items[] = self::itemFromBlog($row);

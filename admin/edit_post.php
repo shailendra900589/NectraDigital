@@ -3,6 +3,8 @@ session_start();
 if (!isset($_SESSION['admin_logged_in'])) exit;
 include '../includes/db.php';
 require_once '../includes/ckeditor.php';
+require_once '../includes/blog_orphan.php';
+blog_orphan_ensure_schema($conn);
 
 $id = intval($_GET['id']);
 $result = $conn->query("SELECT * FROM blog_posts WHERE id=$id");
@@ -24,6 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $content = $_POST['content'];
     $input_slug = sanitize_db_text($_POST['slug']);
     $meta_desc = sanitize_db_text($_POST['meta_description']);
+    $is_orphan = !empty($_POST['is_orphan']) ? 1 : 0;
     $img_path = $post['image'];
     $raw_slug = !empty($input_slug) ? $input_slug : $title;
     $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $raw_slug), '-'));
@@ -38,11 +41,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (!isset($error)) {
-        $stmt = $conn->prepare("UPDATE blog_posts SET title=?, category=?, image=?, content=?, slug=?, meta_description=? WHERE id=?");
-        $stmt->bind_param("ssssssi", $title, $cat, $img_path, $content, $slug, $meta_desc, $id);
-        if ($stmt->execute()) header("Location: dashboard.php?page=blog");
+        $stmt = $conn->prepare("UPDATE blog_posts SET title=?, category=?, image=?, content=?, slug=?, meta_description=?, is_orphan=? WHERE id=?");
+        $stmt->bind_param("ssssssii", $title, $cat, $img_path, $content, $slug, $meta_desc, $is_orphan, $id);
+        if ($stmt->execute()) {
+            blog_signal_post_indexed($slug, $post['created_at'] ?? null);
+            header("Location: dashboard.php?page=blog");
+        }
     }
 }
+$post_is_orphan = blog_is_orphan($post);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -81,6 +88,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="col-12 mb-3">
                     <label>SEO Meta Description (Max 160 chars)</label>
                     <textarea name="meta_description" class="form-control bg-dark text-white" rows="2" maxlength="160"><?php echo isset($post['meta_description']) ? nectra_display_text($post['meta_description']) : ''; ?></textarea>
+                </div>
+                <div class="col-12 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" name="is_orphan" id="is_orphan" value="1" <?php echo !empty($post_is_orphan) ? 'checked' : ''; ?>>
+                        <label class="form-check-label" for="is_orphan">
+                            <strong>Orphan post</strong> — direct URL only, hidden from Insights &amp; site listings, still auto-indexed
+                        </label>
+                    </div>
                 </div>
                 <div class="col-12 mb-3">
                     <label>Content Protocol</label>

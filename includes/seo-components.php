@@ -166,8 +166,11 @@ function render_post_internal_links($conn, $post, $category) {
     $links[] = ['url' => '/hire-experts', 'title' => 'Hire Experts'];
     
     if ($conn) {
+        require_once __DIR__ . '/blog_orphan.php';
+        blog_orphan_ensure_schema($conn);
         $pid = $post['id'];
-        $stmt = $conn->prepare("SELECT slug, title FROM blog_posts WHERE id != ? AND category = ? ORDER BY created_at DESC LIMIT 4");
+        $listWhere = blog_listable_sql();
+        $stmt = $conn->prepare("SELECT slug, title FROM blog_posts WHERE id != ? AND category = ? AND {$listWhere} ORDER BY created_at DESC LIMIT 4");
         $stmt->bind_param("is", $pid, $category);
         $stmt->execute();
         $res = $stmt->get_result();

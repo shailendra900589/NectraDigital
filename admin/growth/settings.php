@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'indexnow_api_key', 'cron_token',
         'index_engine_indexnow', 'index_engine_bing', 'index_engine_yandex',
         'index_engine_duckduckgo', 'index_engine_google_sitemap', 'index_engine_bing_sitemap',
+        'bing_webmaster_api_key', 'bing_webmaster_site_url', 'index_engine_bing_api',
     ];
     $db = ge_conn();
     $stmt = $db->prepare("INSERT INTO ge_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
@@ -74,6 +75,23 @@ ge_admin_layout_start('Settings', 'settings');
             ?>
             <div class="col-md-4"><label class="form-label"><?php echo $label; ?></label><select name="index_engine_<?php echo $ek; ?>" class="form-select"><option value="1" <?php echo $val==='1'?'selected':''; ?>>Enabled</option><option value="0" <?php echo $val==='0'?'selected':''; ?>>Disabled</option></select></div>
             <?php endforeach; ?>
+
+            <div class="col-12"><hr><h2 class="h6">Bing Webmaster URL Submission API</h2></div>
+            <div class="col-md-6">
+                <label class="form-label">Bing Webmaster API Key</label>
+                <input type="text" name="bing_webmaster_api_key" class="form-control" value="<?php echo htmlspecialchars(ge_setting('bing_webmaster_api_key', '')); ?>" placeholder="Paste from Bing Webmaster → Settings → API Access">
+                <small class="text-muted">Auto-submits new blog URLs (including orphan posts) directly to Bing. Works alongside IndexNow.</small>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Bing Site URL</label>
+                <input type="url" name="bing_webmaster_site_url" class="form-control" value="<?php echo htmlspecialchars(ge_setting('bing_webmaster_site_url', SITE_URL)); ?>" placeholder="<?php echo htmlspecialchars(SITE_URL); ?>">
+                <small class="text-muted">Must match the verified site in Bing Webmaster.</small>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Bing URL API</label>
+                <?php $bingApiOn = ge_setting('index_engine_bing_api', '1'); ?>
+                <select name="index_engine_bing_api" class="form-select"><option value="1" <?php echo $bingApiOn==='1'?'selected':''; ?>>Enabled</option><option value="0" <?php echo $bingApiOn==='0'?'selected':''; ?>>Disabled</option></select>
+            </div>
 
             <div class="col-12"><hr><h2 class="h6">Founder / EEAT</h2></div>
             <div class="col-md-6"><label class="form-label">Founder Name</label><input type="text" name="founder_name" class="form-control" value="<?php echo htmlspecialchars(ge_setting('founder_name')); ?>"></div>
