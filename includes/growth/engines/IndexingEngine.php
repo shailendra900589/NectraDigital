@@ -304,6 +304,86 @@ class IndexingEngine
         ];
     }
 
+    /** Unified stats for admin dashboard + live API polling. */
+    public static function dashboardStats(bool $noCache = false): array
+    {
+        $pages = LandingPage::indexStatsFast(!$noCache);
+        $queue = IndexingQueue::stats();
+        $lastQueueAt = IndexingQueue::lastProcessedAt();
+        $lastRun = trim((string)ge_setting('indexing_last_run_at', ''));
+        $lastRunMeta = json_decode((string)ge_setting('indexing_last_run_meta', ''), true);
+        $lastSummary = self::lastSubmissionSummary();
+
+        $queueDone = (int)($queue['completed'] ?? 0) + (int)($queue['failed'] ?? 0);
+        $queueTotal = (int)($queue['total'] ?? 0);
+        $queuePct = $queueTotal > 0 ? min(100, (int)round(($queueDone / $queueTotal) * 100)) : 100;
+
+        return [
+            'pages' => $pages,
+            'queue' => $queue,
+            'queue_progress_pct' => $queuePct,
+            'last_queue_processed_at' => $lastQueueAt,
+            'last_cron_at' => $lastRun !== '' ? $lastRun : null,
+            'last_cron_meta' => is_array($lastRunMeta) ? $lastRunMeta : [],
+            'last_submission' => $lastSummary,
+            'updated_at' => date('c'),
+        ];
+    }
+
+    /** Re-queue landing pages stuck in submitted state for 30+ days. */
+    public static function resetStaleSubmitted(int $days = 30): array
+    {
+        if (!ge_table_exists('ge_landing_pages')) {
+            return ['reset' => 0, 'queued' => 0];
+        }
+        $days = max(7, min(90, $days));
+        $db = ge_conn();
+        $res = $db->query(
+            "SELECT id, slug FROM ge_landing_pages
+             WHERE status='published' AND index_status='submitted'
+             AND index_submitted_at IS NOT NULL
+             AND index_submitted_at < DATE_SUB(NOW(), INTERVAL {$days} DAY)
+             LIMIT 2000"
+        );
+        $reset = 0;
+        $queued = 0;
+        require_once __DIR__ . '/../../i18n.php';
+        if ($res) {
+            while ($row = $res->fetch_assoc()) {
+                $pid = (int)$row['id'];
+                $db->query("UPDATE ge_landing_pages SET index_status='pending', is_indexed=0 WHERE id={$pid}");
+                $reset++;
+                foreach (nectra_language_url_variants(SITE_URL . '/' . $row['slug']) as $variant) {
+                    if (IndexingQueue::enqueueUnique($variant, $pid)) {
+                        $queued++;
+                    }
+                }
+            }
+        }
+        self::logRun('reset_stale', ['reset' => $reset, 'queued' => $queued, 'days' => $days]);
+        return ['reset' => $reset, 'queued' => $queued];
+    }
+
+    public static function logRun(string $action, array $meta = []): void
+    {
+        if (!ge_table_exists('ge_settings')) {
+            return;
+        }
+        $payload = json_encode(array_merge(['action' => $action], $meta), JSON_UNESCAPED_SLASHES);
+        $now = date('Y-m-d H:i:s');
+        $db = ge_conn();
+        $stmt = $db->prepare("INSERT INTO ge_settings (setting_key, setting_value) VALUES ('indexing_last_run_at', ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+        if ($stmt) {
+            $stmt->bind_param('s', $now);
+            $stmt->execute();
+        }
+        $stmt2 = $db->prepare("INSERT INTO ge_settings (setting_key, setting_value) VALUES ('indexing_last_run_meta', ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+        if ($stmt2) {
+            $stmt2->bind_param('s', $payload);
+            $stmt2->execute();
+        }
+    }
+
     /** Process one admin-safe batch (web UI — avoids gateway timeout). */
     public static function processWebBatch(?int $batchSize = null): array
     {
@@ -406,7 +486,8 @@ class IndexingEngine
         foreach ($pending as $item) {
             $id = (int)$item['id'];
             $pageId = (int)($item['landing_page_id'] ?? 0);
-            if ($batch['ok']) {
+            $success = !empty($batch['ok']) || !empty($bingApi['ok']);
+            if ($success) {
                 IndexingQueue::markProcessed($id, 'completed', $responseLog);
                 if ($pageId > 0) {
                     ge_conn()->query("UPDATE ge_landing_pages SET index_status='submitted', index_submitted_at=NOW() WHERE id={$pageId}");
@@ -420,6 +501,12 @@ class IndexingEngine
                 $failed++;
             }
         }
+
+        self::logRun('process_queue', [
+            'processed' => $processed,
+            'failed' => $failed,
+            'pending_remaining' => IndexingQueue::stats()['pending'] ?? 0,
+        ]);
 
         return [
             'processed' => $processed,

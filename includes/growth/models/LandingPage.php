@@ -285,7 +285,7 @@ class LandingPage extends BaseModel
     /** Fast stats for admin UI — no JOINs, optional session cache. */
     public static function indexStatsFast(bool $useCache = true): array
     {
-        $defaults = ['total' => 0, 'indexed' => 0, 'pending' => 0, 'submitted' => 0, 'failed' => 0];
+        $defaults = ['total' => 0, 'indexed' => 0, 'pending' => 0, 'submitted' => 0, 'failed' => 0, 'stale_submitted' => 0];
         if (!ge_table_exists('ge_landing_pages')) {
             return $defaults;
         }
@@ -300,17 +300,22 @@ class LandingPage extends BaseModel
 
         $hasIndexStatus = self::columnExists('index_status');
         $hasIsIndexed = self::columnExists('is_indexed');
+        $hasSubmittedAt = self::columnExists('index_submitted_at');
 
         if ($hasIndexStatus) {
             $indexedExpr = $hasIsIndexed
                 ? "SUM(CASE WHEN index_status = 'indexed' OR is_indexed = 1 THEN 1 ELSE 0 END)"
                 : "SUM(CASE WHEN index_status = 'indexed' THEN 1 ELSE 0 END)";
+            $staleExpr = $hasSubmittedAt
+                ? "SUM(CASE WHEN index_status = 'submitted' AND index_submitted_at IS NOT NULL AND index_submitted_at < DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END)"
+                : "0";
             $stats = self::fetchOne(
                 "SELECT COUNT(*) AS total,
                         {$indexedExpr} AS indexed,
-                        SUM(CASE WHEN index_status = 'pending' THEN 1 ELSE 0 END) AS pending,
+                        SUM(CASE WHEN index_status = 'pending' OR index_status IS NULL OR index_status = '' THEN 1 ELSE 0 END) AS pending,
                         SUM(CASE WHEN index_status = 'submitted' THEN 1 ELSE 0 END) AS submitted,
-                        SUM(CASE WHEN index_status = 'failed' THEN 1 ELSE 0 END) AS failed
+                        SUM(CASE WHEN index_status = 'failed' THEN 1 ELSE 0 END) AS failed,
+                        {$staleExpr} AS stale_submitted
                  FROM ge_landing_pages WHERE status = 'published'"
             ) ?? $defaults;
         } else {

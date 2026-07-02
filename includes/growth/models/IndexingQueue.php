@@ -66,4 +66,55 @@ class IndexingQueue extends BaseModel
             'i', [$limit]
         );
     }
+
+    /** @return array{pending:int,completed:int,failed:int,total:int} */
+    public static function stats(): array
+    {
+        $defaults = ['pending' => 0, 'completed' => 0, 'failed' => 0, 'total' => 0];
+        if (!function_exists('ge_table_exists') || !ge_table_exists('ge_indexing_queue')) {
+            return $defaults;
+        }
+        $row = self::fetchOne(
+            "SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
+                SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed
+             FROM ge_indexing_queue"
+        ) ?? $defaults;
+        foreach (array_keys($defaults) as $k) {
+            $defaults[$k] = (int)($row[$k] ?? 0);
+        }
+        return $defaults;
+    }
+
+    /** Recent queue rows for live activity feed. */
+    public static function recentActivity(int $limit = 25): array
+    {
+        if (!function_exists('ge_table_exists') || !ge_table_exists('ge_indexing_queue')) {
+            return [];
+        }
+        $limit = max(1, min(100, $limit));
+        return self::fetchAll(
+            "SELECT id, url, status, created_at, processed_at
+             FROM ge_indexing_queue
+             ORDER BY COALESCE(processed_at, created_at) DESC, id DESC
+             LIMIT ?",
+            'i',
+            [$limit]
+        );
+    }
+
+    public static function lastProcessedAt(): ?string
+    {
+        if (!function_exists('ge_table_exists') || !ge_table_exists('ge_indexing_queue')) {
+            return null;
+        }
+        $row = self::fetchOne(
+            "SELECT processed_at FROM ge_indexing_queue
+             WHERE processed_at IS NOT NULL
+             ORDER BY processed_at DESC LIMIT 1"
+        );
+        return $row['processed_at'] ?? null;
+    }
 }

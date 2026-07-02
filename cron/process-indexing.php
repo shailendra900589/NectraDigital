@@ -11,6 +11,7 @@ use Growth\Engines\IndexingEngine;
 ge_cron_auth_or_exit();
 
 $result = IndexingEngine::processAllQueue((int)ge_setting('index_batch_size', 100), 50);
+IndexingEngine::logRun('cron_process_indexing', $result);
 
 if (php_sapi_name() === 'cli') {
     echo json_encode($result, JSON_PRETTY_PRINT) . "\n";

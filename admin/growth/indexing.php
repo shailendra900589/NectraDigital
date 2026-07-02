@@ -101,29 +101,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ge_admin_flash('success', 'Stats refreshed.');
     }
 
+    if ($action === 'reset_stale') {
+        $r = IndexingEngine::resetStaleSubmitted(30);
+        ge_admin_flash('success', "Reset {$r['reset']} stale submitted pages and re-queued {$r['queued']} URLs.");
+        ge_indexing_invalidate_stats_cache();
+    }
+
     header('Location: indexing.php');
     exit;
 }
 
 // --- Fast GET load (must finish before nginx 504) ---
-$stats = ['total' => 0, 'indexed' => 0, 'pending' => 0, 'submitted' => 0, 'failed' => 0];
-$queue = [];
-$pendingPages = [];
+$dash = ['pages' => ['total' => 0, 'indexed' => 0, 'pending' => 0, 'submitted' => 0, 'failed' => 0, 'stale_submitted' => 0], 'queue' => ['pending' => 0, 'completed' => 0, 'failed' => 0, 'total' => 0], 'queue_progress_pct' => 100, 'last_cron_at' => null, 'last_queue_processed_at' => null, 'last_cron_meta' => []];
+$stats = $dash['pages'];
+$queueStats = $dash['queue'];
 $queuePending = 0;
+$queueProgressPct = 100;
+$pendingPages = [];
+$activity = [];
 $idxInfo = ['key' => '', 'key_url' => '', 'host' => parse_url(SITE_URL, PHP_URL_HOST) ?: ''];
 $loadError = null;
 
 try {
     if (ge_is_ready()) {
-        $stats = LandingPage::indexStatsFast(true);
+        $dash = IndexingEngine::dashboardStats(true);
+        $stats = $dash['pages'];
+        $queueStats = $dash['queue'];
+        $queuePending = (int)($queueStats['pending'] ?? 0);
+        $queueProgressPct = (int)($dash['queue_progress_pct'] ?? 0);
         $pendingPages = LandingPage::pendingSample(15);
-    }
-    if (ge_table_exists('ge_indexing_queue')) {
-        $queue = IndexingQueue::all(20);
-        $row = ge_conn()->query("SELECT COUNT(*) AS c FROM ge_indexing_queue WHERE status='pending'");
-        if ($row) {
-            $queuePending = (int)($row->fetch_assoc()['c'] ?? 0);
-        }
+        $activity = IndexingQueue::recentActivity(25);
     }
 
     $key = IndexingEngine::readApiKey();
@@ -162,20 +169,67 @@ ge_admin_layout_start('Indexing Manager', 'indexing');
 <div class="alert alert-warning">Partial load: <?php echo htmlspecialchars($loadError); ?></div>
 <?php endif; ?>
 
-<div class="alert alert-secondary small mb-4">
-    <strong>Hostinger tip:</strong> Bulk indexing runs via <strong>cron</strong> (below). Buttons here submit <strong>one safe batch</strong> so the page never times out (504).
-    <?php if ($queuePending > 0): ?>
-    <span class="text-warning ms-1"><?php echo number_format($queuePending); ?> URLs waiting in queue.</span>
-    <?php endif; ?>
+<div id="indexingLiveRoot" data-api-url="indexing-api.php" data-poll-ms="8000">
+
+<div id="idxToast" class="alert alert-success small d-none position-fixed top-0 end-0 m-3 shadow" style="z-index:2000;max-width:320px;"></div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <span id="idxLiveStatus" class="small text-muted"><i class="fas fa-circle text-success me-1" style="font-size:0.55rem;"></i> Live · loading…</span>
+    <div class="small text-muted">
+        <span id="idxLastCron"><?php echo $dash['last_cron_at'] ? 'Last cron: ' . htmlspecialchars($dash['last_cron_at']) : 'Last cron: never'; ?></span>
+        · <span id="idxLastQueue"><?php echo $dash['last_queue_processed_at'] ? 'Last queue batch: ' . htmlspecialchars($dash['last_queue_processed_at']) : 'Last queue batch: none yet'; ?></span>
+    </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <div class="col-md-3"><div class="ge-stat-card"><div class="ge-stat-value text-success"><?php echo number_format((int)($stats['indexed'] ?? 0)); ?></div><div class="ge-stat-label">Indexed</div></div></div>
-    <div class="col-md-3"><div class="ge-stat-card"><div class="ge-stat-value text-warning"><?php echo number_format((int)($stats['pending'] ?? 0)); ?></div><div class="ge-stat-label">Pending</div></div></div>
-    <div class="col-md-3"><div class="ge-stat-card"><div class="ge-stat-value"><?php echo number_format((int)($stats['submitted'] ?? 0)); ?></div><div class="ge-stat-label">Submitted</div></div></div>
-    <div class="col-md-3"><div class="ge-stat-card"><div class="ge-stat-value text-danger"><?php echo number_format((int)($stats['failed'] ?? 0)); ?></div><div class="ge-stat-label">Failed</div></div></div>
+<div id="idxQueueAlert" class="alert alert-warning small mb-4 <?php echo $queuePending > 0 ? '' : 'd-none'; ?>">
+    <strong><span id="idx-queue-alert-count"><?php echo number_format($queuePending); ?></span> URLs waiting in queue.</strong>
+    Cron is not processing them yet — add cron jobs below or click <strong>Process Batch (Live)</strong>.
 </div>
-<form method="POST" class="mb-4"><input type="hidden" name="action" value="refresh_stats"><button type="submit" class="btn btn-sm btn-outline-secondary">Refresh stats</button></form>
+
+<div class="alert alert-secondary small mb-4">
+    <strong>Important:</strong> <em>Submitted</em> means IndexNow/Bing accepted the URL — not confirmed in Google/Bing search results.
+    Use <em>Mark Indexed</em> after verifying in Search Console, or rely on sitemap + cron. Indexed count only updates when manually marked or verified.
+</div>
+
+<div class="row g-4 mb-2">
+    <div class="col-6 col-md-4 col-xl-2"><div class="ge-stat-card"><div class="ge-stat-value" id="idx-stat-total"><?php echo number_format((int)($stats['total'] ?? 0)); ?></div><div class="ge-stat-label">Total Pages</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="ge-stat-card"><div class="ge-stat-value text-success" id="idx-stat-indexed"><?php echo number_format((int)($stats['indexed'] ?? 0)); ?></div><div class="ge-stat-label">Indexed ✓</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="ge-stat-card"><div class="ge-stat-value text-warning" id="idx-stat-pending"><?php echo number_format((int)($stats['pending'] ?? 0)); ?></div><div class="ge-stat-label">Page Pending</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="ge-stat-card"><div class="ge-stat-value" id="idx-stat-submitted"><?php echo number_format((int)($stats['submitted'] ?? 0)); ?></div><div class="ge-stat-label">Submitted</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="ge-stat-card"><div class="ge-stat-value text-danger" id="idx-stat-failed"><?php echo number_format((int)($stats['failed'] ?? 0)); ?></div><div class="ge-stat-label">Failed</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="ge-stat-card"><div class="ge-stat-value text-info" id="idx-stat-stale"><?php echo number_format((int)($stats['stale_submitted'] ?? 0)); ?></div><div class="ge-stat-label">Stale 30d+</div></div></div>
+</div>
+
+<div class="ge-card mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h2 class="h6 mb-0">Queue Progress</h2>
+        <span class="small text-muted">Completed + failed vs total · <strong id="idx-queue-pct"><?php echo $queueProgressPct; ?>%</strong></span>
+    </div>
+    <div class="progress mb-3" style="height:12px;background:var(--ge-surface-2);">
+        <div id="idxQueueProgress" class="progress-bar bg-info" role="progressbar" style="width:<?php echo $queueProgressPct; ?>%;" aria-valuenow="<?php echo $queueProgressPct; ?>" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="row g-3 text-center">
+        <div class="col-4"><div class="small text-muted">Queue Pending</div><div class="fw-bold text-warning" id="idx-queue-pending"><?php echo number_format((int)($queueStats['pending'] ?? 0)); ?></div></div>
+        <div class="col-4"><div class="small text-muted">Queue Done</div><div class="fw-bold text-success" id="idx-queue-completed"><?php echo number_format((int)($queueStats['completed'] ?? 0)); ?></div></div>
+        <div class="col-4"><div class="small text-muted">Queue Failed</div><div class="fw-bold text-danger" id="idx-queue-failed"><?php echo number_format((int)($queueStats['failed'] ?? 0)); ?></div></div>
+    </div>
+</div>
+
+<form method="POST" class="mb-4 d-flex flex-wrap gap-2 align-items-center">
+    <input type="hidden" name="action" value="refresh_stats">
+    <button type="submit" class="btn btn-sm btn-outline-secondary">Refresh now</button>
+    <button type="button" id="idxProcessAjax" class="btn btn-sm btn-success"><i class="fas fa-bolt"></i> Process Batch (Live)</button>
+</form>
+<?php if ((int)($stats['stale_submitted'] ?? 0) > 0): ?>
+<form method="POST" class="mb-4">
+    <input type="hidden" name="action" value="reset_stale">
+    <button type="submit" class="btn btn-sm btn-outline-warning" onclick="return confirm('Re-queue <?php echo (int)$stats['stale_submitted']; ?> stale submitted pages (30+ days)?');"><i class="fas fa-redo"></i> Re-queue Stale Submitted Pages</button>
+</form>
+<?php endif; ?>
+
+<div class="alert alert-info small mb-4">
+    <strong>Hostinger tip:</strong> Set cron every 5–15 min to drain the queue automatically. Manual buttons process one safe batch to avoid 504 timeout.
+</div>
 
 <div class="alert alert-info small">
     <strong>Engines:</strong> IndexNow · Bing IndexNow · Bing Webmaster API · Yandex · DuckDuckGo
@@ -235,9 +289,9 @@ ge_admin_layout_start('Indexing Manager', 'indexing');
             </tbody></table></div>
         </div>
         <div class="ge-card">
-            <h2 class="h6 mb-3">Index Queue Log</h2>
-            <div class="table-responsive"><table class="table ge-table table-sm"><thead><tr><th>URL</th><th>Status</th><th>Date</th></tr></thead><tbody>
-            <?php foreach ($queue as $q):
+            <h2 class="h6 mb-3">Queue Activity <span class="text-muted fw-normal small">(auto-updates every 8s)</span></h2>
+            <div class="table-responsive"><table class="table ge-table table-sm"><thead><tr><th>URL</th><th>Status</th><th>Queued</th><th>Processed</th></tr></thead><tbody id="idxActivityBody">
+            <?php foreach ($activity as $q):
                 $pathLabel = trim((string)($q['url'] ?? ''));
                 if ($pathLabel !== '') {
                     $parsed = parse_url($pathLabel, PHP_URL_PATH);
@@ -247,15 +301,20 @@ ge_admin_layout_start('Indexing Manager', 'indexing');
                 } else {
                     $pathLabel = '—';
                 }
+                $st = (string)($q['status'] ?? '');
+                $badgeClass = $st === 'completed' ? 'ge-badge-indexed' : ($st === 'failed' ? 'ge-badge-failed' : 'ge-badge-pending');
             ?>
-            <tr><td class="small"><code><?php echo htmlspecialchars($pathLabel); ?></code></td><td><?php echo htmlspecialchars((string)($q['status'] ?? '')); ?></td><td class="small text-muted"><?php echo htmlspecialchars((string)($q['created_at'] ?? '')); ?></td></tr>
+            <tr><td class="small"><code><?php echo htmlspecialchars($pathLabel); ?></code></td><td><span class="ge-badge <?php echo $badgeClass; ?>"><?php echo htmlspecialchars($st); ?></span></td><td class="small text-muted"><?php echo htmlspecialchars((string)($q['created_at'] ?? '')); ?></td><td class="small text-muted"><?php echo htmlspecialchars((string)($q['processed_at'] ?? '—')); ?></td></tr>
             <?php endforeach; ?>
-            <?php if (empty($queue)): ?>
-            <tr><td colspan="3" class="text-muted text-center small">Queue empty.</td></tr>
+            <?php if (empty($activity)): ?>
+            <tr><td colspan="4" class="text-muted text-center small">No queue activity yet.</td></tr>
             <?php endif; ?>
             </tbody></table></div>
         </div>
     </div>
 </div>
+
+</div>
+<script src="../../assets/js/indexing-admin.js?v=1"></script>
 
 <?php ge_admin_layout_end(); ?>
