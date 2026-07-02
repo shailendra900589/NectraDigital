@@ -131,6 +131,20 @@ if (isset($_GET['del_hire'])) {
     $conn->query("DELETE FROM hire_requests WHERE id=".intval($_GET['del_hire']));
     header("Location: dashboard.php?page=hire_requests&msg=deleted"); exit;
 }
+if (isset($_GET['del_lead'])) {
+    $lid = (int)$_GET['del_lead'];
+    if ($lid > 0) {
+        $conn->query("DELETE FROM leads WHERE id={$lid}");
+    }
+    header("Location: dashboard.php?page=leads&msg=deleted"); exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_delete_leads'])) {
+    $ids = array_values(array_filter(array_map('intval', (array)($_POST['lead_ids'] ?? []))));
+    if ($ids) {
+        $conn->query('DELETE FROM leads WHERE id IN (' . implode(',', $ids) . ')');
+    }
+    header('Location: dashboard.php?page=leads&msg=bulk_deleted'); exit;
+}
 if (isset($_POST['update_hire_status'])) {
     $req_id = intval($_POST['request_id']);
     $new_status = $conn->real_escape_string($_POST['status']);
@@ -571,14 +585,142 @@ admin_layout_start($pageTitles[$page], $page, [
     // LEADS
     // ==========================================
     elseif ($page == 'leads') {
-        $sql = "SELECT * FROM leads ORDER BY created_at DESC";
-        $result = $conn->query($sql);
-        echo '<div class="ge-card"><div class="ge-table-wrap"><table class="table ge-table table-hover mb-0"><thead><tr><th>Status</th><th>Contact</th><th>Service</th><th>Message</th></tr></thead><tbody>';
-        while($row = $result->fetch_assoc()){
-            $spam = $row['is_spam'] ? "<span class='badge bg-danger'>BOT</span>" : "<span class='badge bg-success'>CLEAN</span>";
-            echo "<tr><td>$spam</td><td><strong class='text-white'>{$row['name']}</strong><br><small class='text-info'>{$row['email']}</small><br><small class='text-white-50'>IP: {$row['ip_address']}</small></td><td>{$row['service']}<br><small>{$row['budget']}</small></td><td><div style='max-width:300px; height:60px; overflow-y:auto;' class='small text-white-50'>{$row['message']}</div></td></tr>";
+        $filter = isset($_GET['filter']) ? (string)$_GET['filter'] : 'all';
+        if (!in_array($filter, ['all', 'clean', 'spam'], true)) {
+            $filter = 'all';
         }
-        echo '</tbody></table></div></div>';
+        $search = trim((string)($_GET['q'] ?? ''));
+
+        $statsRow = $conn->query("SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN is_spam = 0 THEN 1 ELSE 0 END) AS clean_count,
+            SUM(CASE WHEN is_spam = 1 THEN 1 ELSE 0 END) AS spam_count,
+            SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) AS today_count
+            FROM leads")->fetch_assoc() ?: [];
+
+        if (isset($_GET['msg'])) {
+            if ($_GET['msg'] === 'deleted') {
+                echo "<div class='alert alert-success alert-dismissible fade show'>Lead deleted.<button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
+            }
+            if ($_GET['msg'] === 'bulk_deleted') {
+                echo "<div class='alert alert-success alert-dismissible fade show'>Selected leads deleted.<button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
+            }
+        }
+
+        echo '<div class="row g-3 mb-4">';
+        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value">' . number_format((int)($statsRow['total'] ?? 0)) . '</div><div class="ge-stat-label">Total Leads</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value text-success">' . number_format((int)($statsRow['clean_count'] ?? 0)) . '</div><div class="ge-stat-label">Clean</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value text-danger">' . number_format((int)($statsRow['spam_count'] ?? 0)) . '</div><div class="ge-stat-label">Spam / Bot</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value text-info">' . number_format((int)($statsRow['today_count'] ?? 0)) . '</div><div class="ge-stat-label">Today</div></div></div>';
+        echo '</div>';
+
+        echo '<div class="ge-card mb-4"><form method="GET" class="row g-3 align-items-end">';
+        echo '<input type="hidden" name="page" value="leads">';
+        echo '<div class="col-md-5"><label class="form-label small text-muted">Search</label>';
+        echo '<input type="search" name="q" value="' . htmlspecialchars($search) . '" class="form-control form-control-sm" placeholder="Name, email, service, message…"></div>';
+        echo '<div class="col-md-3"><label class="form-label small text-muted">Filter</label>';
+        echo '<select name="filter" class="form-select form-select-sm">';
+        foreach (['all' => 'All leads', 'clean' => 'Clean only', 'spam' => 'Spam only'] as $val => $label) {
+            echo '<option value="' . $val . '"' . ($filter === $val ? ' selected' : '') . '>' . $label . '</option>';
+        }
+        echo '</select></div>';
+        echo '<div class="col-md-4 d-flex gap-2"><button type="submit" class="btn btn-sm btn-ge-primary">Apply</button>';
+        echo '<a href="dashboard.php?page=leads" class="btn btn-sm btn-outline-secondary">Reset</a></div>';
+        echo '</form></div>';
+
+        $where = ['1=1'];
+        if ($filter === 'clean') {
+            $where[] = 'is_spam = 0';
+        } elseif ($filter === 'spam') {
+            $where[] = 'is_spam = 1';
+        }
+        if ($search !== '') {
+            $esc = $conn->real_escape_string($search);
+            $where[] = "(name LIKE '%{$esc}%' OR email LIKE '%{$esc}%' OR service LIKE '%{$esc}%' OR message LIKE '%{$esc}%' OR budget LIKE '%{$esc}%')";
+        }
+        $whereSql = implode(' AND ', $where);
+
+        $result = $conn->query("SELECT * FROM leads WHERE {$whereSql} ORDER BY created_at DESC LIMIT 200");
+        $leadCount = $result ? $result->num_rows : 0;
+
+        echo '<form method="POST" id="leadsBulkForm">';
+        echo '<input type="hidden" name="bulk_delete_leads" value="1">';
+        echo '<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">';
+        echo '<p class="text-muted small mb-0">Showing <strong>' . number_format($leadCount) . '</strong> lead(s)' . ($search !== '' || $filter !== 'all' ? ' (filtered)' : '') . '</p>';
+        echo '<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm(\'Delete all selected leads?\')"><i class="fas fa-trash"></i> Delete Selected</button>';
+        echo '</div>';
+
+        echo '<div class="ge-card"><div class="ge-table-wrap"><table class="table ge-table table-hover align-middle mb-0">';
+        echo '<thead><tr>';
+        echo '<th style="width:36px;"><input type="checkbox" class="form-check-input" id="leadSelectAll" title="Select all"></th>';
+        echo '<th>Date</th><th>Status</th><th>Contact</th><th>Service & Budget</th><th>Message</th><th class="text-end">Actions</th>';
+        echo '</tr></thead><tbody>';
+
+        if ($result && $result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $id = (int)$row['id'];
+                $name = htmlspecialchars((string)$row['name']);
+                $email = htmlspecialchars((string)$row['email']);
+                $service = htmlspecialchars((string)$row['service']);
+                $budget = htmlspecialchars((string)($row['budget'] ?? ''));
+                $message = htmlspecialchars((string)$row['message']);
+                $ip = htmlspecialchars((string)($row['ip_address'] ?? ''));
+                $date = !empty($row['created_at']) ? date('M d, Y', strtotime($row['created_at'])) : '—';
+                $time = !empty($row['created_at']) ? date('g:i A', strtotime($row['created_at'])) : '';
+                $isSpam = !empty($row['is_spam']);
+                $statusBadge = $isSpam
+                    ? '<span class="ge-badge ge-badge-failed">Spam</span>'
+                    : '<span class="ge-badge ge-badge-indexed">Clean</span>';
+
+                echo "<tr>
+                    <td><input type='checkbox' class='form-check-input lead-row-check' name='lead_ids[]' value='{$id}'></td>
+                    <td class='small text-nowrap'><strong>{$date}</strong>" . ($time ? "<br><span class='text-muted'>{$time}</span>" : '') . "</td>
+                    <td>{$statusBadge}</td>
+                    <td>
+                        <strong>{$name}</strong><br>
+                        <a href='mailto:{$email}' class='small text-info text-decoration-none'>{$email}</a><br>
+                        <span class='small text-muted'>IP: {$ip}</span>
+                    </td>
+                    <td>
+                        <span class='badge bg-secondary'>{$service}</span>" .
+                        ($budget !== '' ? "<br><small class='text-muted'>Budget: {$budget}</small>" : '') . "
+                    </td>
+                    <td class='small' style='max-width:280px;'>
+                        <div class='lead-msg-preview text-muted'>" . nl2br($message) . "</div>
+                    </td>
+                    <td class='text-end text-nowrap'>
+                        <button type='button' class='btn btn-sm btn-outline-info' onclick='toggleDetails({$id})' title='View full message'><i class='fas fa-eye'></i></button>
+                        <a href='mailto:{$email}?subject=" . rawurlencode('Re: Your inquiry — Nectra Digital') . "' class='btn btn-sm btn-outline-secondary' title='Reply'><i class='fas fa-reply'></i></a>
+                        <a href='?page=leads&del_lead={$id}' class='btn btn-sm btn-outline-danger' onclick='return confirm(\"Delete this lead?\")' title='Delete'><i class='fas fa-trash'></i></a>
+                    </td>
+                </tr>
+                <tr id='details-{$id}' style='display:none;'>
+                    <td colspan='7' class='p-3 border-top border-secondary'>
+                        <h6 class='text-info mb-2'>Full Message</h6>
+                        <p class='mb-2 text-muted small' style='white-space:pre-wrap;'>{$message}</p>
+                        <div class='d-flex flex-wrap gap-2'>
+                            <a href='mailto:{$email}' class='btn btn-sm btn-ge-primary'><i class='fas fa-envelope me-1'></i> Email {$name}</a>
+                            <a href='?page=leads&del_lead={$id}' class='btn btn-sm btn-outline-danger' onclick='return confirm(\"Delete this lead?\")'><i class='fas fa-trash me-1'></i> Delete</a>
+                        </div>
+                    </td>
+                </tr>";
+            }
+        } else {
+            echo '<tr><td colspan="7" class="text-center py-5 text-muted">No contact leads found.</td></tr>';
+        }
+
+        echo '</tbody></table></div></div></form>';
+        echo "<script>
+        (function() {
+            var selectAll = document.getElementById('leadSelectAll');
+            if (!selectAll) return;
+            selectAll.addEventListener('change', function() {
+                document.querySelectorAll('.lead-row-check').forEach(function(cb) {
+                    cb.checked = selectAll.checked;
+                });
+            });
+        })();
+        </script>";
     }
     ?>
 <?php admin_layout_end(); ?>
