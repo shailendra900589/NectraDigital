@@ -34,5 +34,9 @@ if (!defined('SITE_URL')) {
 }
 
 if (php_sapi_name() !== 'cli') {
+    nectra_enforce_preferred_host();
+}
+
+if (php_sapi_name() !== 'cli') {
     error_reporting(0);
 }

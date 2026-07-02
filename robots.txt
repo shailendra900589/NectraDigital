@@ -22,7 +22,7 @@ Allow: /
 User-agent: Googlebot
 Allow: /
 
-# Search engine discovery
+# Search engine discovery — preferred host: https://www.nectradigital.com
 Sitemap: https://www.nectradigital.com/sitemap.xml
 Sitemap: https://www.nectradigital.com/news-sitemap.xml
 Sitemap: https://www.nectradigital.com/rss.xml

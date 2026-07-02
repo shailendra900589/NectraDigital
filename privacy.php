@@ -1,6 +1,8 @@
 <?php 
 $page_title = "Data Privacy Protocols";
 $page_desc = "Nectra Digital Privacy Policy. Compliance with GDPR, CCPA, and Global Data Protection Standards.";
+require_once __DIR__ . '/includes/i18n.php';
+$canonical_url = nectra_page_canonical('/privacy');
 include 'includes/header.php'; 
 ?>
 

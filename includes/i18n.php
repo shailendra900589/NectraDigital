@@ -154,7 +154,7 @@ function nectra_enforce_index_redirect(): void
 
     $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
     if (preg_match('#^/index(\.php|\.html)?$#i', $path)) {
-        header('Location: /', true, 301);
+        header('Location: ' . nectra_site_base_url() . '/', true, 301);
         exit;
     }
 }
@@ -175,7 +175,7 @@ function nectra_redirect_without_lang_param(int $status = 301): void
     }
     unset($query['lang']);
     $qs = $query ? '?' . http_build_query($query) : '';
-    $target = $path . $qs;
+    $target = nectra_site_base_url() . $path . $qs;
 
     header('Location: ' . $target, true, $status);
     exit;

@@ -20,6 +20,10 @@ if (!empty($canonical_url)) {
     $canonical_href = nectra_normalize_canonical_url($clean_uri ?: '/');
 }
 
+if (!headers_sent()) {
+    header('Link: <' . $canonical_href . '>; rel="canonical"', false);
+}
+
 $default_title = "Best SEO & Digital Marketing in India | Nectra Digital";
 $default_desc  = "Best SEO company in India — search engine optimization, AI automation, digital marketing & software development. 200+ projects. Free audit.";
 $default_img   = SITE_URL . "/assets/images/logo.png";

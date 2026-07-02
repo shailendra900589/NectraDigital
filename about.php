@@ -5,6 +5,8 @@ require_once 'includes/seo-components.php';
 $page_title = "About Nectra Digital | Founder Ravindra Kumar Chauhan — SEO Expert India";
 $page_desc = "Meet Ravindra Kumar Chauhan, Founder & CEO of Nectra Digital. 5+ years expertise in SEO, digital marketing, AI automation, and software development. India's trusted digital transformation company.";
 $page_keys = "About Nectra Digital, Ravindra Kumar Chauhan, SEO Expert India, Digital Marketing Founder, AI Agency India Founder";
+require_once __DIR__ . '/includes/i18n.php';
+$canonical_url = nectra_page_canonical('/about');
 
 $page_schema = [
     get_breadcrumb_schema([
