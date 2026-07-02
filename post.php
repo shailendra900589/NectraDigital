@@ -52,6 +52,8 @@ $decoded_title = nectra_decode_entities($post['title']);
 $decoded_category = nectra_decode_entities($post['category']);
 
 $page_title = $decoded_title;
+$seo_title_min = 25;
+$seo_title_max = 65;
 
 // NEW: Check if manual meta description exists, else auto-generate
 if (!empty($post['meta_description'])) {

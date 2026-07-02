@@ -206,7 +206,7 @@ function get_services_data() {
                 ['q' => 'Why choose a digital marketing agency in India?', 'a' => 'Indian digital marketing agencies offer world-class expertise at competitive pricing, with deep understanding of both domestic and international markets, multilingual capabilities, and 24/7 operational coverage.'],
                 ['q' => 'How do you measure digital marketing ROI?', 'a' => 'We track cost per acquisition, return on ad spend, customer lifetime value, organic traffic growth, conversion rates, and revenue attribution across all channels with transparent monthly reporting.']
             ],
-            'related' => ['seo-services', 'ppc-management', 'google-ads-management'],
+            'related' => ['seo-services', 'performance-marketing-services', 'social-media-marketing-services', 'google-ads-management'],
             'silo' => 'Digital Marketing'
         ],
         'ppc-management' => [
@@ -353,6 +353,38 @@ function get_services_data() {
             'related' => ['software-development-services', 'web-development-services', 'ai-automation-services'],
             'silo' => 'Software Development'
         ],
+        'social-media-marketing-services' => [
+            'title' => 'Social Media Marketing Services | SMM Agency India',
+            'h1' => 'Social Media Marketing Services',
+            'meta_desc' => 'Grow brand awareness and leads with social media marketing services. Content strategy, paid social, community management, and analytics from a full-service SMM agency in India.',
+            'keywords' => 'Social Media Marketing Services, SMM Agency India, Social Media Management, Facebook Marketing, Instagram Marketing',
+            'icon' => 'fa-share-alt',
+            'intro' => 'Social media is where your audience discovers, evaluates, and engages with brands. Our social media marketing services combine organic content, paid social campaigns, and community management to build trust and drive measurable business outcomes.',
+            'features' => ['Content Strategy & Calendars', 'Organic Post Creation', 'Paid Social Campaigns', 'Community Management', 'Influencer Outreach', 'Social Analytics & Reporting'],
+            'faqs' => [
+                ['q' => 'Which social platforms should my business focus on?', 'a' => 'It depends on your audience. B2B brands often prioritize LinkedIn and YouTube. D2C and local businesses see strong results on Instagram, Facebook, and WhatsApp. We recommend channels after reviewing your goals, industry, and customer demographics.'],
+                ['q' => 'Do you manage both organic and paid social media?', 'a' => 'Yes. We handle organic content, community engagement, and paid campaigns across Meta, LinkedIn, YouTube, and other platforms — with unified reporting so you see what drives leads and revenue.'],
+                ['q' => 'How do you measure social media marketing ROI?', 'a' => 'We track reach, engagement, follower growth, website clicks, lead form submissions, and attributed conversions using UTM tracking, GA4, and platform analytics — not vanity metrics alone.']
+            ],
+            'related' => ['digital-marketing-services', 'performance-marketing-services', 'meta-ads-services'],
+            'silo' => 'Social Media Marketing'
+        ],
+        'performance-marketing-services' => [
+            'title' => 'Performance Marketing Services | Paid Ads Agency India',
+            'h1' => 'Performance Marketing Services',
+            'meta_desc' => 'ROI-focused performance marketing services across Google Ads, Meta Ads, and landing page CRO. Lower CPA, higher ROAS, and transparent reporting from a certified paid media team.',
+            'keywords' => 'Performance Marketing Services, Performance Marketing Agency India, Paid Media Agency, ROAS Optimization',
+            'icon' => 'fa-chart-line',
+            'intro' => 'Performance marketing means every campaign is measured against revenue — not impressions. We plan, launch, and optimize paid media across Google and Meta with landing pages, tracking, and weekly optimization built for profitable growth.',
+            'features' => ['Google Ads Management', 'Meta Ads Management', 'Landing Page CRO', 'Conversion Tracking Setup', 'Retargeting Funnels', 'Weekly ROAS Optimization'],
+            'faqs' => [
+                ['q' => 'What is performance marketing?', 'a' => 'Performance marketing is paid digital advertising optimized for measurable outcomes — leads, sales, and ROAS — using data, testing, and continuous budget refinement across search and social channels.'],
+                ['q' => 'How is performance marketing different from brand marketing?', 'a' => 'Brand marketing builds long-term awareness. Performance marketing drives immediate, trackable conversions. Most growth strategies combine both; we specialize in the paid media engine that turns demand into revenue.'],
+                ['q' => 'Do you also manage SEO and social media?', 'a' => 'Yes. Performance marketing works best alongside SEO and social media. Nectra Digital offers integrated digital marketing so paid, organic, and social channels reinforce each other.']
+            ],
+            'related' => ['ppc-management', 'google-ads-management', 'meta-ads-services', 'digital-marketing-services'],
+            'silo' => 'Performance Marketing'
+        ],
         'ecommerce-development' => [
             'title' => 'Ecommerce Development Company | Online Store Development',
             'h1' => 'Ecommerce Development Services',
@@ -369,6 +401,36 @@ function get_services_data() {
             'related' => ['web-development-services', 'seo-services', 'digital-marketing-services'],
             'silo' => 'Web Development'
         ]
+    ];
+}
+
+/** Primary money pages — nav, footer, and homepage cross-links (PDF audit order). */
+function get_primary_services(): array
+{
+    return [
+        'seo-services',
+        'local-seo-services',
+        'digital-marketing-services',
+        'performance-marketing-services',
+        'social-media-marketing-services',
+        'ai-automation-services',
+        'web-development-services',
+        'software-development-services',
+        'mobile-app-development',
+    ];
+}
+
+function get_nav_secondary_services(): array
+{
+    return [
+        'technical-seo-services',
+        'enterprise-seo-services',
+        'ppc-management',
+        'google-ads-management',
+        'meta-ads-services',
+        'ai-chatbot-development',
+        'whatsapp-ai-bot-development',
+        'ecommerce-development',
     ];
 }
 

@@ -119,8 +119,8 @@ function ge_default_ctas(): array {
     ];
 }
 
-/** Format title to strict SEO range (default 50–55 characters). */
-function ge_trim_seo_title(string $title, string $brand = 'Nectra Digital', int $min = 50, int $max = 55): string
+/** Format title to SEO range (default 30–60 characters). */
+function ge_trim_seo_title(string $title, string $brand = 'Nectra Digital', int $min = 30, int $max = 60): string
 {
     $title = trim(preg_replace('/\s+/u', ' ', $title));
     if ($title === '') {
@@ -170,6 +170,9 @@ function ge_expand_seo_title(string $title, string $brand, int $min, int $max): 
 
     if (str_ends_with($title, $suffix)) {
         $core = rtrim(mb_substr($title, 0, -mb_strlen($suffix)), ' |');
+        if (ge_title_has_local_qualifier($core)) {
+            return $title;
+        }
         $candidates = array_merge($candidates, ge_seo_title_variants($core));
         foreach ($candidates as $coreVariant) {
             $coreVariant = trim(preg_replace('/\s+/u', ' ', $coreVariant));
@@ -208,6 +211,22 @@ function ge_expand_seo_title(string $title, string $brand, int $min, int $max): 
 
 function ge_seo_title_variants(string $core): array
 {
+    $variants = [];
+
+    if (preg_match('/\bin\s+([A-Za-z][A-Za-z\s]{1,24})$/u', $core, $m)) {
+        $city = trim($m[1]);
+        if (strcasecmp($city, 'India') !== 0) {
+            $variants = [
+                "Best SEO Company in {$city} India",
+                "Best SEO Agency in {$city} India",
+                "Top SEO Services in {$city} India",
+                "Best SEO in {$city} India Agency",
+                $core,
+            ];
+            return array_unique($variants);
+        }
+    }
+
     $variants = [
         'Best SEO & Digital Marketing in India',
         'Best SEO Company in India Agency',
@@ -219,22 +238,17 @@ function ge_seo_title_variants(string $core): array
         $core . ' Co',
     ];
 
-    if (preg_match('/\bin\s+([A-Za-z][A-Za-z\s]{1,24})$/u', $core, $m)) {
-        $city = trim($m[1]);
-        $variants = array_merge([
-            "Best SEO Company in {$city} India",
-            "Best SEO Agency in {$city} India",
-            "Top SEO Services in {$city} India",
-            "Best SEO in {$city} India Agency",
-        ], $variants);
-    }
-
     if (stripos($core, 'contact') !== false) {
         $variants[] = 'Contact Nectra Digital SEO India HQ';
         $variants[] = 'Contact Nectra Digital · SEO India';
     }
 
     return array_unique($variants);
+}
+
+function ge_title_has_local_qualifier(string $core): bool
+{
+    return (bool) preg_match('/\bin\s+(?!India\b)[A-Za-z][A-Za-z\s]{1,24}(?:\s|$)/u', trim($core));
 }
 
 function ge_pad_seo_title(string $title, string $brand, int $min, int $max): string

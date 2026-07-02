@@ -5,9 +5,11 @@ require_once __DIR__ . '/seo-data.php';
 require_once __DIR__ . '/growth/helpers.php';
 require_once __DIR__ . '/i18n.php';
 
-global $page_title, $page_desc, $page_img, $page_keys, $noindex, $og_type, $page_schema, $canonical_url;
+global $page_title, $page_desc, $page_img, $page_keys, $noindex, $og_type, $page_schema, $canonical_url, $seo_title_min, $seo_title_max;
 
 $nectra_lang = nectra_get_user_lang();
+$title_min = isset($seo_title_min) ? (int) $seo_title_min : 30;
+$title_max = isset($seo_title_max) ? (int) $seo_title_max : 60;
 
 $request_uri = strtok($_SERVER["REQUEST_URI"] ?? '/', '?');
 $clean_uri = str_replace('.php', '', $request_uri); 
@@ -38,13 +40,12 @@ if (isset($page_img) && !empty($page_img)) {
 }
 
 if (!empty($page_title)) {
-    $meta_title = ge_trim_seo_title(trim($page_title), $site_name_safe, 50, 55);
+    $meta_title = ge_trim_seo_title(trim($page_title), $site_name_safe, $title_min, $title_max);
 } else {
-    $meta_title = ge_trim_seo_title($default_title, $site_name_safe, 50, 55);
+    $meta_title = ge_trim_seo_title($default_title, $site_name_safe, $title_min, $title_max);
 }
 
 $meta_desc = ge_trim_seo_description((!empty($page_desc)) ? $page_desc : $default_desc, 120, 160);
-$meta_keys = (!empty($page_keys)) ? $page_keys : "SEO Company India, Best SEO Company India, SEO Services India, Digital Marketing Agency India, AI Automation Services, Web Development Agency";
 $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
 ?>
 <!DOCTYPE html>
@@ -57,7 +58,6 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <meta name="description" content="<?php echo nectra_display_text($meta_desc); ?>">
     <link rel="canonical" href="<?php echo htmlspecialchars($canonical_href); ?>">
     <?php nectra_output_hreflang_tags($final_url); ?>
-    <meta name="keywords" content="<?php echo htmlspecialchars($meta_keys); ?>">
     <meta name="author" content="<?php echo FOUNDER_NAME; ?>">
     <meta name="robots" content="<?php echo !empty($noindex) ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'; ?>">
     
@@ -76,7 +76,6 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <?php if (empty($noindex)): ?>
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="bingbot" content="index, follow">
-    <meta name="news_keywords" content="<?php echo htmlspecialchars($meta_keys); ?>">
     <meta name="syndication-source" content="<?php echo htmlspecialchars($final_url); ?>">
     <?php endif; ?>
 
@@ -174,11 +173,21 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="/services" id="servicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Services</a>
                     <ul class="dropdown-menu dropdown-menu-dark border-secondary" aria-labelledby="servicesDropdown">
-                        <li><a class="dropdown-item" href="/seo-services">SEO Services</a></li>
-                        <li><a class="dropdown-item" href="/local-seo-services">Local SEO</a></li>
-                        <li><a class="dropdown-item" href="/ai-automation-services">AI Automation</a></li>
-                        <li><a class="dropdown-item" href="/digital-marketing-services">Digital Marketing</a></li>
-                        <li><a class="dropdown-item" href="/web-development-services">Web Development</a></li>
+                        <?php
+                        $nav_primary = get_primary_services();
+                        $nav_all = get_services_data();
+                        foreach ($nav_primary as $nav_slug):
+                            if (!isset($nav_all[$nav_slug])) continue;
+                            $nav_label = $nav_all[$nav_slug]['h1'];
+                        ?>
+                        <li><a class="dropdown-item" href="/<?php echo htmlspecialchars($nav_slug); ?>"><?php echo htmlspecialchars($nav_label); ?></a></li>
+                        <?php endforeach; ?>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <?php foreach (get_nav_secondary_services() as $nav_slug):
+                            if (!isset($nav_all[$nav_slug])) continue;
+                        ?>
+                        <li><a class="dropdown-item" href="/<?php echo htmlspecialchars($nav_slug); ?>"><?php echo htmlspecialchars($nav_all[$nav_slug]['h1']); ?></a></li>
+                        <?php endforeach; ?>
                         <li><hr class="dropdown-divider border-secondary"></li>
                         <li><a class="dropdown-item" href="/services">All Services</a></li>
                     </ul>

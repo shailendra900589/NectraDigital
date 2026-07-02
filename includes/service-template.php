@@ -7,6 +7,7 @@ require_once __DIR__ . '/seo-components.php';
 require_once __DIR__ . '/service-content.php';
 require_once __DIR__ . '/local-page-seo.php';
 require_once __DIR__ . '/site-contact.php';
+require_once __DIR__ . '/service-city-unique.php';
 
 if (!isset($service_slug)) {
     header('Location: /services');
@@ -97,7 +98,7 @@ if ($is_city_page) {
 }
 $tagline = $is_city_page && !empty($localized_h2)
     ? $localized_h2
-    : ($service['tagline'] ?? 'Results-Driven ' . $service['silo'] . ' Solutions');
+    : ($service['tagline'] ?? 'Results-Driven ' . ($service['silo'] ?? 'Digital') . ' by Nectra Digital');
 $benefits = $service['benefits'] ?? [];
 $paa = array_merge($service['paa'] ?? [], array_slice($service['faqs'] ?? [], 0, 2));
 
@@ -288,7 +289,7 @@ if ($is_city_page && !empty($city)) {
                     </div>
                     <div class="mt-4 p-4 border border-secondary rounded svc-glass">
                         <h3 class="text-white h6 mb-2"><i class="fas fa-lightbulb text-neon me-2"></i>Expert Insight</h3>
-                        <p class="text-white-50 small fst-italic mb-0">"Our <?php echo strtolower(htmlspecialchars($service['h1'])); ?> approach is built on data, transparency, and relentless optimization — not guesswork. Every strategy is customized to your market, competition, and growth goals." — <?php echo FOUNDER_NAME; ?>, <?php echo FOUNDER_TITLE; ?></p>
+                        <p class="text-white-50 small fst-italic mb-0">"We focus on measurable outcomes — clear strategy, transparent reporting, and continuous optimization tailored to your market and goals." — <?php echo FOUNDER_NAME; ?>, <?php echo FOUNDER_TITLE; ?></p>
                     </div>
                 </div>
             </div>
@@ -343,14 +344,14 @@ if ($is_city_page && !empty($city)) {
         <div class="container">
             <div class="row g-5">
                 <div class="col-lg-8">
-                    <h2 class="text-white h3 mb-4"><?php echo htmlspecialchars($service['silo']); ?> &amp; Search Engine Optimization in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h2>
-                    <p class="text-white-50">Nectra Digital delivers professional <?php echo htmlspecialchars(strtolower($service['silo'])); ?> and search engine optimization for businesses in <?php echo htmlspecialchars($city_name); ?>, <?php echo htmlspecialchars($city_state ?? ''); ?>. Our digital marketing team combines local keyword research, technical SEO, content authority, and conversion-focused landing pages so you rank on Google and generate qualified leads.</p>
-                    <p class="text-white-50">Whether you need map pack visibility, enterprise SEO, or integrated performance marketing — we provide transparent reporting, dedicated account management, and software development support when your growth requires custom tools or automation.</p>
-                    <h3 class="text-white h5 mt-4">Local <?php echo htmlspecialchars($service['silo']); ?> services include</h3>
+                    <h2 class="text-white h3 mb-4"><?php echo htmlspecialchars($service['silo']); ?> for Businesses in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h2>
+                    <p class="text-white-50"><?php echo htmlspecialchars(ge_service_city_unique_block($service_slug, $city_slug ?? '', $city ?? [], $service)); ?></p>
+                    <p class="text-white-50">Nectra Digital supports companies in <?php echo htmlspecialchars($city_name); ?>, <?php echo htmlspecialchars($city_state ?? ''); ?> with <?php echo htmlspecialchars(strtolower($service['silo'])); ?> strategy, execution, and reporting — plus web development and AI automation when your growth plan requires custom tools.</p>
+                    <h3 class="text-white h5 mt-4">What we deliver locally</h3>
                     <ul class="text-white-50">
-                        <li class="mb-2">City-specific keyword targeting for <?php echo htmlspecialchars($city_name); ?> and <?php echo htmlspecialchars($city_state ?? 'India'); ?></li>
-                        <li class="mb-2">Search engine optimization audits, content strategy, and monthly ROI reporting</li>
-                        <li class="mb-2">AI automation, Google Ads, and software development integrations</li>
+                        <li class="mb-2">Market-specific research and campaign setup for <?php echo htmlspecialchars($city_name); ?></li>
+                        <li class="mb-2">Dedicated account management with transparent monthly reporting</li>
+                        <li class="mb-2">Integrated support across SEO, paid media, and development when needed</li>
                     </ul>
                 </div>
                 <div class="col-lg-4">

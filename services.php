@@ -15,7 +15,8 @@ $page_schema = [get_breadcrumb_schema([
 $all_services = get_services_data();
 $silo_groups = [
     'SEO & Growth' => ['seo-services', 'local-seo-services', 'technical-seo-services', 'enterprise-seo-services'],
-    'Performance Marketing' => ['digital-marketing-services', 'ppc-management', 'google-ads-management', 'meta-ads-services'],
+    'Performance Marketing' => ['performance-marketing-services', 'digital-marketing-services', 'ppc-management', 'google-ads-management', 'meta-ads-services'],
+    'Social & Content' => ['social-media-marketing-services'],
     'AI & Automation' => ['ai-automation-services', 'ai-chatbot-development', 'whatsapp-ai-bot-development'],
     'Development' => ['web-development-services', 'software-development-services', 'mobile-app-development', 'ecommerce-development'],
 ];
@@ -29,7 +30,7 @@ include 'includes/header.php';
     <div class="svc-hero-glow"></div>
     <div class="container text-center position-relative z-1 py-5">
         <?php render_breadcrumbs([['name' => 'Home', 'url' => '/'], ['name' => 'Services', 'url' => '/services']]); ?>
-        <span class="svc-badge">15 Specialized Services</span>
+        <span class="svc-badge">17 Specialized Services</span>
         <h1 class="display-4 fw-bold text-white mb-4">Full-Service <span class="text-neon">Digital Agency</span></h1>
         <p class="lead text-white-50 mx-auto mb-4" style="max-width:800px">SEO, AI automation, performance marketing, web development, and software engineering — one strategic partner accountable for your entire growth engine.</p>
         <div class="d-flex flex-wrap justify-content-center gap-3">
@@ -42,7 +43,7 @@ include 'includes/header.php';
 <section class="svc-trust py-4 border-top border-bottom border-secondary">
     <div class="container">
         <div class="row text-center g-3">
-            <div class="col-6 col-md-3"><div class="svc-stat-val text-neon">15</div><div class="svc-stat-lbl text-white-50 small">Services</div></div>
+            <div class="col-6 col-md-3"><div class="svc-stat-val text-neon">17</div><div class="svc-stat-lbl text-white-50 small">Services</div></div>
             <div class="col-6 col-md-3"><div class="svc-stat-val text-neon">200+</div><div class="svc-stat-lbl text-white-50 small">Projects</div></div>
             <div class="col-6 col-md-3"><div class="svc-stat-val text-neon">340%</div><div class="svc-stat-lbl text-white-50 small">Avg. Growth</div></div>
             <div class="col-6 col-md-3"><div class="svc-stat-val text-neon">4.9★</div><div class="svc-stat-lbl text-white-50 small">Client Rating</div></div>

@@ -37,7 +37,7 @@ function service_content_defaults(string $slug, array $service): array {
     ];
 
     $challenges = [
-        ['icon' => 'fa-chart-line', 'title' => 'Low Visibility', 'desc' => 'Your ideal customers cannot find you online when they search for ' . strtolower($silo) . ' solutions.'],
+        ['icon' => 'fa-chart-line', 'title' => 'Low Visibility', 'desc' => 'Your ideal customers struggle to find you online when they are ready to buy.'],
         ['icon' => 'fa-coins', 'title' => 'Wasted Budget', 'desc' => 'Ad spend and marketing efforts lack tracking, optimization, and clear ROI attribution.'],
         ['icon' => 'fa-clock', 'title' => 'Slow Results', 'desc' => 'DIY approaches and generic agencies deliver inconsistent outcomes without a proven framework.'],
     ];
@@ -55,6 +55,7 @@ function service_content_defaults(string $slug, array $service): array {
         'SEO' => ['Google Search Console', 'GA4', 'Semrush', 'Screaming Frog', 'Ahrefs'],
         'Digital Marketing' => ['GA4', 'Google Ads', 'Meta Business Suite', 'HubSpot', 'Hotjar'],
         'Performance Marketing' => ['Google Ads', 'Meta Ads Manager', 'Looker Studio', 'Unbounce', 'Zapier'],
+        'Social Media Marketing' => ['Meta Business Suite', 'Canva', 'Hootsuite', 'GA4', 'Sprout Social'],
         'AI Automation' => ['OpenAI API', 'Make.com', 'Zapier', 'Python', 'WhatsApp API'],
         'Web Development' => ['React', 'Next.js', 'WordPress', 'Laravel', 'Figma'],
         'Software Development' => ['Python', 'Laravel', 'React', 'AWS', 'Docker'],
@@ -139,6 +140,30 @@ function service_content_overrides(): array {
                 ['icon' => 'fa-share-alt', 'title' => 'Social Media Growth', 'desc' => 'Brand building and community engagement across platforms.'],
                 ['icon' => 'fa-percentage', 'title' => 'CRO Optimization', 'desc' => 'Landing page testing to maximize conversion rates.'],
                 ['icon' => 'fa-chart-line', 'title' => 'Unified Analytics', 'desc' => 'Single dashboard for all channel performance and ROI.'],
+            ],
+        ],
+        'social-media-marketing-services' => [
+            'tagline' => 'Build Community. Drive Demand. Measure What Matters.',
+            'overview' => '<p>Social media marketing is more than posting — it is a growth channel that shapes brand perception, nurtures prospects, and supports paid campaigns. Our SMM team builds content systems, runs paid social, and manages communities so your brand stays visible where customers spend their time.</p><p>From Instagram reels to LinkedIn thought leadership, we align social activity with your funnel and report on business outcomes.</p>',
+            'benefits' => [
+                ['icon' => 'fa-calendar-alt', 'title' => 'Content Calendars', 'desc' => 'Consistent, on-brand posts planned around campaigns and seasons.'],
+                ['icon' => 'fa-video', 'title' => 'Creative Production', 'desc' => 'Short-form video, carousels, and ad creatives optimized for each platform.'],
+                ['icon' => 'fa-comments', 'title' => 'Community Management', 'desc' => 'Timely replies, moderation, and engagement that builds trust.'],
+                ['icon' => 'fa-bullhorn', 'title' => 'Paid Social Boost', 'desc' => 'Amplify top organic content with targeted ad spend.'],
+                ['icon' => 'fa-user-friends', 'title' => 'Influencer Collaborations', 'desc' => 'Partnerships that extend reach to relevant audiences.'],
+                ['icon' => 'fa-chart-bar', 'title' => 'Performance Reporting', 'desc' => 'Track clicks, leads, and attributed conversions — not likes alone.'],
+            ],
+        ],
+        'performance-marketing-services' => [
+            'tagline' => 'Paid Media Engineered for ROAS — Not Vanity Clicks.',
+            'overview' => '<p>Performance marketing puts budget behind outcomes. We manage Google Ads, Meta Ads, landing pages, and tracking as one system — so you know which keywords, audiences, and creatives produce revenue.</p><p>Whether launching new campaigns or fixing underperforming accounts, our team optimizes weekly for lower CPA and higher return on ad spend.</p>',
+            'benefits' => [
+                ['icon' => 'fa-search-dollar', 'title' => 'Search & Social Ads', 'desc' => 'Full-funnel campaigns on Google and Meta with unified attribution.'],
+                ['icon' => 'fa-flask', 'title' => 'Structured Testing', 'desc' => 'Ad copy, creative, and audience experiments run on a clear schedule.'],
+                ['icon' => 'fa-file-alt', 'title' => 'Landing Page CRO', 'desc' => 'Pages aligned with ad intent to improve conversion rates.'],
+                ['icon' => 'fa-redo', 'title' => 'Retargeting', 'desc' => 'Re-engage visitors who did not convert on the first visit.'],
+                ['icon' => 'fa-chart-line', 'title' => 'ROAS Dashboards', 'desc' => 'Weekly reports focused on cost per lead and revenue impact.'],
+                ['icon' => 'fa-link', 'title' => 'SEO + Paid Synergy', 'desc' => 'Coordinate organic and paid strategy under one growth partner.'],
             ],
         ],
         'ppc-management' => [

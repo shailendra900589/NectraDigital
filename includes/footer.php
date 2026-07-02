@@ -5,7 +5,13 @@ if (!function_exists('get_services_data')) {
     require_once __DIR__ . '/seo-data.php';
 }
 require_once __DIR__ . '/site-contact.php';
-$footer_services = array_slice(get_services_data(), 0, 8, true);
+$footer_all_services = get_services_data();
+$footer_services = [];
+foreach (get_primary_services() as $slug) {
+    if (isset($footer_all_services[$slug])) {
+        $footer_services[$slug] = $footer_all_services[$slug];
+    }
+}
 $footer_cities = array_slice(get_cities_data(), 0, 8, true);
 ?>
 

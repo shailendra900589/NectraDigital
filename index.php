@@ -27,12 +27,15 @@ output_faq_schema(get_homepage_faqs());
                     <small class="text-neon text-uppercase" style="letter-spacing: 2px;"><i class="fas fa-award me-2"></i> Best SEO Company India · 4.9★ Rating · 200+ Projects</small>
                 </div>
                 
-                <h1 class="display-3 fw-bold text-white mb-4" style="text-shadow: 0 0 20px rgba(0,0,0,0.8);">
-                    India's Leading <span class="text-neon" style="text-shadow: 0 0 15px var(--nectra-neon);">Search Engine Optimization</span> &amp; Digital Marketing Agency
+                <h1 class="display-3 fw-bold text-white mb-3" style="text-shadow: 0 0 20px rgba(0,0,0,0.8);">
+                    India's Leading <span class="text-neon" style="text-shadow: 0 0 15px var(--nectra-neon);">Digital Agency</span> for SEO, Marketing &amp; Software
                 </h1>
+                <h2 class="h4 text-white-50 fw-normal mb-4 mx-auto" style="max-width: 820px;">
+                    SEO, performance marketing, AI automation, web development, and custom software — one partner accountable for measurable growth.
+                </h2>
                 
                 <p class="lead text-white-50 mb-4 mx-auto" style="max-width: 800px; line-height: 1.7;">
-                    Nectra Digital is the best SEO company in India — delivering search engine optimization, AI automation, performance marketing, and custom software development that generates qualified leads and measurable ROI.
+                    Nectra Digital helps Indian and global businesses generate qualified leads with search engine optimization, paid media, social media marketing, and engineering teams that ship fast.
                 </p>
 
                 <div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
@@ -41,10 +44,11 @@ output_faq_schema(get_homepage_faqs());
                 </div>
 
                 <div class="d-flex flex-wrap justify-content-center gap-4 text-white-50 small">
-                    <span><i class="fas fa-check text-neon me-1"></i> SEO Services India</span>
+                    <span><i class="fas fa-check text-neon me-1"></i> SEO Services</span>
+                    <span><i class="fas fa-check text-neon me-1"></i> Performance Marketing</span>
+                    <span><i class="fas fa-check text-neon me-1"></i> Social Media Marketing</span>
                     <span><i class="fas fa-check text-neon me-1"></i> AI Automation</span>
-                    <span><i class="fas fa-check text-neon me-1"></i> Web Development</span>
-                    <span><i class="fas fa-check text-neon me-1"></i> Lead Generation</span>
+                    <span><i class="fas fa-check text-neon me-1"></i> Web &amp; Software Development</span>
                 </div>
             </div>
         </div>
@@ -115,66 +119,23 @@ output_faq_schema(get_homepage_faqs());
         </div>
 
         <div class="row g-4 mb-5">
+            <?php
+            $home_services = get_services_data();
+            foreach (get_primary_services() as $home_slug):
+                if (!isset($home_services[$home_slug])) continue;
+                $hs = $home_services[$home_slug];
+            ?>
             <div class="col-md-6 col-lg-4">
-                <a href="/seo-services" class="text-decoration-none">
+                <a href="/<?php echo htmlspecialchars($home_slug); ?>" class="text-decoration-none">
                     <div class="service-card text-center h-100 p-4 border border-secondary rounded bg-glass hover-effect">
-                        <i class="fas fa-search fa-2x text-neon mb-3"></i>
-                        <h3 class="h5 text-white">SEO Services India</h3>
-                        <p class="text-white-50 small">Search engine optimization, technical SEO, and content authority building by certified SEO experts.</p>
-                        <span class="text-neon small fw-bold">Explore SEO &rarr;</span>
+                        <i class="fas <?php echo htmlspecialchars($hs['icon']); ?> fa-2x text-neon mb-3"></i>
+                        <h3 class="h5 text-white"><?php echo htmlspecialchars($hs['h1']); ?></h3>
+                        <p class="text-white-50 small"><?php echo htmlspecialchars(mb_substr($hs['intro'], 0, 120)); ?>…</p>
+                        <span class="text-neon small fw-bold">Explore <?php echo htmlspecialchars($hs['silo']); ?> &rarr;</span>
                     </div>
                 </a>
             </div>
-            <div class="col-md-6 col-lg-4">
-                <a href="/ai-automation-services" class="text-decoration-none">
-                    <div class="service-card text-center h-100 p-4 border border-secondary rounded bg-glass hover-effect">
-                        <i class="fas fa-robot fa-2x text-neon mb-3"></i>
-                        <h3 class="h5 text-white">AI Automation Services</h3>
-                        <p class="text-white-50 small">AI chatbots, WhatsApp bots, workflow automation, and business process optimization.</p>
-                        <span class="text-neon small fw-bold">Explore AI &rarr;</span>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <a href="/digital-marketing-services" class="text-decoration-none">
-                    <div class="service-card text-center h-100 p-4 border border-secondary rounded bg-glass hover-effect">
-                        <i class="fas fa-chart-line fa-2x text-neon mb-3"></i>
-                        <h3 class="h5 text-white">Digital Marketing Agency</h3>
-                        <p class="text-white-50 small">Performance marketing, Google Ads, Meta Ads, and ROI-driven campaigns that convert.</p>
-                        <span class="text-neon small fw-bold">Explore Marketing &rarr;</span>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <a href="/web-development-services" class="text-decoration-none">
-                    <div class="service-card text-center h-100 p-4 border border-secondary rounded bg-glass hover-effect">
-                        <i class="fas fa-code fa-2x text-neon mb-3"></i>
-                        <h3 class="h5 text-white">Web Development Agency</h3>
-                        <p class="text-white-50 small">React, Next.js, WordPress, Laravel — SEO-ready websites built for speed and conversions.</p>
-                        <span class="text-neon small fw-bold">Explore Web Dev &rarr;</span>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <a href="/software-development-services" class="text-decoration-none">
-                    <div class="service-card text-center h-100 p-4 border border-secondary rounded bg-glass hover-effect">
-                        <i class="fas fa-laptop-code fa-2x text-neon mb-3"></i>
-                        <h3 class="h5 text-white">Software Development</h3>
-                        <p class="text-white-50 small">Custom SaaS, enterprise software, APIs, and mobile apps by experienced engineers.</p>
-                        <span class="text-neon small fw-bold">Explore Software &rarr;</span>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <a href="/local-seo-services" class="text-decoration-none">
-                    <div class="service-card text-center h-100 p-4 border border-secondary rounded bg-glass hover-effect">
-                        <i class="fas fa-map-marker-alt fa-2x text-neon mb-3"></i>
-                        <h3 class="h5 text-white">Local SEO Services</h3>
-                        <p class="text-white-50 small">Google Business Profile optimization, local citations, and map pack domination.</p>
-                        <span class="text-neon small fw-bold">Explore Local SEO &rarr;</span>
-                    </div>
-                </a>
-            </div>
+            <?php endforeach; ?>
         </div>
 
         <div class="text-center">

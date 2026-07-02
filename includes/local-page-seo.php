@@ -49,7 +49,7 @@ function ge_city_hub_seo(array $city, string $citySlug): array
     $state = $city['state'] ?? '';
     $canonical = ge_city_hub_url($citySlug);
 
-    $pageTitle = ge_trim_seo_title("Best SEO & Digital Marketing in {$name} | Nectra Digital", 'Nectra Digital', 50, 55);
+    $pageTitle = ge_trim_seo_title("Digital Agency in {$name} | Nectra Digital", 'Nectra Digital', 30, 60);
     $pageDesc = ge_trim_seo_description("Top SEO company in {$name}, {$state}. Search engine optimization, local SEO, Google Ads, AI automation, web development & lead generation. Free audit.");
     $pageKeys = implode(', ', array_unique([
         "SEO company {$name}",
@@ -109,8 +109,8 @@ function ge_service_city_seo(
             $primary
         ),
         'Nectra Digital',
-        50,
-        55
+        30,
+        60
     );
     $pageDesc = ge_trim_seo_description(
         \Growth\Engines\IntentKeywordEngine::optimizeMetaDescription(
