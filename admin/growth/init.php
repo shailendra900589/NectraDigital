@@ -23,7 +23,7 @@ function ge_admin_fatal(string $message, string $file = '', int $line = 0): void
     if ($file) {
         echo '<p><small>' . htmlspecialchars($file) . ':' . $line . '</small></p>';
     }
-    echo '<p><a href="../dashboard.php?page=home" style="color:#0ff">← NECTRAOS Dashboard</a></p>';
+    echo '<p><a href="../dashboard.php?page=home" style="color:#0ff">← Nectra Admin Dashboard</a></p>';
     echo '</body></html>';
     exit;
 }

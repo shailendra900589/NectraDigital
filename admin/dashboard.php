@@ -137,105 +137,40 @@ if (isset($_POST['update_hire_status'])) {
     $conn->query("UPDATE hire_requests SET status='$new_status' WHERE id=$req_id");
     header("Location: dashboard.php?page=hire_requests&msg=status_updated"); exit;
 }
+
+$page = isset($_GET['page']) ? (string)$_GET['page'] : 'home';
+$pageTitles = [
+    'home' => 'Dashboard Overview',
+    'cities' => 'City Manager',
+    'blog' => 'Blog Posts',
+    'ads' => 'Ad Manager',
+    'comments' => 'Comments',
+    'careers' => 'Careers',
+    'hire_requests' => 'Hire Requests',
+    'leads' => 'Contact Leads',
+];
+if (!isset($pageTitles[$page])) {
+    header('Location: dashboard.php?page=home');
+    exit;
+}
+
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/includes/admin-layout.php';
+
+$dashboardAlerts = [];
+if ($growthMsg) {
+    $dashboardAlerts[] = ['type' => 'success', 'message' => $growthMsg, 'dismiss' => true];
+}
+if (!empty($growthStats['error'])) {
+    $dashboardAlerts[] = ['type' => 'warning', 'message' => 'Growth Engine: ' . $growthStats['error']];
+}
+
+admin_layout_start($pageTitles[$page], $page, [
+    'alerts' => $dashboardAlerts,
+    'growth_warning' => empty($growthStats['ready']),
+]);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Nectra Admin Control</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background: #111; color: #ccc; margin: 0; }
-        .sidebar {
-            background: #050505; border-right: 1px solid #333; width: 250px;
-            position: fixed; top: 0; left: 0; height: 100vh; height: 100dvh;
-            display: flex; flex-direction: column; z-index: 100; overflow: hidden;
-        }
-        .sidebar-brand { flex-shrink: 0; padding: 1.25rem 1rem; text-align: center; border-bottom: 1px solid #333; }
-        .sidebar-nav {
-            flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden;
-            overscroll-behavior: contain;
-            scrollbar-width: thin; scrollbar-color: #00E5FF #1a1a1a;
-        }
-        .sidebar-nav::-webkit-scrollbar { width: 6px; }
-        .sidebar-nav::-webkit-scrollbar-track { background: #111; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: #00E5FF; }
-        .sidebar-footer { flex-shrink: 0; border-top: 1px solid #333; background: #050505; }
-        .content { margin-left: 250px; padding: 30px; min-height: 100vh; }
-        .sidebar .nav-link {
-            color: #aaa; padding: 12px 15px; border-bottom: 1px solid #222;
-            display: block; text-decoration: none; font-size: 0.9rem;
-            transition: background 0.15s, color 0.15s;
-        }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #00E5FF; color: #000; font-weight: bold; }
-        .sidebar-footer .nav-link { border-bottom: none; border-top: 1px solid #222; }
-        .sidebar-footer .nav-link.text-danger { color: #f66 !important; }
-        .sidebar-footer .nav-link.text-danger:hover { background: rgba(255,80,80,0.15); color: #ff8888 !important; font-weight: 600; }
-        .card { background: #1a1a1a; border: 1px solid #333; color: #fff; }
-        .table-dark { --bs-table-bg: #1a1a1a; }
-        .form-control, .form-select { background-color: #222; border-color: #444; color: #fff; }
-        .form-control:focus, .form-select:focus { background-color: #333; color: #fff; border-color: #00E5FF; }
-        img.ad-preview { object-fit: cover; border: 1px solid #444; }
-        .stat-box { background: #0d1117; border: 1px solid #333; border-radius: 8px; padding: 1rem; text-align: center; }
-        .stat-val { font-size: 1.75rem; font-weight: bold; color: #00E5FF; }
-        .stat-lbl { font-size: 0.75rem; color: #888; text-transform: uppercase; }
-        .section-title { color: #666; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 15px 5px; margin: 0; }
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
-            .sidebar.sidebar-open { transform: translateX(0); }
-            .content { margin-left: 0; padding: 16px; }
-        }
-    </style>
-</head>
-<body>
-
-<div class="sidebar">
-    <div class="sidebar-brand">
-        <h4 class="text-white m-0">NECTRA<span class="text-info">OS</span></h4>
-        <small class="text-muted">Admin Control Center</small>
-    </div>
-
-    <nav class="sidebar-nav" aria-label="Admin navigation">
-    <div class="section-title">Overview</div>
-    <a href="?page=home" class="nav-link <?php echo (!isset($_GET['page']) || $_GET['page']=='home')?'active':''; ?>"><i class="fas fa-home me-2"></i> Dashboard Home</a>
-
-    <div class="section-title">Growth & SEO</div>
-    <a href="?page=cities" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='cities')?'active':''; ?>"><i class="fas fa-map-marker-alt me-2"></i> Cities</a>
-    <a href="growth/indexing.php" class="nav-link"><i class="fas fa-search-plus me-2"></i> Auto Indexing</a>
-    <a href="export-urls.php?type=all" class="nav-link"><i class="fas fa-download me-2"></i> Export URLs</a>
-    <a href="growth/services.php" class="nav-link"><i class="fas fa-cogs me-2"></i> Services</a>
-    <a href="growth/generate.php" class="nav-link"><i class="fas fa-magic me-2"></i> Generate Pages</a>
-    <a href="growth/landing-pages.php" class="nav-link"><i class="fas fa-file-alt me-2"></i> Landing Pages</a>
-    <a href="growth/leads.php" class="nav-link"><i class="fas fa-user-plus me-2"></i> CRM Leads</a>
-    <a href="growth/settings.php" class="nav-link"><i class="fas fa-sliders-h me-2"></i> Growth Settings</a>
-
-    <div class="section-title">Inbound</div>
-    <a href="?page=leads" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='leads')?'active':''; ?>"><i class="fas fa-satellite-dish me-2"></i> Contact Leads</a>
-    <a href="?page=hire_requests" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='hire_requests')?'active':''; ?>"><i class="fas fa-user-tie me-2"></i> Hire Requests</a>
-
-    <div class="section-title">Content</div>
-    <a href="?page=blog" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='blog')?'active':''; ?>"><i class="fas fa-edit me-2"></i> Blog Ops</a>
-    <a href="?page=comments" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='comments')?'active':''; ?>"><i class="fas fa-comments me-2"></i> Comments</a>
-
-    <div class="section-title">Monetization & HR</div>
-    <a href="?page=ads" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='ads')?'active':''; ?>"><i class="fas fa-ad me-2"></i> Ad Engine</a>
-    <a href="?page=careers" class="nav-link <?php echo (isset($_GET['page']) && $_GET['page']=='careers')?'active':''; ?>"><i class="fas fa-briefcase me-2"></i> Careers</a>
-    </nav>
-
-    <div class="sidebar-footer">
-        <a href="<?php echo defined('SITE_URL') ? SITE_URL : 'https://www.nectradigital.com'; ?>" target="_blank" class="nav-link"><i class="fas fa-external-link-alt me-2"></i> View Site</a>
-        <a href="logout.php" class="nav-link text-danger"><i class="fas fa-power-off me-2"></i> Terminate</a>
-    </div>
-</div>
-
-<div class="content">
     <?php
-    if ($growthMsg) echo "<div class='alert alert-success alert-dismissible fade show'>".htmlspecialchars($growthMsg)."<button type='button' class='btn-close' data-bs-dismiss='alert'></button></div>";
-    if (!empty($growthStats['error'])) echo "<div class='alert alert-warning'>Growth Engine: ".htmlspecialchars($growthStats['error'])."</div>";
-    if (!$growthStats['ready']) echo "<div class='alert alert-warning'><strong>Growth DB not ready.</strong> Run <a href='../database/migrate.php' target='_blank' class='alert-link'>database/migrate.php</a> or import SQL via phpMyAdmin to enable Cities & Auto Indexing.</div>";
-
-    $page = isset($_GET['page']) ? $_GET['page'] : 'home';
 
     // ==========================================
     // HOME — Unified Dashboard Overview
@@ -243,16 +178,30 @@ if (isset($_POST['update_hire_status'])) {
     if ($page == 'home') {
         $leadCount = $conn->query("SELECT COUNT(*) AS c FROM leads")->fetch_assoc()['c'] ?? 0;
         $hireCount = $conn->query("SELECT COUNT(*) AS c FROM hire_requests WHERE status='new'")->fetch_assoc()['c'] ?? 0;
-        echo '<h2 class="mb-4"><i class="fas fa-tachometer-alt text-info"></i> Command Center</h2>';
         echo '<div class="row g-3 mb-4">';
-        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val">'.$leadCount.'</div><div class="stat-lbl">Contact Leads</div></div></div>';
-        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val">'.$hireCount.'</div><div class="stat-lbl">New Hire Requests</div></div></div>';
-        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val">'.number_format($growthStats['cities']).'</div><div class="stat-lbl">Active Cities</div></div></div>';
-        echo '<div class="col-6 col-md-3"><div class="stat-box"><div class="stat-val">'.number_format($growthStats['pages']).'</div><div class="stat-lbl">Landing Pages</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value">'.number_format($leadCount).'</div><div class="ge-stat-label">Contact Leads</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value">'.number_format($hireCount).'</div><div class="ge-stat-label">New Hire Requests</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value">'.number_format($growthStats['cities']).'</div><div class="ge-stat-label">Active Cities</div></div></div>';
+        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value">'.number_format($growthStats['pages']).'</div><div class="ge-stat-label">Landing Pages</div></div></div>';
         echo '</div>';
 
+        echo '<div class="ge-card mb-4"><div class="ge-section-head">Quick Actions</div><div class="ge-quick-grid">';
+        $quickLinks = [
+            ['create_post.php', 'fa-pen-to-square', 'New Blog Post'],
+            ['?page=leads', 'fa-inbox', 'Contact Leads'],
+            ['growth/indexing.php', 'fa-search-plus', 'Auto Indexing'],
+            ['growth/generate.php', 'fa-wand-magic-sparkles', 'Generate Pages'],
+            ['growth/leads.php', 'fa-address-book', 'CRM Pipeline'],
+            ['export-urls.php?type=all', 'fa-download', 'Export URLs'],
+        ];
+        foreach ($quickLinks as [$href, $icon, $label]) {
+            $url = (str_starts_with($href, '?')) ? 'dashboard.php' . $href : $href;
+            echo '<a href="'.htmlspecialchars($url).'" class="ge-quick-link"><i class="fas '.$icon.'"></i><span>'.htmlspecialchars($label).'</span></a>';
+        }
+        echo '</div></div>';
+
         echo '<div class="row g-4">';
-        echo '<div class="col-lg-6"><div class="card p-4"><h5 class="text-info mb-3"><i class="fas fa-map-marker-alt"></i> Quick Add City</h5>';
+        echo '<div class="col-lg-6"><div class="ge-card"><h5 class="ge-section-head"><i class="fas fa-map-marker-alt text-info me-2"></i>Quick Add City</h5>';
         echo '<form method="POST" action="?page=cities"><input type="hidden" name="growth_action" value="add_city">';
         echo '<div class="row g-2"><div class="col-md-6"><input type="text" name="name" class="form-control" placeholder="City Name *" required></div>';
         echo '<div class="col-md-6"><input type="text" name="state" class="form-control" placeholder="State"></div>';
@@ -261,7 +210,7 @@ if (isset($_POST['update_hire_status'])) {
         echo '<div class="col-12"><button type="submit" class="btn btn-info w-100">Add City</button></div></div></form>';
         echo '<p class="small text-muted mt-2 mb-0"><a href="?page=cities">Manage all cities →</a> · <a href="growth/cities.php?action=import">Bulk import</a></p></div></div>';
 
-        echo '<div class="col-lg-6"><div class="card p-4"><h5 class="text-info mb-3"><i class="fas fa-rocket"></i> Auto Indexing Status</h5>';
+        echo '<div class="col-lg-6"><div class="ge-card"><h5 class="ge-section-head"><i class="fas fa-rocket text-info me-2"></i>Auto Indexing Status</h5>';
         echo '<div class="d-flex justify-content-between mb-2"><span class="text-white-50">Indexed</span><strong class="text-success">'.number_format($growthStats['indexed']).'</strong></div>';
         echo '<div class="d-flex justify-content-between mb-2"><span class="text-white-50">Pending</span><strong class="text-warning">'.number_format($growthStats['pending_index']).'</strong></div>';
         echo '<div class="d-flex justify-content-between mb-3"><span class="text-white-50">Queue</span><strong>'.number_format($growthStats['queue_pending']).'</strong></div>';
@@ -275,15 +224,15 @@ if (isset($_POST['update_hire_status'])) {
         if ($growthStats['ready']) {
             $cityHubs = function_exists('admin_city_hub_urls') ? admin_city_hub_urls() : [];
             $allUrlCount = function_exists('admin_all_indexable_urls') ? count(admin_all_indexable_urls()) : 0;
-            echo '<div class="card p-4 mt-4"><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">';
-            echo '<h5 class="text-info mb-0"><i class="fas fa-link"></i> City Hub URLs (Google Listing)</h5>';
+            echo '<div class="ge-card mt-4"><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">';
+            echo '<h5 class="ge-section-head mb-0"><i class="fas fa-link text-info me-2"></i>City Hub URLs</h5>';
             echo '<div class="d-flex flex-wrap gap-2">';
             echo '<a href="export-urls.php?type=cities" class="btn btn-sm btn-outline-info"><i class="fas fa-download"></i> Download City URLs</a>';
             echo '<a href="export-urls.php?type=landing" class="btn btn-sm btn-outline-info"><i class="fas fa-download"></i> Download Landing URLs</a>';
             echo '<a href="export-urls.php?type=all" class="btn btn-sm btn-info"><i class="fas fa-download"></i> Download All (' . number_format($allUrlCount) . ')</a>';
             echo '</div></div>';
             echo '<p class="text-white-50 small">Har city ka hub page — Google Search Console / Bing me manual listing ke liye. Service×city pages alag se <code>export-urls.php?type=landing</code> se download karein.</p>';
-            echo '<div class="table-responsive" style="max-height:360px;overflow-y:auto;"><table class="table table-dark table-sm mb-0"><thead><tr><th>City</th><th>Hub URL</th><th></th></tr></thead><tbody>';
+            echo '<div class="ge-table-wrap" style="max-height:360px;overflow-y:auto;"><table class="table ge-table table-sm mb-0"><thead><tr><th>City</th><th>Hub URL</th><th></th></tr></thead><tbody>';
             foreach ($cityHubs as $hub) {
                 $url = htmlspecialchars($hub['hub_url']);
                 echo '<tr><td><strong>' . htmlspecialchars($hub['name']) . '</strong><br><span class="text-muted small">' . htmlspecialchars($hub['state']) . '</span></td>';
@@ -300,7 +249,7 @@ if (isset($_POST['update_hire_status'])) {
 
         if ($growthStats['ready']) {
             $pct = $growthStats['potential'] > 0 ? min(100, round(($growthStats['pages'] / $growthStats['potential']) * 100)) : 0;
-            echo '<div class="card p-4 mt-4"><h5 class="text-info mb-3">Programmatic SEO Matrix</h5>';
+            echo '<div class="ge-card mt-4"><h5 class="ge-section-head">Programmatic SEO Matrix</h5>';
             echo '<p class="text-white-50 small">Services × Cities × Industries = '.$growthStats['services'].' × '.$growthStats['cities'].' × '.max(1,$growthStats['industries']+1).' = <strong>'.number_format($growthStats['potential']).'</strong> possible pages</p>';
             echo '<div class="progress mb-2" style="height:10px;background:#333;"><div class="progress-bar bg-info" style="width:'.$pct.'%"></div></div>';
             echo '<p class="small text-muted">'.$pct.'% generated ('.number_format($growthStats['pages']).' / '.number_format($growthStats['potential']).')</p>';
@@ -315,11 +264,12 @@ if (isset($_POST['update_hire_status'])) {
     // ==========================================
     elseif ($page == 'cities') {
         $cities = admin_growth_cities();
-        echo '<div class="d-flex justify-content-between align-items-center mb-4"><h2><i class="fas fa-map-marker-alt text-info"></i> City Manager</h2>';
+        echo '<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">';
+        echo '<p class="text-muted mb-0">Manage cities for programmatic landing pages.</p>';
         echo '<div><a href="growth/cities.php?action=import" class="btn btn-outline-secondary me-2"><i class="fas fa-file-import"></i> Bulk Import</a>';
-        echo '<a href="growth/cities.php?action=add" class="btn btn-info"><i class="fas fa-plus"></i> Advanced Add</a></div></div>';
+        echo '<a href="growth/cities.php?action=add" class="btn btn-ge-primary"><i class="fas fa-plus"></i> Advanced Add</a></div></div>';
 
-        echo '<div class="card p-4 mb-4"><h5>Add New City</h5><form method="POST"><input type="hidden" name="growth_action" value="add_city">';
+        echo '<div class="ge-card mb-4"><h5 class="ge-section-head">Add New City</h5><form method="POST"><input type="hidden" name="growth_action" value="add_city">';
         echo '<div class="row g-3"><div class="col-md-3"><input type="text" name="name" class="form-control" placeholder="City Name *" required></div>';
         echo '<div class="col-md-2"><input type="text" name="slug" class="form-control" placeholder="Slug (auto)"></div>';
         echo '<div class="col-md-2"><input type="text" name="state" class="form-control" placeholder="State"></div>';
@@ -327,7 +277,7 @@ if (isset($_POST['update_hire_status'])) {
         echo '<div class="col-md-2"><input type="number" name="population" class="form-control" placeholder="Population"></div>';
         echo '<div class="col-md-1"><button type="submit" class="btn btn-success w-100">Add</button></div></div></form></div>';
 
-        echo '<div class="card p-3"><div class="table-responsive"><table class="table table-dark table-hover table-sm mb-0"><thead><tr><th>City</th><th>State</th><th>Population</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+        echo '<div class="ge-card"><div class="ge-table-wrap"><table class="table ge-table table-hover table-sm mb-0"><thead><tr><th>City</th><th>State</th><th>Population</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
         foreach ($cities as $c) {
             echo '<tr><td><strong>'.htmlspecialchars($c['name']).'</strong><br><code class="small">'.htmlspecialchars($c['slug']).'</code></td>';
             echo '<td>'.htmlspecialchars($c['state']).'</td><td>'.number_format($c['population']).'</td><td>'.$c['status'].'</td><td>';
@@ -341,14 +291,14 @@ if (isset($_POST['update_hire_status'])) {
         if ($growthStats['ready']) {
             $cityHubs = function_exists('admin_city_hub_urls') ? admin_city_hub_urls() : [];
             $landingCount = (int)($growthStats['pages'] ?? 0);
-            echo '<div class="card p-4 mt-4"><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">';
-            echo '<h5 class="mb-0"><i class="fas fa-link text-info"></i> Generated City Hub Links</h5>';
+            echo '<div class="ge-card mt-4"><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">';
+            echo '<h5 class="ge-section-head mb-0"><i class="fas fa-link text-info me-2"></i>Generated City Hub Links</h5>';
             echo '<div class="d-flex flex-wrap gap-2">';
             echo '<a href="export-urls.php?type=cities" class="btn btn-sm btn-outline-info"><i class="fas fa-download"></i> Export City URLs</a>';
             echo '<a href="export-urls.php?type=all" class="btn btn-sm btn-info"><i class="fas fa-download"></i> Export All URLs</a>';
             echo '</div></div>';
             echo '<p class="text-white-50 small mb-3">City hub pages + <strong>' . number_format($landingCount) . '</strong> service×city landing pages. Download list for Google Search Console bulk indexing.</p>';
-            echo '<div class="table-responsive" style="max-height:420px;overflow-y:auto;"><table class="table table-dark table-sm mb-0"><thead><tr><th>City</th><th>Slug</th><th>Hub URL</th><th></th></tr></thead><tbody>';
+            echo '<div class="ge-table-wrap" style="max-height:420px;overflow-y:auto;"><table class="table ge-table table-sm mb-0"><thead><tr><th>City</th><th>Slug</th><th>Hub URL</th><th></th></tr></thead><tbody>';
             foreach ($cityHubs as $hub) {
                 $url = htmlspecialchars($hub['hub_url']);
                 echo '<tr><td>'.htmlspecialchars($hub['name']).'</td><td><code class="small">'.htmlspecialchars($hub['slug']).'</code></td>';
@@ -368,22 +318,22 @@ if (isset($_POST['update_hire_status'])) {
         }
         $siteBase = rtrim(SITE_URL, '/');
 
-        echo '<div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-layer-group text-info"></i> Intel Management</h2>
+        echo '<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <p class="text-muted mb-0">Create, edit, and index blog posts.</p>
                 <div class="d-flex gap-2">
-                <a href="?page=blog&rebuild_blog_static=1" class="btn btn-outline-light btn-sm" title="Rebuild static HTML for Bing/Google crawlers">Rebuild Crawler Snapshots</a>
-                <a href="create_post.php" class="btn btn-info"><i class="fas fa-plus"></i> New Protocol</a>
+                <a href="?page=blog&rebuild_blog_static=1" class="btn btn-outline-secondary btn-sm" title="Rebuild static HTML for Bing/Google crawlers">Rebuild Snapshots</a>
+                <a href="create_post.php" class="btn btn-ge-primary"><i class="fas fa-plus"></i> New Post</a>
                 </div>
               </div>';
-        if(isset($_GET['msg']) && $_GET['msg'] == 'deleted') echo "<div class='alert alert-danger'>Protocol Deleted.</div>";
+        if(isset($_GET['msg']) && $_GET['msg'] == 'deleted') echo "<div class='alert alert-danger'>Post deleted.</div>";
         if(isset($_GET['msg']) && $_GET['msg'] == 'orphan_toggled') echo "<div class='alert alert-info'>Visibility updated. Orphan posts stay live + indexed but hidden from site listings.</div>";
-        if(isset($_GET['msg']) && $_GET['msg'] == 'index_sent') echo "<div class='alert alert-success'>URL sent to Bing via IndexNow + Bing API. Re-check Bing Webmaster in a few hours.</div>";
-        if(isset($_GET['msg']) && $_GET['msg'] == 'static_rebuilt') echo "<div class='alert alert-success'>Crawler snapshots rebuilt for " . intval($_GET['count'] ?? 0) . " blog post(s). Test again in Bing URL Inspection.</div>";
+        if(isset($_GET['msg']) && $_GET['msg'] == 'index_sent') echo "<div class='alert alert-success'>URL sent to Bing via IndexNow + Bing API.</div>";
+        if(isset($_GET['msg']) && $_GET['msg'] == 'static_rebuilt') echo "<div class='alert alert-success'>Crawler snapshots rebuilt for " . intval($_GET['count'] ?? 0) . " blog post(s).</div>";
 
         $sql = "SELECT * FROM blog_posts ORDER BY created_at DESC";
         $result = $conn->query($sql);
 
-        echo '<div class="table-responsive"><table class="table table-dark table-hover align-middle">
+        echo '<div class="ge-card"><div class="ge-table-wrap"><table class="table ge-table table-hover align-middle mb-0">
                 <thead><tr><th>Date</th><th>Title</th><th>Category</th><th>Visibility</th><th>Post URL</th><th>Actions</th></tr></thead><tbody>';
         while($row = $result->fetch_assoc()) {
             $isOrphan = blog_is_orphan($row);
@@ -409,11 +359,11 @@ if (isset($_POST['update_hire_status'])) {
                         <a href='?page=blog&index_post={$row['id']}' class='btn btn-sm btn-outline-success me-2' title='Send to Bing (IndexNow + API)'><i class='fab fa-microsoft'></i></a>
                         <a href='?page=blog&toggle_orphan={$row['id']}' class='btn btn-sm btn-outline-info me-2' title='" . htmlspecialchars($toggleTitle) . "' onclick='return confirm(\"" . ($isOrphan ? 'Show this post on Insights and site listings?' : 'Make orphan? Post stays live + indexed but hidden from all listings.') . "\")'><i class='fas {$toggleIcon}'></i></a>
                         <a href='edit_post.php?id={$row['id']}' class='btn btn-sm btn-outline-warning me-2'><i class='fas fa-pen'></i></a>
-                        <a href='?page=blog&delete_post={$row['id']}' class='btn btn-sm btn-outline-danger' onclick='return confirm(\"Purge this protocol?\")'><i class='fas fa-trash'></i></a>
+                        <a href='?page=blog&delete_post={$row['id']}' class='btn btn-sm btn-outline-danger' onclick='return confirm(\"Delete this post?\")'><i class='fas fa-trash'></i></a>
                     </td>
                   </tr>";
         }
-        echo '</tbody></table></div>';
+        echo '</tbody></table></div></div>';
         echo "<script>
         document.querySelectorAll('.blog-copy-url').forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -468,11 +418,9 @@ if (isset($_POST['update_hire_status'])) {
             }
         }
 
-        echo "<h2><i class='fas fa-ad text-info'></i> Ad Monetization Engine</h2><hr>";
-        
-        echo "<div class='card p-4 mb-4'>
-            <h5>Create New Ad Unit</h5>
-            <p class='text-muted small mb-3'>Tip: Sidebar shows up to <strong>20 ad cards</strong> (minimum 15) on blog posts — sidebar ads first, then header/content ads if needed. Set placement <strong>Sidebar</strong> for priority. For Google AdSense paste the <strong>full code snippet</strong> from your AdSense dashboard (script + ins + push).</p>
+        echo "<div class='ge-card mb-4'>
+            <h5 class='ge-section-head'>Create New Ad Unit</h5>
+            <p class='text-muted small mb-3'>Sidebar shows up to <strong>20 ad cards</strong> on blog posts. Set placement <strong>Sidebar</strong> for priority. For Google AdSense paste the full code snippet from your dashboard.</p>
             <form method='POST' enctype='multipart/form-data'>
                 <div class='row g-3'>
                     <div class='col-md-4'><input type='text' name='title' class='form-control' placeholder='Ad Name' required></div>
@@ -480,53 +428,49 @@ if (isset($_POST['update_hire_status'])) {
                     <div class='col-md-2'><select name='type' class='form-select' onchange='toggleAdType(this.value)'><option value='image'>Custom Image</option><option value='code'>Google Code</option></select></div>
                     <div class='col-md-4 ad-image-group'><input type='file' name='image' class='form-control mb-2'><input type='text' name='link' class='form-control' placeholder='Link URL'></div>
                     <div class='col-12 ad-code-group' style='display:none;'><textarea name='ad_code' class='form-control' rows='3' placeholder='Paste Google Adsense Code here'></textarea></div>
-                    <div class='col-12'><button type='submit' name='save_ad' class='btn btn-success w-100'>LAUNCH AD</button></div>
+                    <div class='col-12'><button type='submit' name='save_ad' class='btn btn-ge-primary w-100'>Create Ad</button></div>
                 </div>
             </form>
         </div>";
 
         $res = $conn->query("SELECT * FROM ads ORDER BY id DESC");
-        echo "<table class='table table-dark'><thead><tr><th>Preview</th><th>Name</th><th>Type</th><th>Placement</th><th>Action</th></tr></thead><tbody>";
+        echo "<div class='ge-card'><div class='ge-table-wrap'><table class='table ge-table mb-0'><thead><tr><th>Preview</th><th>Name</th><th>Type</th><th>Placement</th><th>Action</th></tr></thead><tbody>";
         while($row = $res->fetch_assoc()){
             $preview = ($row['type'] == 'image' && !empty($row['image_path'])) ? "<img src='../{$row['image_path']}' width='50' height='50' class='ad-preview'>" : "<i class='fas fa-code fa-lg'></i>";
             echo "<tr><td>$preview</td><td>" . nectra_display_text($row['title']) . "</td><td><span class='badge bg-secondary'>{$row['type']}</span></td><td><span class='badge bg-info'>{$row['placement']}</span></td><td><a href='?page=ads&del_ad={$row['id']}' class='text-danger' onclick='return confirm(\"Delete Ad?\")'>Delete</a></td></tr>";
         }
-        echo "</tbody></table>";
-        echo "<script>function toggleAdType(val){if(val=='code'){document.querySelector('.ad-image-group').style.display='none';document.querySelector('.ad-code-group').style.display='block';}else{document.querySelector('.ad-image-group').style.display='block';document.querySelector('.ad-code-group').style.display='none';}}</script>";
+        echo "</tbody></table></div></div>";
     }
 
     // ==========================================
     // 3. COMMENTS MANAGEMENT
     // ==========================================
     elseif ($page == 'comments') {
-        echo "<h2><i class='fas fa-comments text-info'></i> Community Manager</h2><hr>";
         $res = $conn->query("SELECT * FROM comments ORDER BY created_at DESC");
-        echo "<table class='table table-dark'><thead><tr><th>User</th><th>Comment</th><th>Status</th><th>Action</th></tr></thead><tbody>";
+        echo "<div class='ge-card'><div class='ge-table-wrap'><table class='table ge-table mb-0'><thead><tr><th>User</th><th>Comment</th><th>Status</th><th>Action</th></tr></thead><tbody>";
         while($row = $res->fetch_assoc()){
             $status = $row['status'] == 'pending' ? "<a href='?page=comments&approve_comment={$row['id']}' class='btn btn-sm btn-success'>Approve</a>" : "<span class='text-success'>Live</span>";
             echo "<tr><td>{$row['name']}</td><td><small>{$row['comment']}</small></td><td>$status</td><td><a href='?page=comments&del_comment={$row['id']}' class='text-danger' onclick='return confirm(\"Delete Comment?\")'><i class='fas fa-trash'></i></a></td></tr>";
         }
-        echo "</tbody></table>";
+        echo "</tbody></table></div></div>";
     }
 
     // ==========================================
     // 4. CAREERS & APPLICATIONS
     // ==========================================
     elseif ($page == 'careers') {
-        // Tab Navigation
         echo '<ul class="nav nav-tabs mb-4 border-secondary">
                 <li class="nav-item"><a class="nav-link active bg-dark text-white border-secondary" href="#">Active Jobs</a></li>
-                <li class="nav-item"><a class="nav-link text-info" href="#applications">Inbound Applications</a></li>
+                <li class="nav-item"><a class="nav-link text-info" href="#applications">Applications</a></li>
               </ul>';
 
-        // 1. JOBS SECTION
-        echo '<div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-briefcase text-info"></i> Recruitment Ops</h2>
-                <a href="create_job.php" class="btn btn-info"><i class="fas fa-plus"></i> Open New Position</a>
+        echo '<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <p class="text-muted mb-0">Manage open positions and applications.</p>
+                <a href="create_job.php" class="btn btn-ge-primary"><i class="fas fa-plus"></i> New Position</a>
               </div>';
 
         $res = $conn->query("SELECT * FROM careers ORDER BY created_at DESC");
-        echo "<table class='table table-dark table-hover'><thead><tr><th>Position</th><th>Stack</th><th>Status</th><th>Action</th></tr></thead><tbody>";
+        echo "<div class='ge-card mb-4'><div class='ge-table-wrap'><table class='table ge-table table-hover mb-0'><thead><tr><th>Position</th><th>Stack</th><th>Status</th><th>Action</th></tr></thead><tbody>";
         while($row = $res->fetch_assoc()){
             echo "<tr>
                 <td>{$row['position']}</td>
@@ -535,13 +479,12 @@ if (isset($_POST['update_hire_status'])) {
                 <td><a href='?page=careers&del_career={$row['id']}' class='btn btn-sm btn-outline-danger' onclick='return confirm(\"Close Position?\")'>Close</a></td>
             </tr>";
         }
-        echo "</tbody></table>";
+        echo "</tbody></table></div></div>";
 
-        // 2. APPLICATIONS SECTION (Resumes)
-        echo '<h3 class="mt-5 text-warning" id="applications"><i class="fas fa-file-pdf"></i> Received Dossiers</h3><hr>';
+        echo '<h5 class="mt-4 mb-3" id="applications"><i class="fas fa-file-pdf text-warning me-2"></i>Received Applications</h5>';
         $app_res = $conn->query("SELECT a.*, c.position FROM applications a JOIN careers c ON a.job_id = c.id ORDER BY a.created_at DESC");
         
-        echo "<div class='table-responsive'><table class='table table-dark table-bordered border-secondary'>
+        echo "<div class='ge-card'><div class='ge-table-wrap'><table class='table ge-table mb-0'>
                 <thead><tr><th>Candidate</th><th>Applying For</th><th>Cover Letter</th><th>Resume</th></tr></thead><tbody>";
         
         if($app_res->num_rows > 0){
@@ -564,26 +507,22 @@ if (isset($_POST['update_hire_status'])) {
         } else {
             echo "<tr><td colspan='4' class='text-center text-white-50'>No applications received yet.</td></tr>";
         }
-        echo "</tbody></table></div>";
+        echo "</tbody></table></div></div>";
     }
 
     // ==========================================
-    // 5. NEW: HIRE REQUESTS MANAGEMENT
+    // 5. HIRE REQUESTS MANAGEMENT
     // ==========================================
     elseif ($page == 'hire_requests') {
-        echo '<div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-user-tie text-info"></i> Hire Expert Requests</h2>
-              </div>';
-              
         if(isset($_GET['msg'])) {
-            if($_GET['msg'] == 'deleted') echo "<div class='alert alert-danger'>Request Deleted.</div>";
-            if($_GET['msg'] == 'status_updated') echo "<div class='alert alert-success'>Status Updated successfully.</div>";
+            if($_GET['msg'] == 'deleted') echo "<div class='alert alert-danger'>Request deleted.</div>";
+            if($_GET['msg'] == 'status_updated') echo "<div class='alert alert-success'>Status updated successfully.</div>";
         }
 
         $sql = "SELECT * FROM hire_requests ORDER BY created_at DESC";
         $result = $conn->query($sql);
 
-        echo '<div class="table-responsive"><table class="table table-dark table-hover align-middle">
+        echo '<div class="ge-card"><div class="ge-table-wrap"><table class="table ge-table table-hover align-middle mb-0">
                 <thead><tr><th>Date</th><th>Client Info</th><th>Service & Budget</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
         
         if($result->num_rows > 0) {
@@ -617,7 +556,7 @@ if (isset($_POST['update_hire_status'])) {
                       </tr>
                       <tr id='details-{$row['id']}' style='display:none; background-color: #1a1a1a;'>
                           <td colspan='5' class='p-3 border-bottom border-secondary'>
-                              <h6 class='text-info mb-2'>Project Directives:</h6>
+                              <h6 class='text-info mb-2'>Project Details</h6>
                               <p class='mb-0 text-white-50 small' style='white-space: pre-wrap;'>".htmlspecialchars($row['project_details'])."</p>
                           </td>
                       </tr>";
@@ -625,42 +564,21 @@ if (isset($_POST['update_hire_status'])) {
         } else {
             echo "<tr><td colspan='5' class='text-center py-4 text-white-50'>No hire requests found.</td></tr>";
         }
-        echo '</tbody></table></div>';
+        echo '</tbody></table></div></div>';
     }
 
     // ==========================================
     // LEADS
     // ==========================================
     elseif ($page == 'leads') {
-        echo '<h2><i class="fas fa-inbox text-info"></i> Incoming Transmissions</h2><hr class="border-secondary mb-4">';
         $sql = "SELECT * FROM leads ORDER BY created_at DESC";
         $result = $conn->query($sql);
-        echo '<div class="table-responsive"><table class="table table-dark table-hover"><thead><tr><th>Status</th><th>Entity</th><th>Service</th><th>Message</th></tr></thead><tbody>';
+        echo '<div class="ge-card"><div class="ge-table-wrap"><table class="table ge-table table-hover mb-0"><thead><tr><th>Status</th><th>Contact</th><th>Service</th><th>Message</th></tr></thead><tbody>';
         while($row = $result->fetch_assoc()){
             $spam = $row['is_spam'] ? "<span class='badge bg-danger'>BOT</span>" : "<span class='badge bg-success'>CLEAN</span>";
             echo "<tr><td>$spam</td><td><strong class='text-white'>{$row['name']}</strong><br><small class='text-info'>{$row['email']}</small><br><small class='text-white-50'>IP: {$row['ip_address']}</small></td><td>{$row['service']}<br><small>{$row['budget']}</small></td><td><div style='max-width:300px; height:60px; overflow-y:auto;' class='small text-white-50'>{$row['message']}</div></td></tr>";
         }
-        echo '</tbody></table></div>';
-    }
-
-    else {
-        header('Location: dashboard.php?page=home');
-        exit;
+        echo '</tbody></table></div></div>';
     }
     ?>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    function toggleDetails(id) {
-        var row = document.getElementById('details-' + id);
-        if (row.style.display === 'none' || row.style.display === '') {
-            row.style.display = 'table-row';
-        } else {
-            row.style.display = 'none';
-        }
-    }
-</script>
-
-</body>
-</html>
+<?php admin_layout_end(); ?>
