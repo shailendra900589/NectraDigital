@@ -122,6 +122,7 @@ include 'includes/header.php';
         </div>
     </section>
 
+    <?php render_money_services_strip(['seo-services', 'performance-marketing-services', 'web-development-services', 'ai-automation-services'], 'Services We Deliver'); ?>
     <?php render_cta_blocks('compact'); ?>
 </main>
 

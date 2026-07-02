@@ -116,6 +116,27 @@ function render_geo_summary($title) {
     echo '<p class="text-white-50 small mb-0">This guide on ' . htmlspecialchars($title) . ' provides comprehensive, expert-verified information from Nectra Digital. For personalized strategy and implementation, <a href="/contact" class="text-neon">book a free consultation</a> with our team.</p></div>';
 }
 
+function render_money_services_strip(?array $slugs = null, string $heading = 'Explore Our Services'): void
+{
+    if ($slugs === null) {
+        $slugs = array_slice(get_primary_services(), 0, 6);
+    }
+    $services = get_services_data();
+    echo '<section class="py-4 border-top border-secondary"><div class="container">';
+    echo '<h2 class="text-white h5 mb-3">' . htmlspecialchars($heading) . '</h2><div class="row g-2">';
+    foreach ($slugs as $slug) {
+        if (!isset($services[$slug])) {
+            continue;
+        }
+        $s = $services[$slug];
+        echo '<div class="col-md-6 col-lg-4"><a href="/' . htmlspecialchars($slug) . '" class="d-flex align-items-center gap-2 p-3 border border-secondary rounded text-decoration-none hover-effect">';
+        echo '<i class="fas ' . htmlspecialchars($s['icon']) . ' text-neon"></i><span class="text-white small">' . htmlspecialchars($s['h1']) . '</span></a></div>';
+    }
+    echo '<div class="col-md-6 col-lg-4"><a href="/services" class="d-flex align-items-center gap-2 p-3 border border-secondary rounded text-decoration-none hover-effect">';
+    echo '<i class="fas fa-th text-neon"></i><span class="text-white small">View All Services</span></a></div>';
+    echo '</div></div></section>';
+}
+
 function render_internal_links_service($related_slugs) {
     $services = get_services_data();
     echo '<section class="py-4 border-top border-secondary"><div class="container"><h3 class="text-white h6 mb-3">Related Services</h3><div class="row g-2">';
@@ -137,11 +158,20 @@ function render_post_internal_links($conn, $post, $category) {
     $links = [];
     
     $cat_map = [
-        'SEO' => ['seo-services', 'technical-seo-services', 'local-seo-services'],
-        'Marketing' => ['digital-marketing-services', 'ppc-management'],
-        'AI' => ['ai-automation-services', 'ai-chatbot-development'],
-        'Web' => ['web-development-services', 'ecommerce-development'],
-        'Tech' => ['software-development-services', 'mobile-app-development'],
+        'SEO' => ['seo-services', 'local-seo-services', 'technical-seo-services'],
+        'Marketing' => ['digital-marketing-services', 'performance-marketing-services', 'social-media-marketing-services'],
+        'PPC' => ['performance-marketing-services', 'google-ads-management', 'ppc-management'],
+        'Ads' => ['google-ads-management', 'meta-ads-services', 'performance-marketing-services'],
+        'AI' => ['ai-automation-services', 'ai-chatbot-development', 'whatsapp-ai-bot-development'],
+        'Automation' => ['ai-automation-services', 'ai-chatbot-development'],
+        'Web' => ['web-development-services', 'ecommerce-development', 'software-development-services'],
+        'Development' => ['software-development-services', 'web-development-services', 'mobile-app-development'],
+        'Software' => ['software-development-services', 'mobile-app-development'],
+        'Mobile' => ['mobile-app-development', 'software-development-services'],
+        'Ecommerce' => ['ecommerce-development', 'web-development-services', 'seo-services'],
+        'Local' => ['local-seo-services', 'seo-services', 'digital-marketing-services'],
+        'Content' => ['content-strategy', 'seo-services', 'social-media-marketing-services'],
+        'Tech' => ['software-development-services', 'web-development-services', 'ai-automation-services'],
     ];
     
     $matched = false;
@@ -155,8 +185,9 @@ function render_post_internal_links($conn, $post, $category) {
         }
     }
     if (!$matched) {
-        $links[] = ['url' => '/seo-services', 'title' => 'SEO Services India'];
-        $links[] = ['url' => '/digital-marketing-services', 'title' => 'Digital Marketing Agency'];
+        $links[] = ['url' => '/seo-services', 'title' => 'Professional SEO Services in India'];
+        $links[] = ['url' => '/performance-marketing-services', 'title' => 'Performance Marketing Services'];
+        $links[] = ['url' => '/web-development-services', 'title' => 'Web Development Services'];
         $links[] = ['url' => '/ai-automation-services', 'title' => 'AI Automation Services'];
     }
     

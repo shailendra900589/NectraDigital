@@ -130,12 +130,12 @@ function get_review_schema() {
 function get_services_data() {
     return [
         'seo-services' => [
-            'title' => 'SEO Services India | Search Engine Optimization Company',
+            'title' => 'Professional SEO Services India | Nectra Digital',
             'h1' => 'Professional SEO Services in India',
-            'meta_desc' => 'Rank #1 on Google with Nectra Digital SEO services India. Data-driven search engine optimization, keyword strategy, and content authority building by SEO experts.',
+            'meta_desc' => 'Rank higher on Google with data-driven SEO — keyword strategy, technical audits, content, and link building. 200+ projects. Free SEO audit from Nectra Digital.',
             'keywords' => 'SEO Services India, SEO Company India, Search Engine Optimization Services, SEO Expert India, Best SEO Company India',
             'icon' => 'fa-search',
-            'intro' => 'Our search engine optimization services combine technical excellence, content authority, and strategic link building to dominate Google rankings for high-intent commercial keywords across India and globally.',
+            'intro' => 'Our SEO services combine technical excellence, content authority, and strategic link building to help you rank for high-intent keywords in India and globally — with transparent monthly reporting.',
             'features' => ['Keyword Research & Strategy', 'On-Page SEO Optimization', 'Content Silo Architecture', 'Link Building & Digital PR', 'Monthly Ranking Reports', 'Competitor Analysis'],
             'faqs' => [
                 ['q' => 'How long does SEO take to show results?', 'a' => 'Most clients see measurable ranking improvements within 3-4 months. Competitive keywords may take 6-12 months for top positions. We provide monthly progress reports with transparent KPIs.'],

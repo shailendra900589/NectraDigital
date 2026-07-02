@@ -124,7 +124,7 @@ if ($is_city_page && !empty($city)) {
                     <span class="svc-badge"><?php echo htmlspecialchars($service['silo']); ?><?php if ($is_city_page && !empty($city_name)): ?> · <?php echo htmlspecialchars($city_name); ?><?php else: ?> · Nectra Digital<?php endif; ?></span>
                     <p class="svc-tagline text-neon mb-2"><?php echo htmlspecialchars($tagline); ?></p>
                     <?php if ($is_city_page && !empty($city_name)): ?>
-                    <h1 class="display-4 fw-bold text-white mb-4">Best <?php echo htmlspecialchars($service['silo']); ?> Company in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h1>
+                    <h1 class="display-4 fw-bold text-white mb-4"><?php echo htmlspecialchars($service['silo']); ?> in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h1>
                     <?php else: ?>
                     <h1 class="display-4 fw-bold text-white mb-4"><?php echo htmlspecialchars($service['h1']); ?></h1>
                     <?php endif; ?>

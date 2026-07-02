@@ -66,7 +66,7 @@ output_faq_schema($city_faqs);
         <div class="container position-relative z-1 py-5">
             <?php render_breadcrumbs($breadcrumbs); ?>
             <span class="svc-badge"><?php echo $is_hq ? 'Global Headquarters' : 'Local Operations'; ?></span>
-            <h1 class="display-5 fw-bold text-white mb-3">Best SEO &amp; Digital Marketing Company in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h1>
+            <h1 class="display-5 fw-bold text-white mb-3"><?php echo htmlspecialchars($hubSeo['h1']); ?></h1>
             <p class="lead text-white-50 mb-4" style="max-width: 820px;">
                 <?php echo htmlspecialchars($hubSeo['hero_intro']); ?>
             </p>

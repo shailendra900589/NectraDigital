@@ -50,18 +50,13 @@ function ge_city_hub_seo(array $city, string $citySlug): array
     $canonical = ge_city_hub_url($citySlug);
 
     $pageTitle = ge_trim_seo_title("Digital Agency in {$name} | Nectra Digital", 'Nectra Digital', 30, 60);
-    $pageDesc = ge_trim_seo_description("Top SEO company in {$name}, {$state}. Search engine optimization, local SEO, Google Ads, AI automation, web development & lead generation. Free audit.");
+    $pageDesc = ge_trim_seo_description("Nectra Digital helps businesses in {$name}, {$state} grow with SEO, paid media, web development, and AI automation. Free audit and custom proposal.");
     $pageKeys = implode(', ', array_unique([
-        "SEO company {$name}",
-        "best SEO company in {$name}",
         "digital marketing agency {$name}",
-        "local SEO {$name}",
-        "web development company {$name}",
+        "SEO services {$name}",
+        "web development {$name}",
         "PPC agency {$name}",
         "AI automation {$name}",
-        "hire digital marketing {$name}",
-        "SEO services {$name}",
-        "digital agency {$name}",
     ]));
 
     $breadcrumbs = [
@@ -75,9 +70,9 @@ function ge_city_hub_seo(array $city, string $citySlug): array
         'page_desc' => $pageDesc,
         'page_keys' => $pageKeys,
         'canonical_url' => $canonical,
-        'h1' => "Best SEO & Digital Marketing Company in {$name}",
+        'h1' => "Digital Marketing Agency in {$name}",
         'hero_label' => !empty($city['is_hq']) ? 'Global Headquarters' : 'Local Operations',
-        'hero_intro' => "Nectra Digital is a leading SEO company and digital marketing agency serving businesses in {$name}, {$state}. We deliver search engine optimization, AI automation, web development, and performance marketing that drives measurable ROI.",
+        'hero_intro' => "Grow traffic, leads, and revenue in {$name}, {$state} with SEO, Google Ads, social media, web development, and AI automation — delivered by a dedicated Nectra Digital team with transparent reporting.",
         'breadcrumbs' => $breadcrumbs,
         'og_type' => 'website',
     ];
@@ -101,7 +96,7 @@ function ge_service_city_seo(
 
     $primary = \Growth\Engines\IntentKeywordEngine::primaryPhrase($svcRecord, $cityRecord, null);
 
-    $h1 = "Best {$silo} Company in {$cityName}";
+    $h1 = "{$silo} Services in {$cityName}";
     $h2 = "Expert {$silo} in {$cityState} · Results-Driven · Nectra Digital";
     $pageTitle = ge_trim_seo_title(
         \Growth\Engines\IntentKeywordEngine::optimizeMetaTitle(

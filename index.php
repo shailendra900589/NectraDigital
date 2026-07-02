@@ -3,8 +3,8 @@ require_once 'includes/seo-data.php';
 require_once 'includes/seo-components.php';
 require_once 'includes/i18n.php';
 
-$page_title = "Best SEO & Digital Marketing in India | Nectra Digital";
-$page_desc = "Best SEO company in India — search engine optimization, AI automation, digital marketing & software development. 200+ projects. Free audit.";
+$page_title = "SEO & Digital Marketing Agency India | Nectra Digital";
+$page_desc = "Nectra Digital — SEO, performance marketing, AI automation, web & software development. 200+ projects, 340% avg. growth. Free audit & strategy call.";
 $page_keys = "SEO Company India, search engine optimization India, SEO services India, digital marketing agency India, AI automation, software development company India";
 $canonical_url = nectra_page_canonical('/');
 
@@ -19,46 +19,48 @@ include 'includes/header.php';
 output_faq_schema(get_homepage_faqs());
 ?>
 
-<header class="d-flex align-items-center justify-content-center text-center position-relative" style="min-height: 100vh; background: #050505; overflow: hidden;">
+<header class="d-flex align-items-center justify-content-center text-center position-relative" style="min-height: 75vh; background: #050505; overflow: hidden;">
     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.1) 0%, rgba(5,5,5,1) 70%); pointer-events: none;"></div>
     
     <div class="container position-relative z-1">
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="d-inline-block border border-neon rounded-pill px-3 py-1 mb-4 bg-dark">
-                    <small class="text-neon text-uppercase" style="letter-spacing: 2px;"><i class="fas fa-award me-2"></i> Best SEO Company India · 4.9★ Rating · 200+ Projects</small>
+                    <small class="text-neon text-uppercase" style="letter-spacing: 2px;"><i class="fas fa-chart-line me-2"></i> 340% Avg. Organic Growth · 4.9★ · 200+ Projects</small>
                 </div>
                 
                 <h1 class="display-3 fw-bold text-white mb-3" style="text-shadow: 0 0 20px rgba(0,0,0,0.8);">
-                    India's Leading <span class="text-neon" style="text-shadow: 0 0 15px var(--nectra-neon);">Digital Agency</span> for SEO, Marketing &amp; Software
+                    SEO &amp; <span class="text-neon" style="text-shadow: 0 0 15px var(--nectra-neon);">Digital Marketing Agency</span> in India
                 </h1>
                 <h2 class="h4 text-white-50 fw-normal mb-4 mx-auto" style="max-width: 820px;">
-                    SEO, performance marketing, AI automation, web development, and custom software — one partner accountable for measurable growth.
+                    SEO, paid media, AI automation, and custom software — one team focused on leads, revenue, and measurable ROI.
                 </h2>
                 
                 <p class="lead text-white-50 mb-4 mx-auto" style="max-width: 800px; line-height: 1.7;">
-                    Nectra Digital helps Indian and global businesses generate qualified leads with search engine optimization, paid media, social media marketing, and engineering teams that ship fast.
+                    We help Indian and global brands rank on Google, convert traffic into qualified leads, and scale with automation and engineering support.
                 </p>
 
-                <div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
+                <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
                     <a href="/contact?service=SEO+Audit" class="btn btn-nectra btn-lg">Get Free SEO Audit</a>
-                    <a href="/contact?service=Consultation" class="btn btn-outline-light btn-lg">Book Free Consultation</a>
+                    <a href="/seo-services" class="btn btn-outline-light btn-lg">Explore SEO Services</a>
                 </div>
 
-                <div class="d-flex flex-wrap justify-content-center gap-4 text-white-50 small">
-                    <span><i class="fas fa-check text-neon me-1"></i> SEO Services</span>
-                    <span><i class="fas fa-check text-neon me-1"></i> Performance Marketing</span>
-                    <span><i class="fas fa-check text-neon me-1"></i> Social Media Marketing</span>
-                    <span><i class="fas fa-check text-neon me-1"></i> AI Automation</span>
-                    <span><i class="fas fa-check text-neon me-1"></i> Web &amp; Software Development</span>
+                <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
+                    <?php
+                    $hero_links = [
+                        'seo-services' => 'SEO',
+                        'performance-marketing-services' => 'Paid Media',
+                        'social-media-marketing-services' => 'Social Media',
+                        'ai-automation-services' => 'AI Automation',
+                        'web-development-services' => 'Web Dev',
+                        'software-development-services' => 'Software',
+                    ];
+                    foreach ($hero_links as $slug => $label): ?>
+                    <a href="/<?php echo htmlspecialchars($slug); ?>" class="badge bg-dark border border-secondary text-white-50 p-2 text-decoration-none hover-effect"><?php echo htmlspecialchars($label); ?></a>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4 text-white-50 animate-bounce">
-        <small class="text-uppercase" style="letter-spacing: 2px;">Scroll</small><br>
-        <i class="fas fa-chevron-down mt-2"></i>
     </div>
 </header>
 
@@ -89,22 +91,22 @@ output_faq_schema(get_homepage_faqs());
     <div class="container py-4">
         <div class="row g-5 align-items-start">
             <div class="col-lg-7">
-                <h2 class="text-white h3 mb-4">Search Engine Optimization &amp; <span class="text-neon">Digital Growth</span> for Indian Businesses</h2>
-                <p class="text-white-50">As a full-service SEO company and digital marketing agency, Nectra Digital helps brands rank on Google, convert traffic into revenue, and scale with AI automation. Our search engine optimization services cover technical SEO, content strategy, local SEO, and link building — backed by transparent reporting and a dedicated account team.</p>
-                <p class="text-white-50">Beyond SEO services, we deliver performance marketing on Google Ads and Meta, web development with React and WordPress, and enterprise software development for SaaS and mobile apps. Whether you need local visibility in Lucknow, Mumbai, Bangalore, or Delhi — or national rankings across India — our engine optimization framework is built for sustainable growth.</p>
+                <h2 class="text-white h3 mb-4">Grow Organic Traffic &amp; <span class="text-neon">Qualified Leads</span></h2>
+                <p class="text-white-50">Nectra Digital is a full-service agency helping brands in India and worldwide improve Google visibility, run profitable ad campaigns, and build websites and apps that convert. Our <a href="/seo-services" class="text-neon text-decoration-none">SEO services</a> cover technical audits, content strategy, local SEO, and link building — with monthly reporting you can act on.</p>
+                <p class="text-white-50">Beyond organic search, we manage <a href="/performance-marketing-services" class="text-neon text-decoration-none">performance marketing</a> on Google and Meta, <a href="/social-media-marketing-services" class="text-neon text-decoration-none">social media marketing</a>, and <a href="/software-development-services" class="text-neon text-decoration-none">custom software</a> when your growth plan needs engineering. Whether you target Lucknow, Mumbai, Delhi, or national rankings — we build a roadmap tied to leads and revenue.</p>
                 <h3 class="text-white h5 mt-4 mb-3">Why businesses choose Nectra Digital</h3>
                 <ul class="text-white-50">
-                    <li class="mb-2"><strong class="text-white">Search engine optimization expertise</strong> — 5+ years, 200+ projects, 340% average traffic growth</li>
-                    <li class="mb-2"><strong class="text-white">AI automation &amp; digital marketing</strong> — chatbots, workflows, and paid media under one roof</li>
-                    <li class="mb-2"><strong class="text-white">Software development</strong> — custom apps, APIs, and ecommerce platforms that convert</li>
-                    <li class="mb-2"><strong class="text-white">Local SEO across 20+ cities</strong> — map pack rankings and city-specific landing pages</li>
+                    <li class="mb-2"><strong class="text-white">Proven SEO results</strong> — 5+ years, 200+ projects, 340% average traffic growth</li>
+                    <li class="mb-2"><strong class="text-white">Integrated marketing &amp; tech</strong> — SEO, ads, social, AI, and development under one roof</li>
+                    <li class="mb-2"><strong class="text-white">Dedicated account teams</strong> — strategists and specialists, not rotating juniors</li>
+                    <li class="mb-2"><strong class="text-white">Local SEO in 20+ cities</strong> — <a href="/local-seo-services" class="text-neon text-decoration-none">map pack rankings</a> and city landing pages</li>
                 </ul>
             </div>
             <div class="col-lg-5">
                 <?php render_nap_block('home'); ?>
                 <div class="mt-4 p-4 border border-neon rounded bg-glass">
                     <h3 class="text-neon h6 mb-2">Free SEO Audit</h3>
-                    <p class="text-white-50 small mb-3">Get a technical search engine optimization review and growth roadmap — no obligation.</p>
+                    <p class="text-white-50 small mb-3">Technical SEO review, competitor snapshot, and priority fixes — free, no obligation.</p>
                     <a href="/contact?service=SEO+Audit" class="btn btn-nectra btn-sm w-100">Request Free Audit</a>
                 </div>
             </div>
@@ -117,7 +119,7 @@ output_faq_schema(get_homepage_faqs());
         <div class="text-center mb-5">
             <h6 class="text-neon text-uppercase mb-2">Full-Service Digital Agency</h6>
             <h2 class="text-white">SEO, Marketing & <span class="text-neon">Development Services</span></h2>
-            <p class="text-white-50 mx-auto" style="max-width: 700px;">End-to-end digital solutions from India's top SEO company — search engine optimization, AI automation, performance marketing, and custom software development.</p>
+            <p class="text-white-50 mx-auto" style="max-width: 700px;">SEO, paid media, AI automation, web development, and software engineering — one partner for traffic and leads.</p>
         </div>
 
         <div class="row g-4 mb-5">
@@ -141,7 +143,7 @@ output_faq_schema(get_homepage_faqs());
         </div>
 
         <div class="text-center">
-            <a href="/services" class="btn btn-outline-light">View All 15+ Services</a>
+            <a href="/services" class="btn btn-outline-light">View All 17 Services</a>
         </div>
     </div>
 </section>
@@ -191,7 +193,7 @@ output_faq_schema(get_homepage_faqs());
             <div class="col-lg-6">
                 <div class="text-center mb-5">
                     <h2 class="text-white">Ready to <span class="text-neon">Dominate Search?</span></h2>
-                    <p class="text-white-50">Get a free SEO audit and customized growth strategy from India's top digital marketing agency.</p>
+                    <p class="text-white-50">Request a free SEO audit and custom growth plan — we respond within 24 hours.</p>
                 </div>
                 
                 <div class="p-4 border border-secondary rounded bg-glass">

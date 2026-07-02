@@ -1,9 +1,19 @@
-<?php 
-$page_title = "Contact Nectra Digital SEO Agency India | Lucknow";
-$page_desc = "Contact Nectra Digital — SEO company HQ in Lucknow, India. Phone, address & project inquiry form. Search engine optimization & digital marketing.";
-$page_keys = "Contact Nectra Digital, SEO company contact India, digital marketing consultation";
-include 'includes/header.php';
+<?php
+require_once 'includes/seo-data.php';
+require_once 'includes/seo-components.php';
+require_once 'includes/i18n.php';
 require_once 'includes/site-contact.php';
+
+$page_title = "Contact Nectra Digital | Free SEO Audit & Consultation";
+$page_desc = "Contact Nectra Digital in Lucknow — SEO, paid media, web development & AI automation. Call, email, or request a free audit. Reply within 24 hours.";
+$canonical_url = nectra_page_canonical('/contact');
+$page_schema = [
+    get_breadcrumb_schema([
+        ['name' => 'Home', 'url' => SITE_URL . '/'],
+        ['name' => 'Contact', 'url' => SITE_URL . '/contact'],
+    ]),
+];
+include 'includes/header.php';
 ?>
 
 <script type="application/ld+json">
@@ -40,9 +50,10 @@ require_once 'includes/site-contact.php';
 <main>
     <header class="d-flex align-items-center justify-content-center text-center" style="min-height: 40vh; background: linear-gradient(to bottom, #050505 0%, #0a1518 100%);">
         <div class="container">
-            <h1 class="h6 text-neon text-uppercase mb-3" style="letter-spacing: 3px;">Communication Channels</h1>
-            <p class="display-4 fw-bold text-white mb-2">INITIALIZE <span class="text-neon">PROTOCOL</span></p>
-            <p class="lead text-white-50 mx-auto" style="max-width: 600px;">Ready to engineer your digital dominance? Secure connection established.</p>
+            <?php render_breadcrumbs([['name' => 'Home', 'url' => '/'], ['name' => 'Contact', 'url' => '/contact']]); ?>
+            <h1 class="display-5 fw-bold text-white mb-3">Contact <span class="text-neon">Nectra Digital</span></h1>
+            <p class="lead text-white-50 mx-auto mb-4" style="max-width: 640px;">Get a free SEO audit or project proposal. Our team in Lucknow serves clients across India and globally — SEO, ads, web, and AI automation.</p>
+            <a href="#contactPageForm" class="btn btn-nectra btn-lg">Request Free Audit</a>
         </div>
     </header>
 
@@ -175,7 +186,7 @@ require_once 'includes/site-contact.php';
 
                                 <div class="col-12 mt-4">
                                     <button type="submit" class="btn btn-nectra w-100 py-3">
-                                        TRANSMIT DATA <i class="fas fa-paper-plane ms-2" aria-hidden="true"></i>
+                                        Send Message <i class="fas fa-paper-plane ms-2" aria-hidden="true"></i>
                                     </button>
                                     <div id="pageFormResponse" class="mt-3 text-center fw-bold" aria-live="polite"></div>
                                 </div>
@@ -203,6 +214,8 @@ require_once 'includes/site-contact.php';
         <div style="margin-top: -400px; height: 400px; width: 100%; background: rgba(0, 229, 255, 0.05); pointer-events: none; position: relative;"></div>
     </section>
 </main>
+
+<?php render_money_services_strip(null, 'Popular Services — Get a Quote'); ?>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {

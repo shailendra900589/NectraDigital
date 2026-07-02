@@ -10,6 +10,7 @@ if (empty($page)) {
 
 require_once __DIR__ . '/includes/growth/bootstrap.php';
 require_once __DIR__ . '/includes/i18n.php';
+require_once __DIR__ . '/includes/seo-components.php';
 
 use Growth\Engines\SchemaEngine;
 use Growth\Engines\SeoEngine;
@@ -195,7 +196,9 @@ if (!empty($schemaData)) {
             </div>
         </div>
     </section>
-    <?php endif; ?>
+    <?php else:
+        render_internal_links_service(['seo-services', 'local-seo-services', 'performance-marketing-services', 'web-development-services', 'ai-automation-services']);
+    endif; ?>
 </main>
 
 <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/growth-landing.css">

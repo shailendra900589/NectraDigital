@@ -26,7 +26,7 @@ $footer_cities = array_slice(get_cities_data(), 0, 8, true);
                     </a>
                 </div>
                 <p class="text-white-50 small" style="line-height: 1.6;">
-                    Best SEO company in India — search engine optimization, AI automation, digital marketing, and software development engineered for ROI.
+                    SEO, paid media, AI automation, web development, and software — engineered for traffic, leads, and ROI.
                 </p>
                 <?php render_nap_block('footer'); ?>
                 <div class="d-flex gap-3 mt-3">
