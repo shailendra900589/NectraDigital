@@ -95,49 +95,95 @@ function nectra_clear_googtrans_cookies(): void
     unset($_COOKIE['googtrans']);
 }
 
-/** Apply ?lang= from URL to cookies before HTML output (full-page Google Translate). */
+/** Remove ?lang= from a URL (canonical / sitemap / IndexNow must never include it). */
+function nectra_strip_lang_from_url(string $url): string
+{
+    $parts = parse_url($url);
+    if ($parts === false) {
+        return rtrim($url, '/');
+    }
+
+    $query = [];
+    if (!empty($parts['query'])) {
+        parse_str($parts['query'], $query);
+        unset($query['lang']);
+    }
+
+    $scheme = $parts['scheme'] ?? 'https';
+    $host = $parts['host'] ?? '';
+    $port = isset($parts['port']) ? ':' . $parts['port'] : '';
+    $path = $parts['path'] ?? '';
+    $qs = $query ? '?' . http_build_query($query) : '';
+
+    return rtrim($scheme . '://' . $host . $port . $path . $qs, '/');
+}
+
+/** 301 redirect to the same path without ?lang= (prevents GSC alternate-canonical noise). */
+function nectra_redirect_without_lang_param(int $status = 301): void
+{
+    if (headers_sent()) {
+        return;
+    }
+
+    $uri = $_SERVER['REQUEST_URI'] ?? '/';
+    $parts = parse_url($uri);
+    $path = $parts['path'] ?? '/';
+    $query = [];
+    if (!empty($parts['query'])) {
+        parse_str($parts['query'], $query);
+    }
+    unset($query['lang']);
+    $qs = $query ? '?' . http_build_query($query) : '';
+    $target = $path . $qs;
+
+    header('Location: ' . $target, true, $status);
+    exit;
+}
+
+/** Apply ?lang= from URL to cookies, then redirect to clean canonical URL. */
 function nectra_handle_lang_request(): void
 {
+    if (php_sapi_name() === 'cli' || headers_sent() || !isset($_GET['lang'])) {
+        return;
+    }
+
     if (!function_exists('nectra_is_search_bot')) {
         require_once __DIR__ . '/text-utils.php';
     }
-    if (php_sapi_name() === 'cli' || headers_sent() || nectra_is_search_bot()) {
-        return;
-    }
 
     $supported = nectra_supported_languages();
-    $lang = isset($_GET['lang']) ? trim((string)$_GET['lang']) : '';
+    $lang = trim((string)$_GET['lang']);
+    $isBot = nectra_is_search_bot();
 
-    if ($lang === '' || !isset($supported[$lang])) {
-        return;
-    }
-
-    nectra_clear_googtrans_cookies();
-
-    $expires = time() + 365 * 86400;
-    $domain = nectra_cookie_domain();
-    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
-    $cookieOpts = [
-        'expires'  => $expires,
-        'path'     => '/',
-        'secure'   => $secure,
-        'httponly' => false,
-        'samesite' => 'Lax',
-    ];
-
-    setcookie('nectra_lang', $lang, $cookieOpts);
-    $_COOKIE['nectra_lang'] = $lang;
-
-    if ($lang === 'en') {
+    if (!$isBot && $lang !== '' && isset($supported[$lang])) {
         nectra_clear_googtrans_cookies();
-        return;
+
+        $expires = time() + 365 * 86400;
+        $domain = nectra_cookie_domain();
+        $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+        $cookieOpts = [
+            'expires'  => $expires,
+            'path'     => '/',
+            'secure'   => $secure,
+            'httponly' => false,
+            'samesite' => 'Lax',
+        ];
+
+        setcookie('nectra_lang', $lang, $cookieOpts);
+        $_COOKIE['nectra_lang'] = $lang;
+
+        if ($lang === 'en') {
+            nectra_clear_googtrans_cookies();
+        } else {
+            $googleCode = nectra_google_lang_code($lang);
+            $googVal = '/en/' . $googleCode;
+            setcookie('googtrans', $googVal, $cookieOpts);
+            setcookie('googtrans', $googVal, array_merge($cookieOpts, ['domain' => $domain]));
+            $_COOKIE['googtrans'] = $googVal;
+        }
     }
 
-    $googleCode = nectra_google_lang_code($lang);
-    $googVal = '/en/' . $googleCode;
-    setcookie('googtrans', $googVal, $cookieOpts);
-    setcookie('googtrans', $googVal, array_merge($cookieOpts, ['domain' => $domain]));
-    $_COOKIE['googtrans'] = $googVal;
+    nectra_redirect_without_lang_param();
 }
 
 function nectra_get_user_lang(): string
@@ -186,47 +232,27 @@ function nectra_html_dir(): string
     return nectra_is_rtl_lang(nectra_get_user_lang()) ? 'rtl' : 'ltr';
 }
 
-/** Build localized URL (?lang=) for hreflang / IndexNow / sitemap. */
+/**
+ * Legacy helper — translation uses cookies + Google Translate, not indexable ?lang= URLs.
+ * Always returns the clean canonical URL without language query params.
+ */
 function nectra_lang_url(string $baseUrl, string $langCode): string
 {
-    $baseUrl = rtrim($baseUrl, '/');
-    if ($langCode === 'en') {
-        return $baseUrl;
-    }
-    $parts = parse_url($baseUrl);
-    $path = $parts['path'] ?? '';
-    $query = [];
-    if (!empty($parts['query'])) {
-        parse_str($parts['query'], $query);
-    }
-    $query['lang'] = $langCode;
-    $qs = http_build_query($query);
-    $scheme = $parts['scheme'] ?? 'https';
-    $host = $parts['host'] ?? '';
-    $port = isset($parts['port']) ? ':' . $parts['port'] : '';
-    return $scheme . '://' . $host . $port . $path . '?' . $qs;
+    return nectra_strip_lang_from_url($baseUrl);
 }
 
 function nectra_language_url_variants(string $url): array
 {
-    if (nectra_skip_i18n_url($url)) {
-        return [$url];
-    }
-
-    $urls = [];
-    foreach (nectra_supported_languages() as $code => $meta) {
-        $urls[] = nectra_lang_url($url, $code);
-    }
-    return array_values(array_unique($urls));
+    return [nectra_strip_lang_from_url($url)];
 }
 
 function nectra_expand_urls_for_languages(array $urls): array
 {
-    $expanded = [];
+    $clean = [];
     foreach ($urls as $url) {
-        $expanded = array_merge($expanded, nectra_language_url_variants($url));
+        $clean[] = nectra_strip_lang_from_url($url);
     }
-    return array_values(array_unique($expanded));
+    return array_values(array_unique($clean));
 }
 
 function nectra_skip_i18n_url(string $url): bool
@@ -343,18 +369,9 @@ function nectra_google_translate_request(array $texts, string $target, string $s
     return $out;
 }
 
+/** Intentionally empty — Google Translate widget URLs must not use hreflang (causes GSC alternate-canonical reports). */
 function nectra_output_hreflang_tags(string $canonicalUrl): void
 {
-    $supported = nectra_supported_languages();
-    $base = rtrim($canonicalUrl, '/');
-
-    echo '<link rel="alternate" hreflang="x-default" href="' . htmlspecialchars($base) . '" />' . "\n";
-
-    foreach ($supported as $code => $meta) {
-        $hl = $meta['hreflang'] ?? $code;
-        $href = nectra_lang_url($base, $code);
-        echo '<link rel="alternate" hreflang="' . htmlspecialchars($hl) . '" href="' . htmlspecialchars($href) . '" />' . "\n";
-    }
 }
 
 function nectra_i18n_config_js(): array

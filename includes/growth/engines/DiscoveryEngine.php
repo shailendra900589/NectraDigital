@@ -55,7 +55,7 @@ class DiscoveryEngine
         return array_map(fn($p) => $base . $p, $paths);
     }
 
-    public static function enqueueUrl(string $url, int $landingPageId = 0, bool $expandLanguages = true): void
+    public static function enqueueUrl(string $url, int $landingPageId = 0, bool $expandLanguages = false): void
     {
         if (ge_setting('auto_index_queue', '1') !== '1') {
             return;

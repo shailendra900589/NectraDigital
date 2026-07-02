@@ -106,7 +106,7 @@ class IndexingEngine
     }
 
     /** Submit one or many URLs via IndexNow to all enabled endpoints. */
-    public static function submitIndexNow(array $urls, bool $expandI18n = true): array
+    public static function submitIndexNow(array $urls, bool $expandI18n = false): array
     {
         if ($expandI18n) {
             require_once __DIR__ . '/../../i18n.php';
@@ -345,8 +345,6 @@ class IndexingEngine
         }
 
         $urls = array_values(array_unique(array_filter($urls)));
-        require_once __DIR__ . '/../../i18n.php';
-        $expandedTotal = count(nectra_expand_urls_for_languages($urls));
         if (empty($urls)) {
             return ['ok' => false, 'message' => 'No URLs to submit', 'urls_total' => 0];
         }
@@ -356,7 +354,7 @@ class IndexingEngine
         $lastBatch = ['ok' => false];
 
         foreach (array_chunk($urls, 500) as $chunk) {
-            $lastBatch = self::submitIndexNow($chunk, true);
+            $lastBatch = self::submitIndexNow($chunk, false);
             $batchCount++;
             if (!empty($lastBatch['ok'])) {
                 $submitted += (int)($lastBatch['urls_submitted'] ?? count($chunk));
@@ -374,12 +372,12 @@ class IndexingEngine
 
         return [
             'ok' => $submitted > 0,
-            'urls_total' => $expandedTotal,
+            'urls_total' => count($urls),
             'urls_submitted' => $submitted,
             'batches' => $batchCount,
             'indexnow' => $lastBatch,
             'sitemap' => $sitemap,
-            'i18n' => true,
+            'i18n' => false,
         ];
     }
 
@@ -397,7 +395,7 @@ class IndexingEngine
         }
 
         $urls = array_column($pending, 'url');
-        $batch = self::submitIndexNow($urls, true);
+        $batch = self::submitIndexNow($urls, false);
         $bingApi = self::submitBingWebmasterUrls($urls, false);
         $sitemap = $pingSitemap ? self::pingSitemap() : ['skipped' => true];
 

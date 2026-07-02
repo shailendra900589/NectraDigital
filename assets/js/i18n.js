@@ -118,18 +118,24 @@
 
         if (code === DEFAULT) {
             if (fromUser) showToast('English');
-            location.assign(buildLangUrl(DEFAULT));
-            return;
+        } else {
+            setGoogtransCookie(code);
+            if (fromUser) {
+                var native = (languages[code] && languages[code].native) || code;
+                showToast(native);
+            }
         }
 
-        setGoogtransCookie(code);
+        var url = new URL(location.href);
+        url.searchParams.delete('lang');
+        var target = url.pathname + url.search + url.hash;
+        var current = location.pathname + location.search + location.hash;
 
-        if (fromUser) {
-            var native = (languages[code] && languages[code].native) || code;
-            showToast(native);
+        if (target === current) {
+            location.reload();
+        } else {
+            location.assign(target);
         }
-
-        location.assign(buildLangUrl(code));
     }
 
     function getTranslateSelect() {

@@ -60,17 +60,9 @@ class SitemapEngine
         return $xml;
     }
 
-    private static function urlEntry(string $loc, string $lastmod, string $freq, string $priority, bool $withHreflang = true): string
+    private static function urlEntry(string $loc, string $lastmod, string $freq, string $priority, bool $withHreflang = false): string
     {
         $entry = "  <url><loc>" . htmlspecialchars($loc) . "</loc><lastmod>{$lastmod}</lastmod><changefreq>{$freq}</changefreq><priority>{$priority}</priority>";
-        if ($withHreflang && function_exists('nectra_supported_languages')) {
-            foreach (nectra_supported_languages() as $code => $meta) {
-                $href = nectra_lang_url($loc, $code);
-                $hl = htmlspecialchars($meta['hreflang'] ?? $code);
-                $entry .= '<xhtml:link rel="alternate" hreflang="' . $hl . '" href="' . htmlspecialchars($href) . '"/>';
-            }
-            $entry .= '<xhtml:link rel="alternate" hreflang="x-default" href="' . htmlspecialchars($loc) . '"/>';
-        }
         return $entry . "</url>\n";
     }
 }

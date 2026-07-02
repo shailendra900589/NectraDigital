@@ -19,7 +19,7 @@ if (!empty($canonical_url)) {
     $final_url = trim(SITE_URL . $clean_uri, '/'); 
 }
 
-$canonical_href = nectra_lang_url($final_url, $nectra_lang);
+$canonical_href = nectra_strip_lang_from_url($final_url);
 
 $default_title = "Best SEO & Digital Marketing in India | Nectra Digital";
 $default_desc  = "Best SEO company in India — search engine optimization, AI automation, digital marketing & software development. 200+ projects. Free audit.";
@@ -57,7 +57,6 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <title><?php echo nectra_display_text($meta_title); ?></title>
     <meta name="description" content="<?php echo nectra_display_text($meta_desc); ?>">
     <link rel="canonical" href="<?php echo htmlspecialchars($canonical_href); ?>">
-    <?php nectra_output_hreflang_tags($final_url); ?>
     <meta name="author" content="<?php echo FOUNDER_NAME; ?>">
     <meta name="robots" content="<?php echo !empty($noindex) ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'; ?>">
     
