@@ -95,27 +95,68 @@ function nectra_clear_googtrans_cookies(): void
     unset($_COOKIE['googtrans']);
 }
 
-/** Remove ?lang= from a URL (canonical / sitemap / IndexNow must never include it). */
+/** Site origin without trailing slash — used for all canonical URLs. */
+function nectra_site_base_url(): string
+{
+    return rtrim(defined('SITE_URL') ? SITE_URL : 'https://www.nectradigital.com', '/');
+}
+
+/**
+ * Build one absolute canonical URL per page: no query string, no /index, no .php, lowercase path.
+ */
+function nectra_normalize_canonical_url(string $urlOrPath): string
+{
+    $site = nectra_site_base_url();
+
+    if ($urlOrPath === '' || $urlOrPath === '/') {
+        return $site;
+    }
+
+    if (strpos($urlOrPath, 'http') !== 0) {
+        $urlOrPath = $site . (str_starts_with($urlOrPath, '/') ? $urlOrPath : '/' . $urlOrPath);
+    }
+
+    $parts = parse_url($urlOrPath);
+    if ($parts === false) {
+        return $site;
+    }
+
+    $path = $parts['path'] ?? '/';
+    $path = preg_replace('#/+#', '/', $path);
+    $path = preg_replace('#\.php$#i', '', $path);
+    $path = strtolower($path);
+
+    if (in_array($path, ['/', '/index', '/index.html', '/home'], true)) {
+        return $site;
+    }
+
+    return $site . rtrim($path, '/');
+}
+
+/** @deprecated Use nectra_normalize_canonical_url() */
 function nectra_strip_lang_from_url(string $url): string
 {
-    $parts = parse_url($url);
-    if ($parts === false) {
-        return rtrim($url, '/');
+    return nectra_normalize_canonical_url($url);
+}
+
+/** Resolve canonical from explicit page slug/path (leading slash optional). */
+function nectra_page_canonical(string $path = '/'): string
+{
+    return nectra_normalize_canonical_url($path);
+}
+
+/** 301 redirect /index and /index.php to homepage. */
+function nectra_enforce_index_redirect(): void
+{
+    if (php_sapi_name() === 'cli' || headers_sent()) {
+        return;
     }
 
-    $query = [];
-    if (!empty($parts['query'])) {
-        parse_str($parts['query'], $query);
-        unset($query['lang']);
+    $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+    if (preg_match('#^/index(\.php|\.html)?$#i', $path)) {
+        header('Location: /', true, 301);
+        exit;
     }
-
-    $scheme = $parts['scheme'] ?? 'https';
-    $host = $parts['host'] ?? '';
-    $port = isset($parts['port']) ? ':' . $parts['port'] : '';
-    $path = $parts['path'] ?? '';
-    $qs = $query ? '?' . http_build_query($query) : '';
-
-    return rtrim($scheme . '://' . $host . $port . $path . $qs, '/');
 }
 
 /** 301 redirect to the same path without ?lang= (prevents GSC alternate-canonical noise). */
@@ -392,4 +433,5 @@ function nectra_i18n_config_js(): array
     ];
 }
 
+nectra_enforce_index_redirect();
 nectra_handle_lang_request();

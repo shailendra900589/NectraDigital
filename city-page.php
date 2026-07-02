@@ -6,6 +6,7 @@
 require_once __DIR__ . '/includes/seo-data.php';
 require_once __DIR__ . '/includes/seo-components.php';
 require_once __DIR__ . '/includes/local-page-seo.php';
+require_once __DIR__ . '/includes/i18n.php';
 
 $city_slug = isset($_GET['city']) ? preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['city'])) : '';
 $cities = get_cities_data();
@@ -34,7 +35,7 @@ $hubSeo = ge_city_hub_seo($city, $city_slug);
 $page_title = $hubSeo['page_title'];
 $page_desc = $hubSeo['page_desc'];
 $page_keys = $hubSeo['page_keys'];
-$canonical_url = $hubSeo['canonical_url'];
+$canonical_url = nectra_normalize_canonical_url($hubSeo['canonical_url']);
 $og_type = $hubSeo['og_type'];
 $breadcrumbs = $hubSeo['breadcrumbs'];
 $city_faqs = ge_city_hub_faqs($city, $city_slug);

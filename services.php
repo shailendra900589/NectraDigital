@@ -2,10 +2,12 @@
 require_once 'includes/seo-data.php';
 require_once 'includes/seo-components.php';
 require_once 'includes/service-content.php';
+require_once 'includes/i18n.php';
 
 $page_title = "All Digital Services | SEO, AI Automation, Web Development India";
 $page_desc = "Complete digital services: SEO services India, local SEO, technical SEO, AI automation, Google Ads, Meta Ads, web development, software development, mobile apps, and ecommerce.";
 $page_keys = "Digital Services India, SEO Services, AI Automation, Web Development, Software Development, Digital Marketing Agency";
+$canonical_url = nectra_page_canonical('/services');
 
 $page_schema = [get_breadcrumb_schema([
     ['name' => 'Home', 'url' => SITE_URL . '/'],

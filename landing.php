@@ -9,6 +9,7 @@ if (empty($page)) {
 }
 
 require_once __DIR__ . '/includes/growth/bootstrap.php';
+require_once __DIR__ . '/includes/i18n.php';
 
 use Growth\Engines\SchemaEngine;
 use Growth\Engines\SeoEngine;
@@ -26,6 +27,7 @@ $seo = SeoEngine::metaTags($page);
 $page_title = $page['meta_title'];
 $page_desc = $page['meta_description'];
 $page_keys = implode(', ', ge_json_decode($page['keywords_json'] ?? '[]'));
+$canonical_url = $seo['canonical'];
 $og_type = 'website';
 
 include __DIR__ . '/includes/header.php';

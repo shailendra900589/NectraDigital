@@ -12,14 +12,13 @@ $title_min = isset($seo_title_min) ? (int) $seo_title_min : 30;
 $title_max = isset($seo_title_max) ? (int) $seo_title_max : 60;
 
 $request_uri = strtok($_SERVER["REQUEST_URI"] ?? '/', '?');
-$clean_uri = str_replace('.php', '', $request_uri); 
-if (!empty($canonical_url)) {
-    $final_url = rtrim($canonical_url, '/');
-} else {
-    $final_url = trim(SITE_URL . $clean_uri, '/'); 
-}
+$clean_uri = str_replace('.php', '', $request_uri);
 
-$canonical_href = nectra_strip_lang_from_url($final_url);
+if (!empty($canonical_url)) {
+    $canonical_href = nectra_normalize_canonical_url($canonical_url);
+} else {
+    $canonical_href = nectra_normalize_canonical_url($clean_uri ?: '/');
+}
 
 $default_title = "Best SEO & Digital Marketing in India | Nectra Digital";
 $default_desc  = "Best SEO company in India — search engine optimization, AI automation, digital marketing & software development. 200+ projects. Free audit.";

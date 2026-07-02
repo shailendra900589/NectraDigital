@@ -8,6 +8,7 @@ require_once __DIR__ . '/service-content.php';
 require_once __DIR__ . '/local-page-seo.php';
 require_once __DIR__ . '/site-contact.php';
 require_once __DIR__ . '/service-city-unique.php';
+require_once __DIR__ . '/i18n.php';
 
 if (!isset($service_slug)) {
     header('Location: /services');
@@ -46,7 +47,7 @@ if ($is_city_page) {
     $page_title = $page_title ?? $service['title'];
     $page_desc = $page_desc ?? $service['meta_desc'];
     $page_keys = $page_keys ?? ($service['keywords'] ?? '');
-    $canonical_url = $canonical_url ?? null;
+    $canonical_url = !empty($canonical_url) ? nectra_normalize_canonical_url($canonical_url) : nectra_page_canonical('/' . $service_slug);
     $og_type = $og_type ?? 'website';
     $overview = ($service['overview'] ?? '<p>' . htmlspecialchars($service['intro']) . '</p>');
     if (!empty($localized_overview_extra)) {
@@ -67,6 +68,7 @@ if ($is_city_page) {
 } else {
     $page_title = $service['title'];
     $page_desc = $service['meta_desc'];
+    $canonical_url = nectra_page_canonical('/' . $service_slug);
     $overview = $service['overview'] ?? '<p>' . htmlspecialchars($service['intro']) . '</p>';
     $city_quick_answer = $service['intro'];
     $form_service = $service['h1'];

@@ -110,7 +110,8 @@ if (!empty($display_img) && strpos($display_img, 'http') === false) {
 }
 $page_img = $display_img;
 $og_type = 'article';
-$canonical_url = rtrim(SITE_URL, '/') . '/' . $post['slug'];
+require_once 'includes/i18n.php';
+$canonical_url = nectra_page_canonical('/' . $post['slug']);
 
 if (!headers_sent()) {
     header('X-Robots-Tag: index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');

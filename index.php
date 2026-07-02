@@ -1,10 +1,12 @@
 <?php 
 require_once 'includes/seo-data.php';
 require_once 'includes/seo-components.php';
+require_once 'includes/i18n.php';
 
 $page_title = "Best SEO & Digital Marketing in India | Nectra Digital";
 $page_desc = "Best SEO company in India — search engine optimization, AI automation, digital marketing & software development. 200+ projects. Free audit.";
 $page_keys = "SEO Company India, search engine optimization India, SEO services India, digital marketing agency India, AI automation, software development company India";
+$canonical_url = nectra_page_canonical('/');
 
 $page_schema = [
     get_breadcrumb_schema([['name' => 'Home', 'url' => SITE_URL . '/']]),
