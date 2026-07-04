@@ -109,6 +109,13 @@ if (isset($_GET['rebuild_blog_static'])) {
     $built = blog_static_rebuild_all($conn);
     header("Location: dashboard.php?page=blog&msg=static_rebuilt&count={$built}"); exit;
 }
+if (isset($_GET['fix_blog_encoding'])) {
+    require_once __DIR__ . '/../includes/blog-encoding.php';
+    $fixed = blog_encoding_repair_all($conn);
+    require_once __DIR__ . '/../includes/blog_static.php';
+    blog_static_rebuild_all($conn);
+    header("Location: dashboard.php?page=blog&msg=encoding_fixed&count={$fixed}"); exit;
+}
 if (isset($_GET['del_ad'])) {
     $conn->query("DELETE FROM ads WHERE id=".intval($_GET['del_ad']));
     header("Location: dashboard.php?page=ads&msg=ad_deleted"); exit;
@@ -336,6 +343,7 @@ admin_layout_start($pageTitles[$page], $page, [
                 <p class="text-muted mb-0">Create, edit, and index blog posts.</p>
                 <div class="d-flex gap-2">
                 <a href="?page=blog&rebuild_blog_static=1" class="btn btn-outline-secondary btn-sm" title="Rebuild static HTML for Bing/Google crawlers">Rebuild Snapshots</a>
+                <a href="?page=blog&fix_blog_encoding=1" class="btn btn-outline-warning btn-sm" title="Fix mojibake / Indiax typos in all posts" onclick="return confirm('Repair UTF-8 encoding in all blog posts?')">Fix Encoding</a>
                 <a href="create_post.php" class="btn btn-ge-primary"><i class="fas fa-plus"></i> New Post</a>
                 </div>
               </div>';
@@ -343,6 +351,7 @@ admin_layout_start($pageTitles[$page], $page, [
         if(isset($_GET['msg']) && $_GET['msg'] == 'orphan_toggled') echo "<div class='alert alert-info'>Visibility updated. Orphan posts stay live + indexed but hidden from site listings.</div>";
         if(isset($_GET['msg']) && $_GET['msg'] == 'index_sent') echo "<div class='alert alert-success'>URL sent to Bing via IndexNow + Bing API.</div>";
         if(isset($_GET['msg']) && $_GET['msg'] == 'static_rebuilt') echo "<div class='alert alert-success'>Crawler snapshots rebuilt for " . intval($_GET['count'] ?? 0) . " blog post(s).</div>";
+        if(isset($_GET['msg']) && $_GET['msg'] == 'encoding_fixed') echo "<div class='alert alert-success'>Encoding repaired in " . intval($_GET['count'] ?? 0) . " blog post(s). Static snapshots rebuilt.</div>";
 
         $sql = "SELECT * FROM blog_posts ORDER BY created_at DESC";
         $result = $conn->query($sql);

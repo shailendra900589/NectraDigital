@@ -11,6 +11,7 @@ if (empty($page)) {
 require_once __DIR__ . '/includes/growth/bootstrap.php';
 require_once __DIR__ . '/includes/i18n.php';
 require_once __DIR__ . '/includes/seo-components.php';
+require_once __DIR__ . '/includes/eeat-copy.php';
 
 use Growth\Engines\SchemaEngine;
 use Growth\Engines\SeoEngine;
@@ -66,8 +67,8 @@ if (!empty($schemaData)) {
                 </div>
                 <div class="col-lg-4 d-none d-lg-block text-center">
                     <div class="gl-stat-ring mx-auto">
-                        <div class="gl-stat-value">4.9★</div>
-                        <div class="gl-stat-label">Client Rating</div>
+                        <div class="gl-stat-value"><?php echo htmlspecialchars(nectra_trust_rating_label()); ?></div>
+                        <div class="gl-stat-label">Client Feedback</div>
                     </div>
                 </div>
             </div>

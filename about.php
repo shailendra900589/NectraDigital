@@ -5,14 +5,17 @@ require_once 'includes/seo-components.php';
 $page_title = "About Nectra Digital | Founder Ravindra Kumar Chauhan — SEO Expert India";
 $page_desc = "Meet Ravindra Kumar Chauhan, Founder & CEO of Nectra Digital. 5+ years expertise in SEO, digital marketing, AI automation, and software development. India's trusted digital transformation company.";
 $page_keys = "About Nectra Digital, Ravindra Kumar Chauhan, SEO Expert India, Digital Marketing Founder, AI Agency India Founder";
-require_once __DIR__ . '/includes/i18n.php';
-$canonical_url = nectra_page_canonical('/about');
+require_once 'includes/i18n.php';
+$canonical_url = nectra_page_canonical('/');
+
+require_once __DIR__ . '/includes/eeat-copy.php';
 
 $page_schema = [
     get_breadcrumb_schema([
         ['name' => 'Home', 'url' => SITE_URL . '/'],
         ['name' => 'About', 'url' => SITE_URL . '/about']
-    ])
+    ]),
+    get_founder_schema(),
 ];
 
 include 'includes/header.php';
@@ -23,7 +26,7 @@ include 'includes/header.php';
         <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.05) 0%, rgba(5,5,5,1) 70%);"></div>
         <div class="container position-relative z-1">
             <?php render_breadcrumbs([['name' => 'Home', 'url' => '/'], ['name' => 'About', 'url' => '/about']]); ?>
-            <span class="badge border border-neon text-neon px-3 py-2 mb-3 rounded-pill">EEAT Verified · Founder-Led Agency</span>
+            <span class="badge border border-neon text-neon px-3 py-2 mb-3 rounded-pill">Founder-Led Agency · Editorial Standards</span>
             <h1 class="display-4 fw-bold text-white mb-3">About Nectra Digital — <span class="text-neon">SEO Expert India</span></h1>
             <p class="lead text-white-50 mx-auto" style="max-width: 700px;">A founder-led digital marketing and software development company engineering measurable growth through SEO, AI automation, and performance marketing.</p>
         </div>
@@ -73,8 +76,8 @@ include 'includes/header.php';
                 <div class="col-md-4">
                     <div class="p-4 border border-secondary rounded bg-glass h-100 text-center">
                         <i class="fas fa-shield-alt fa-2x text-neon mb-3"></i>
-                        <h3 class="text-white h5">EEAT & Transparency</h3>
-                        <p class="text-white-50 small mb-0">Expert-authored content, verified credentials, editorial standards, and transparent reporting on every KPI that matters.</p>
+                        <h3 class="text-white h5">Transparency & Editorial Standards</h3>
+                        <p class="text-white-50 small mb-0">Expert-authored content, verified credentials, published editorial guidelines, and transparent reporting on KPIs that matter.</p>
                     </div>
                 </div>
                 <div class="col-md-4">

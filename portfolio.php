@@ -101,6 +101,14 @@ $projects = [
         </div>
     </header>
 
+    <section class="py-4 border-top border-secondary bg-dark">
+        <div class="container">
+            <div class="alert alert-secondary border-secondary bg-glass text-white-50 small mb-0">
+                <strong class="text-white">Note:</strong> Portfolio entries below are representative project types and outcomes. Names and metrics illustrate the kind of work we deliver — live client references are shared during consultation when permitted by NDA.
+            </div>
+        </div>
+    </section>
+
     <section class="sticky-top border-bottom border-secondary py-3" style="top: 70px; z-index: 900; background: rgba(5,5,5,0.95); backdrop-filter: blur(10px);">
         <div class="container text-center">
             <div class="btn-group" role="group" aria-label="Project Filters">

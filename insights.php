@@ -1,6 +1,8 @@
 <?php 
 require_once 'includes/db.php';
 require_once 'includes/blog_orphan.php';
+require_once 'includes/text-utils.php';
+require_once 'includes/text-utils.php';
 blog_orphan_ensure_schema($conn);
 $page_title = "Digital Intelligence & Insights";
 $page_desc = "Nectra Digital Insights. Deep dives into AI, Tech, and SEO protocols.";
@@ -43,8 +45,8 @@ $result = $conn->query($sql);
                 <?php 
                 if ($result->num_rows > 0) {
                     while($row = $result->fetch_assoc()) {
-                        // Clean excerpt
-                        $excerpt = mb_substr(strip_tags($row['content']), 0, 120) . "...";
+                        $excerpt = nectra_fix_mojibake(strip_tags($row['content'] ?? ''));
+                        $excerpt = mb_substr($excerpt, 0, 120) . '...';
                         
                         // Image Handling: Show Uploaded Image or Default Icon
                         $thumb_html = '';
@@ -86,8 +88,9 @@ $result = $conn->query($sql);
                                         '.$excerpt.'
                                     </p>
                                     
-                                    <div class="d-flex align-items-center border-top border-secondary pt-3 mt-auto">
-                                        <span class="ms-auto text-neon x-small fw-bold">ACCESS FILE <i class="fas fa-chevron-right ms-1"></i></span>
+                                    <div class="d-flex align-items-center justify-content-between border-top border-secondary pt-3 mt-auto flex-wrap gap-2">
+                                        <span class="text-white-50 x-small"><i class="far fa-user me-1"></i> <?php echo FOUNDER_NAME; ?> · <i class="far fa-calendar ms-2 me-1"></i> <?php echo date('M j, Y', strtotime($row['created_at'])); ?></span>
+                                        <span class="text-neon x-small fw-bold">Read article <i class="fas fa-chevron-right ms-1"></i></span>
                                     </div>
                                 </div>
                             </article>

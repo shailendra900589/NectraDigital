@@ -78,7 +78,6 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <?php if (empty($noindex)): ?>
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="bingbot" content="index, follow">
-    <meta name="syndication-source" content="<?php echo htmlspecialchars($final_url); ?>">
     <?php endif; ?>
 
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>

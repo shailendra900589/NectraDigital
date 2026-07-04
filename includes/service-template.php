@@ -8,6 +8,7 @@ require_once __DIR__ . '/service-content.php';
 require_once __DIR__ . '/local-page-seo.php';
 require_once __DIR__ . '/site-contact.php';
 require_once __DIR__ . '/service-city-unique.php';
+require_once __DIR__ . '/eeat-copy.php';
 require_once __DIR__ . '/i18n.php';
 
 if (!isset($service_slug)) {
@@ -164,7 +165,7 @@ if ($is_city_page && !empty($city)) {
             <div class="row text-center g-3">
                 <div class="col-6 col-md-3"><i class="fas fa-award text-neon me-2"></i><span class="text-white-50 small">5+ Years Experience</span></div>
                 <div class="col-6 col-md-3"><i class="fas fa-users text-neon me-2"></i><span class="text-white-50 small">200+ Projects</span></div>
-                <div class="col-6 col-md-3"><i class="fas fa-star text-neon me-2"></i><span class="text-white-50 small">4.9★ Client Rating</span></div>
+                <div class="col-6 col-md-3"><i class="fas fa-star text-neon me-2"></i><span class="text-white-50 small"><?php echo htmlspecialchars(nectra_trust_rating_label()); ?></span></div>
                 <div class="col-6 col-md-3"><i class="fas fa-headset text-neon me-2"></i><span class="text-white-50 small">24/7 Support</span></div>
             </div>
         </div>

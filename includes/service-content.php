@@ -17,7 +17,7 @@ function service_content_defaults(string $slug, array $service): array {
     $seed = crc32($slug);
 
     $stats_sets = [
-        ['200+', 'Projects Delivered', '340%', 'Avg. Growth', '5+', 'Years Experience', '4.9★', 'Client Rating'],
+        ['200+', 'Projects Delivered', '340%', 'Avg. Growth', '5+', 'Years Experience', 'High', 'Client Satisfaction'],
         ['150+', 'Clients Served', '98%', 'Retention Rate', '24/7', 'Support', '50+', 'Cities Covered'],
     ];
     $si = $seed % 2;

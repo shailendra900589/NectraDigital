@@ -3,6 +3,7 @@ require_once 'includes/seo-data.php';
 require_once 'includes/seo-components.php';
 require_once 'includes/service-content.php';
 require_once 'includes/i18n.php';
+require_once 'includes/eeat-copy.php';
 
 $page_title = "All Digital Services | SEO, AI Automation, Web Development India";
 $page_desc = "Complete digital services: SEO services India, local SEO, technical SEO, AI automation, Google Ads, Meta Ads, web development, software development, mobile apps, and ecommerce.";
@@ -48,7 +49,7 @@ include 'includes/header.php';
             <div class="col-6 col-md-3"><div class="svc-stat-val text-neon">17</div><div class="svc-stat-lbl text-white-50 small">Services</div></div>
             <div class="col-6 col-md-3"><div class="svc-stat-val text-neon">200+</div><div class="svc-stat-lbl text-white-50 small">Projects</div></div>
             <div class="col-6 col-md-3"><div class="svc-stat-val text-neon">340%</div><div class="svc-stat-lbl text-white-50 small">Avg. Growth</div></div>
-            <div class="col-6 col-md-3"><div class="svc-stat-val text-neon">4.9★</div><div class="svc-stat-lbl text-white-50 small">Client Rating</div></div>
+            <div class="col-6 col-md-3"><div class="svc-stat-val text-neon"><?php echo htmlspecialchars(nectra_trust_rating_label()); ?></div><div class="svc-stat-lbl text-white-50 small">Client Feedback</div></div>
         </div>
     </div>
 </section>

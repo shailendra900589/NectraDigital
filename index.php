@@ -2,6 +2,7 @@
 require_once 'includes/seo-data.php';
 require_once 'includes/seo-components.php';
 require_once 'includes/i18n.php';
+require_once 'includes/eeat-copy.php';
 
 $page_title = "SEO & Digital Marketing Agency India | Nectra Digital";
 $page_desc = "Nectra Digital — SEO, performance marketing, AI automation, web & software development. 200+ projects, 340% avg. growth. Free audit & strategy call.";
@@ -10,7 +11,6 @@ $canonical_url = nectra_page_canonical('/');
 
 $page_schema = [
     get_breadcrumb_schema([['name' => 'Home', 'url' => SITE_URL . '/']]),
-    get_review_schema(),
 ];
 require_once __DIR__ . '/includes/site-contact.php';
 $page_schema[] = get_home_local_business_schema();
@@ -26,7 +26,7 @@ output_faq_schema(get_homepage_faqs());
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="d-inline-block border border-neon rounded-pill px-3 py-1 mb-4 bg-dark">
-                    <small class="text-neon text-uppercase" style="letter-spacing: 2px;"><i class="fas fa-chart-line me-2"></i> 340% Avg. Organic Growth · 4.9★ · 200+ Projects</small>
+                    <small class="text-neon text-uppercase" style="letter-spacing: 2px;"><i class="fas fa-chart-line me-2"></i> 340% Avg. Organic Growth · 200+ Projects · <?php echo nectra_market_city_count(); ?>+ Cities</small>
                 </div>
                 
                 <h1 class="display-3 fw-bold text-white mb-3" style="text-shadow: 0 0 20px rgba(0,0,0,0.8);">

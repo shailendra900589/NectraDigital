@@ -6,6 +6,7 @@
 require_once __DIR__ . '/includes/seo-data.php';
 require_once __DIR__ . '/includes/seo-components.php';
 require_once __DIR__ . '/includes/local-page-seo.php';
+require_once __DIR__ . '/includes/eeat-copy.php';
 require_once __DIR__ . '/includes/i18n.php';
 
 $city_slug = isset($_GET['city']) ? preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['city'])) : '';
@@ -77,7 +78,7 @@ output_faq_schema($city_faqs);
         </div>
     </header>
 
-    <?php render_trust_signals(); ?>
+    <?php render_trust_signals($city_slug); ?>
 
     <section class="py-5">
         <div class="container">
@@ -117,7 +118,7 @@ output_faq_schema($city_faqs);
                                     <h3 class="text-white h6 mb-1 mt-1"><?php echo htmlspecialchars($silo . ' in ' . $city_name); ?></h3>
                                 </div>
                             </div>
-                            <p class="text-white-50 small mb-2"><?php echo htmlspecialchars(mb_substr($s['intro'] ?? '', 0, 120)); ?>…</p>
+                            <p class="text-white-50 small mb-2"><?php echo htmlspecialchars(ge_city_service_card_teaser($slug, $city_slug, $city, $s)); ?></p>
                             <span class="text-neon small fw-semibold">View Full Page →</span>
                         </div>
                     </a>
@@ -133,11 +134,9 @@ output_faq_schema($city_faqs);
                 <div class="col-lg-6 mb-4 mb-lg-0">
                     <h2 class="text-white h3 mb-4">Why <?php echo htmlspecialchars($city_name); ?> Businesses Choose Nectra Digital</h2>
                     <ul class="list-unstyled text-white-50">
-                        <li class="mb-3"><i class="fas fa-check-circle text-neon me-2"></i> Local SEO expertise targeting <?php echo htmlspecialchars($city_name); ?> keywords and map pack rankings</li>
-                        <li class="mb-3"><i class="fas fa-check-circle text-neon me-2"></i> 5+ years experience with 200+ successful projects across India</li>
-                        <li class="mb-3"><i class="fas fa-check-circle text-neon me-2"></i> Dedicated account manager with <?php echo htmlspecialchars($city_name); ?> market knowledge</li>
-                        <li class="mb-3"><i class="fas fa-check-circle text-neon me-2"></i> Transparent monthly reporting with clear ROI metrics</li>
-                        <li class="mb-3"><i class="fas fa-check-circle text-neon me-2"></i> Full-stack capabilities: SEO + Ads + Development + AI under one roof</li>
+                        <?php foreach (ge_city_why_choose_bullets($city, $city_slug) as $bullet): ?>
+                        <li class="mb-3"><i class="fas fa-check-circle text-neon me-2"></i> <?php echo htmlspecialchars($bullet); ?></li>
+                        <?php endforeach; ?>
                     </ul>
                 </div>
                 <div class="col-lg-6">

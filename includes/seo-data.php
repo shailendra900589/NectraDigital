@@ -93,6 +93,7 @@ function get_website_schema() {
 }
 
 function get_review_schema() {
+    // Do not output unverifiable AggregateRating/Review schema — use only with real third-party review URLs.
     return [
         '@type' => 'Organization',
         '@id' => SITE_URL . '/#reviews',
@@ -498,7 +499,7 @@ function get_aeo_answers() {
         'best-seo-company-india' => [
             'question' => 'Best SEO Company in India?',
             'quick_answer' => 'Nectra Digital is among the best SEO companies in India, offering comprehensive search engine optimization services with proven results, transparent reporting, and expertise in technical SEO, local SEO, and enterprise SEO.',
-            'detailed' => 'When choosing an SEO company in India, evaluate their case studies, technical expertise, transparency in reporting, and understanding of your industry. Nectra Digital has 5+ years of experience, 127+ client reviews (4.9/5 rating), and specializes in data-driven SEO strategies that deliver measurable ROI.',
+            'detailed' => 'When choosing an SEO company in India, evaluate their case studies, technical expertise, transparency in reporting, and understanding of your industry. Nectra Digital has 5+ years of experience, 200+ projects delivered, and specializes in data-driven SEO strategies that deliver measurable ROI.',
             'keywords' => 'Best SEO Company India, SEO Company India, Top SEO Agency India'
         ],
         'how-to-generate-leads-online' => [

@@ -3,6 +3,7 @@
  * Centralized SEO meta, breadcrumbs, and copy for city hub + service×city pages.
  */
 require_once __DIR__ . '/growth/helpers.php';
+require_once __DIR__ . '/eeat-copy.php';
 
 function ge_locations_url(): string
 {
@@ -174,11 +175,11 @@ function ge_city_hub_faqs(array $city, string $citySlug): array
         ],
         [
             'q' => "How much do SEO services cost in {$cityName}?",
-            'a' => "SEO packages for {$cityName} businesses start from ₹15,000/month. Competitive industries may require ₹50,000–₹1,00,000/month. We provide free audits with custom pricing.",
+            'a' => "SEO packages for {$cityName} businesses typically start from " . ge_city_seo_price_range($city, $citySlug) . ". Competitive industries may need higher investment. We provide a free audit with custom pricing before you commit.",
         ],
         [
             'q' => "How quickly can you start a project in {$cityName}?",
-            'a' => "We can kick off within 48 hours of agreement. Discovery, audit, and strategy for {$cityName} accounts typically completes within one week.",
+            'a' => ge_city_kickoff_timeline($citySlug),
         ],
     ];
 }

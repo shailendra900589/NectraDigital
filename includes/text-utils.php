@@ -26,14 +26,53 @@ function nectra_decode_entities(?string $text, int $maxPasses = 6): string
     return $current;
 }
 
+function nectra_fix_mojibake(?string $text): string
+{
+    if ($text === null || $text === '') {
+        return '';
+    }
+
+    $text = nectra_decode_entities($text);
+
+    $map = [
+        'â€™' => "'",
+        'â€˜' => "'",
+        'â€œ' => '"',
+        'â€' => '"',
+        'â€“' => '–',
+        'â€”' => '—',
+        'â€¦' => '…',
+        'Letâ' => "Let's",
+        'donâ€™t' => "don't",
+        'Donâ€™t' => "Don't",
+        'wonâ€™t' => "won't",
+        'itâ€™s' => "it's",
+        'Itâ€™s' => "It's",
+        'Indiax' => 'India',
+        'indiax' => 'India',
+    ];
+    $text = str_replace(array_keys($map), array_values($map), $text);
+
+    if (preg_match('/â|Ã|ðŸ|Letâ/u', $text)) {
+        $attempt = @mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
+        if (is_string($attempt) && $attempt !== '' && mb_check_encoding($attempt, 'UTF-8')) {
+            $text = $attempt;
+        }
+    }
+
+    $text = preg_replace('/Letâ[\x00-\xFF]{0,3}s/u', "Let's", $text) ?? $text;
+
+    return trim($text);
+}
+
 function nectra_display_text(?string $text): string
 {
-    return htmlspecialchars(nectra_decode_entities($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    return htmlspecialchars(nectra_fix_mojibake($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 }
 
 function sanitize_db_text(?string $data): string
 {
-    return stripslashes(nectra_decode_entities(trim((string) $data)));
+    return stripslashes(nectra_fix_mojibake(trim((string) $data)));
 }
 
 function nectra_preferred_host(): string

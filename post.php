@@ -491,8 +491,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
             
             <div class="blog-post-meta d-flex justify-content-center gap-4 flex-wrap">
                 <span><i class="far fa-user me-2 text-neon"></i> <?php echo FOUNDER_NAME; ?></span>
-                <span><i class="far fa-calendar me-2 text-neon"></i> <?php echo date('M j, Y', strtotime($post['created_at'])); ?></span>
-                <span><i class="far fa-clock me-2 text-neon"></i> <?php echo max(1, round(str_word_count(strip_tags($post['content'])) / 200)); ?> min read</span>
+                <span><i class="far fa-calendar me-2 text-neon"></i> Published <?php echo date('M j, Y', strtotime($post['created_at'])); ?></span>
+                <?php if (!empty($post['updated_at']) && date('Y-m-d', strtotime($post['updated_at'])) !== date('Y-m-d', strtotime($post['created_at']))): ?>
+                <span><i class="far fa-clock me-2 text-neon"></i> Updated <?php echo date('M j, Y', strtotime($post['updated_at'])); ?></span>
+                <?php endif; ?>
+                <span><i class="fas fa-book-open me-2 text-neon"></i> <?php echo max(1, round(str_word_count(strip_tags($post['content'])) / 200)); ?> min read</span>
             </div>
 
         </div>
@@ -522,22 +525,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
 
                     <div class="blog-content">
                         <?php 
-                            $content = $post['content'];
-                            
-                            // 8. ENCODING REPAIR PATCH (Now with Emojis Restored)
-                            $bad_chars = [
-                                'â€™' => "'",  
-                                'â€œ' => '"',  
-                                'â€'  => '"',  
-                                'â€“' => '-',  
-                                'â€”' => '--', 
-                                'â€˜' => "'",
-                                'ðŸŸ¢' => '🟢', 
-                                'ðŸ‘‰' => '👉', 
-                                'ðŸ“ž' => '📞', 
-                                'ðŸš€' => '🚀'
-                            ];
-                            $content = str_replace(array_keys($bad_chars), array_values($bad_chars), $content);
+                            $content = nectra_fix_mojibake($post['content']);
                             
                             ob_start(); get_ad('content', $conn); $ad_html = ob_get_clean();
                             

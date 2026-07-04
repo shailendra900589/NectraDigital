@@ -1,6 +1,7 @@
 <?php 
 require_once 'includes/seo-data.php';
 require_once 'includes/seo-components.php';
+require_once 'includes/eeat-copy.php';
 
 $page_title = "SEO & Digital Marketing FAQ | Answer Engine Optimized";
 $page_desc = "Direct answers to top SEO, AI automation, and digital marketing questions. What is SEO? How much does SEO cost? Best SEO company in India? Optimized for Google AI Overviews and ChatGPT.";
@@ -11,6 +12,13 @@ $all_faqs = [];
 foreach ($aeo_answers as $a) {
     $all_faqs[] = ['q' => $a['question'], 'a' => $a['quick_answer'] . ' ' . $a['detailed']];
 }
+
+$page_schema = [
+    get_breadcrumb_schema([
+        ['name' => 'Home', 'url' => SITE_URL . '/'],
+        ['name' => 'AEO Answers', 'url' => SITE_URL . '/aeo'],
+    ]),
+];
 
 include 'includes/header.php';
 output_faq_schema($all_faqs);

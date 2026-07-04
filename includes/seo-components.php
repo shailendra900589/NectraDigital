@@ -69,7 +69,7 @@ function render_founder_section($compact = false) {
     echo '<h6 class="text-neon text-uppercase mb-2" style="letter-spacing:2px;">Founder & Leadership</h6>';
     echo '<h2 class="text-white h3 mb-3">' . FOUNDER_NAME . '</h2>';
     echo '<p class="text-neon small text-uppercase mb-3">' . FOUNDER_TITLE . ' · ' . FOUNDER_EXPERIENCE . ' Experience</p>';
-    echo '<p class="text-white-50">' . FOUNDER_NAME . ' founded Nectra Digital with a mission to bridge complex technology and measurable business growth. With expertise spanning SEO, digital marketing, AI automation, and software development, he leads a team dedicated to delivering ROI-driven digital solutions for businesses across India and globally.</p>';
+    echo '<p class="text-white-50">' . FOUNDER_NAME . ' founded Nectra Digital to connect complex technology with measurable business growth. With expertise in SEO, digital marketing, AI automation, and software development, he leads a founder-led team of channel specialists serving clients across India and globally.</p>';
     echo '<div class="d-flex flex-wrap gap-2 mb-3">';
     foreach (FOUNDER_EXPERTISE as $skill) {
         echo '<span class="badge bg-dark border border-secondary text-white-50">' . $skill . '</span>';
@@ -222,21 +222,17 @@ function render_post_internal_links($conn, $post, $category) {
     echo '</div></section>';
 }
 
-function render_trust_signals() {
+function render_trust_signals(?string $citySlug = null) {
+    require_once __DIR__ . '/eeat-copy.php';
     echo '<section class="py-4 border-top border-bottom border-secondary bg-dark"><div class="container"><div class="row g-4 text-center">';
-    $signals = [
-        ['icon' => 'fa-star', 'value' => '4.9/5', 'label' => 'Client Rating'],
-        ['icon' => 'fa-users', 'value' => '200+', 'label' => 'Projects Delivered'],
-        ['icon' => 'fa-chart-line', 'value' => '340%', 'label' => 'Avg. Traffic Growth'],
-        ['icon' => 'fa-globe', 'value' => '15+', 'label' => 'Cities Served'],
-        ['icon' => 'fa-award', 'value' => '5+', 'label' => 'Years Experience'],
-    ];
-    foreach ($signals as $s) {
+    foreach (nectra_trust_signals($citySlug) as $s) {
         echo '<div class="col"><i class="fas ' . $s['icon'] . ' text-neon fa-lg mb-2"></i>';
-        echo '<div class="text-white fw-bold">' . $s['value'] . '</div>';
-        echo '<small class="text-white-50">' . $s['label'] . '</small></div>';
+        echo '<div class="text-white fw-bold">' . htmlspecialchars($s['value']) . '</div>';
+        echo '<small class="text-white-50">' . htmlspecialchars($s['label']) . '</small></div>';
     }
-    echo '</div></div></section>';
+    echo '</div>';
+    echo '<p class="text-center text-white-50 small mt-3 mb-0">' . htmlspecialchars(nectra_trust_rating_note()) . '</p>';
+    echo '</div></section>';
 }
 
 function render_usp_section() {
