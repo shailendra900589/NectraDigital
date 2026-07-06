@@ -343,7 +343,7 @@ admin_layout_start($pageTitles[$page], $page, [
                 <p class="text-muted mb-0">Create, edit, and index blog posts.</p>
                 <div class="d-flex gap-2">
                 <a href="?page=blog&rebuild_blog_static=1" class="btn btn-outline-secondary btn-sm" title="Rebuild static HTML for Bing/Google crawlers">Rebuild Snapshots</a>
-                <a href="?page=blog&fix_blog_encoding=1" class="btn btn-outline-warning btn-sm" title="Fix mojibake / Indiax typos in all posts" onclick="return confirm('Repair UTF-8 encoding in all blog posts?')">Fix Encoding</a>
+                <a href="?page=blog&fix_blog_encoding=1" class="btn btn-outline-warning btn-sm" title="Fix mojibake / Indiax typos in all posts" onclick="return confirm(&quot;Repair UTF-8 encoding in all blog posts?&quot;)">Fix Encoding</a>
                 <a href="create_post.php" class="btn btn-ge-primary"><i class="fas fa-plus"></i> New Post</a>
                 </div>
               </div>';
