@@ -2,7 +2,6 @@
 require_once 'includes/db.php';
 require_once 'includes/blog_orphan.php';
 require_once 'includes/text-utils.php';
-require_once 'includes/text-utils.php';
 blog_orphan_ensure_schema($conn);
 $page_title = "Digital Intelligence & Insights";
 $page_desc = "Nectra Digital Insights. Deep dives into AI, Tech, and SEO protocols.";
@@ -19,14 +18,21 @@ $offset = ($current_page - 1) * $posts_per_page;
 
 // Count total posts (listed only)
 $listWhere = blog_listable_sql();
-$total_sql = "SELECT COUNT(*) as total FROM blog_posts WHERE {$listWhere}";
-$total_result = $conn->query($total_sql);
-$total_rows = $total_result->fetch_assoc()['total'];
-$total_pages = ceil($total_rows / $posts_per_page);
+$total_rows = 0;
+$total_result = $conn->query("SELECT COUNT(*) as total FROM blog_posts WHERE {$listWhere}");
+if ($total_result) {
+    $total_rows = (int)($total_result->fetch_assoc()['total'] ?? 0);
+}
+$total_pages = max(1, (int)ceil($total_rows / $posts_per_page));
+if ($current_page > $total_pages) {
+    $current_page = $total_pages;
+    $offset = ($current_page - 1) * $posts_per_page;
+}
 
 // FETCH POSTS — exclude orphan (direct-link-only) posts
 $sql = "SELECT * FROM blog_posts WHERE {$listWhere} ORDER BY created_at DESC LIMIT $posts_per_page OFFSET $offset";
 $result = $conn->query($sql);
+$authorName = defined('FOUNDER_NAME') ? FOUNDER_NAME : 'Nectra Digital';
 ?>
 
 <main>
@@ -43,10 +49,13 @@ $result = $conn->query($sql);
             <div class="row g-4">
                 
                 <?php 
-                if ($result->num_rows > 0) {
+                if ($result && $result->num_rows > 0) {
                     while($row = $result->fetch_assoc()) {
                         $excerpt = nectra_fix_mojibake(strip_tags($row['content'] ?? ''));
                         $excerpt = mb_substr($excerpt, 0, 120) . '...';
+                        $postDate = !empty($row['created_at'])
+                            ? date('M j, Y', strtotime($row['created_at']))
+                            : '';
                         
                         // Image Handling: Show Uploaded Image or Default Icon
                         $thumb_html = '';
@@ -63,12 +72,10 @@ $result = $conn->query($sql);
                             </div>';
                         }
 
-                        // ==========================================
-                        // FIX: Added 'post/' so the link matches .htaccess
-                        // ==========================================
                         $post_title = nectra_display_text($row['title']);
                         $post_category = nectra_display_text($row['category']);
-                        $post_link = $row['slug'];
+                        $post_link = '/' . ltrim((string)($row['slug'] ?? ''), '/');
+                        $byline = htmlspecialchars(trim((string)($row['author'] ?? $authorName)), ENT_QUOTES, 'UTF-8');
 
                         echo '
                         <div class="col-md-6">
@@ -80,7 +87,7 @@ $result = $conn->query($sql);
                                     '.((!empty($row['image'])) ? '<div class="mb-3"><span class="badge border border-secondary text-white-50">'.$post_category.'</span></div>' : '').'
 
                                     <h3 class="h4 text-white mb-3">
-                                        <a href="'.$post_link.'" class="text-white text-decoration-none stretched-link hover-neon">
+                                        <a href="'.htmlspecialchars($post_link, ENT_QUOTES, 'UTF-8').'" class="text-white text-decoration-none stretched-link hover-neon">
                                             '.$post_title.'
                                         </a>
                                     </h3>
@@ -89,7 +96,7 @@ $result = $conn->query($sql);
                                     </p>
                                     
                                     <div class="d-flex align-items-center justify-content-between border-top border-secondary pt-3 mt-auto flex-wrap gap-2">
-                                        <span class="text-white-50 x-small"><i class="far fa-user me-1"></i> <?php echo FOUNDER_NAME; ?> · <i class="far fa-calendar ms-2 me-1"></i> <?php echo date('M j, Y', strtotime($row['created_at'])); ?></span>
+                                        <span class="text-white-50 x-small"><i class="far fa-user me-1"></i> '.$byline.' · <i class="far fa-calendar ms-2 me-1"></i> '.htmlspecialchars($postDate, ENT_QUOTES, 'UTF-8').'</span>
                                         <span class="text-neon x-small fw-bold">Read article <i class="fas fa-chevron-right ms-1"></i></span>
                                     </div>
                                 </div>
