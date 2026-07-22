@@ -157,6 +157,7 @@ try {
 <script src="<?php echo SITE_URL; ?>/assets/js/growth-chatbot.js?v=4" defer></script>
 <?php endif; ?>
 <script src="<?php echo SITE_URL; ?>/assets/js/floating-contact.js?v=4" defer></script>
+<?php if (function_exists('nectra_render_adsense_init')) { nectra_render_adsense_init(); } ?>
 <script defer>
 (function(c,l,a,r,i,t,y){
     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};

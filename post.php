@@ -6,6 +6,8 @@ header('Content-Type: text/html; charset=utf-8');
 require_once 'includes/db.php';
 require_once 'includes/blog_orphan.php';
 require_once 'includes/blog_faq.php';
+require_once 'includes/ads-engine.php';
+ads_ensure_schema($conn);
 
 // FORCE DB CHARSET
 if(isset($conn)) {
@@ -152,208 +154,13 @@ $base_tag = '<base href="' . SITE_URL . '/">';
 $meta_charset = '<meta charset="UTF-8">'; 
 
 $header_html = str_replace('<head>', "<head>\n" . $meta_charset . "\n" . $base_tag, $header_html);
+if (ads_has_code_units($conn)) {
+    $GLOBALS['nectra_adsense_needs_loader'] = true;
+}
+$header_html = nectra_inject_adsense_head($header_html);
 echo $header_html;
 
-// 6. AD ENGINE
-function render_ad_unit(array $ad, string $variant = 'banner'): bool
-{
-    if (!ad_has_displayable_content($ad)) {
-        return false;
-    }
-
-    $isSidebar = ($variant === 'sidebar');
-    $html = '';
-    $isImageAd = (($ad['type'] ?? '') === 'image');
-
-    if ($isImageAd) {
-        $ad_img = $ad['image_path'] ?? '';
-        if ($ad_img && strpos($ad_img, 'http') === false) {
-            $ad_img = SITE_URL . '/' . ltrim($ad_img, '/');
-        }
-        $link = htmlspecialchars($ad['link'] ?? '#', ENT_QUOTES, 'UTF-8');
-        $title = nectra_display_text($ad['title'] ?? '');
-
-        if ($ad_img) {
-            if ($isSidebar) {
-                $html .= '<a href="' . $link . '" target="_blank" rel="noopener sponsored" class="sidebar-ad-link d-block text-decoration-none">';
-                $html .= '<div class="sidebar-ad-img-wrap"><img src="' . htmlspecialchars($ad_img) . '" alt="' . $title . '" class="sidebar-ad-img" loading="lazy"></div>';
-                if ($title !== '') {
-                    $html .= '<div class="sidebar-ad-caption px-3 py-2 border-top border-secondary"><span class="text-white small fw-semibold d-block">' . $title . '</span></div>';
-                }
-                $html .= '</a>';
-            } else {
-                $html .= '<a href="' . $link . '" target="_blank" rel="noopener sponsored" class="d-block">';
-                $html .= '<img src="' . htmlspecialchars($ad_img) . '" class="img-fluid rounded nectra-ad-img" alt="' . $title . '" loading="lazy">';
-                $html .= '</a>';
-            }
-        }
-    } elseif (trim($ad['ad_code'] ?? '') !== '') {
-        if ($isSidebar) {
-            $html .= '<div class="sidebar-ad-code p-3">' . ($ad['ad_code'] ?? '') . '</div>';
-        } else {
-            $html .= '<div class="mt-3" style="margin-top:15px; color:#fff;">' . ($ad['ad_code'] ?? '') . '</div>';
-        }
-    }
-
-    if ($html === '') {
-        return false;
-    }
-
-    if ($isSidebar) {
-        echo '<div class="sidebar-ad-card border border-secondary rounded overflow-hidden bg-dark hover-neon-border" style="transition:0.3s;">';
-        echo '<span class="badge bg-secondary sidebar-ad-badge">SPONSORED</span>';
-        echo $html;
-        echo '</div>';
-    } else {
-        echo '<div class="ad-container my-5 position-relative p-3 border border-secondary rounded" style="background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(5px); z-index: 5; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">';
-        echo '<span class="position-absolute top-0 start-0 badge bg-secondary" style="font-size:10px; opacity:0.8;">SPONSORED</span>';
-        echo $html;
-        echo '</div>';
-    }
-
-    return true;
-}
-
-function get_ad($placement, $conn): bool
-{
-    $check = $conn->query("SHOW TABLES LIKE 'ads'");
-    if (!$check || $check->num_rows === 0) {
-        return false;
-    }
-
-    $placement = $conn->real_escape_string($placement);
-    $sql = "SELECT * FROM ads WHERE placement='$placement' AND (status='active' OR status IS NULL OR status='') ORDER BY RAND() LIMIT 1";
-    $res = $conn->query($sql);
-    if ($res && $res->num_rows > 0) {
-        $ad = $res->fetch_assoc();
-        return render_ad_unit($ad, 'banner');
-    }
-    return false;
-}
-
-function get_active_ads(mysqli $conn, array $placements, int $limit, array $excludeIds = []): array
-{
-    if ($limit <= 0) {
-        return [];
-    }
-
-    $placeholders = implode(',', array_fill(0, count($placements), '?'));
-    $types = str_repeat('s', count($placements));
-    $params = $placements;
-
-    $excludeSql = '';
-    if (!empty($excludeIds)) {
-        $excludeIds = array_map('intval', $excludeIds);
-        $excludeSql = ' AND id NOT IN (' . implode(',', $excludeIds) . ')';
-    }
-
-    $sql = "SELECT * FROM ads
-            WHERE (status = 'active' OR status IS NULL OR status = '')
-            AND placement IN ($placeholders)
-            $excludeSql
-            ORDER BY id DESC
-            LIMIT " . (int)$limit;
-
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        return [];
-    }
-
-    $stmt->bind_param($types, ...$params);
-    $stmt->execute();
-    $res = $stmt->get_result();
-
-    $ads = [];
-    while ($row = $res->fetch_assoc()) {
-        $ads[] = $row;
-    }
-    return $ads;
-}
-
-function ad_has_displayable_content(array $ad): bool
-{
-    if (($ad['type'] ?? '') === 'image') {
-        return trim($ad['image_path'] ?? '') !== '';
-    }
-    return trim($ad['ad_code'] ?? '') !== '';
-}
-
-function build_sidebar_ad_slots(mysqli $conn, int $target = 20, int $minimum = 15): array
-{
-    $target = max($minimum, min(25, $target));
-    $minimum = max(15, min($minimum, $target));
-
-    $ads = array_values(array_filter(
-        get_active_ads($conn, ['sidebar'], $target),
-        'ad_has_displayable_content'
-    ));
-    $usedIds = array_column($ads, 'id');
-
-    if (count($ads) < $target) {
-        $more = array_values(array_filter(
-            get_active_ads($conn, ['header', 'content'], $target - count($ads), $usedIds),
-            'ad_has_displayable_content'
-        ));
-        foreach ($more as $ad) {
-            $ads[] = $ad;
-            $usedIds[] = $ad['id'];
-        }
-    }
-
-    if (count($ads) < $target) {
-        $more = array_values(array_filter(
-            get_active_ads($conn, ['sidebar', 'header', 'content'], $target - count($ads), $usedIds),
-            'ad_has_displayable_content'
-        ));
-        foreach ($more as $ad) {
-            $ads[] = $ad;
-            $usedIds[] = $ad['id'];
-        }
-    }
-
-    if (count($ads) > 0 && count($ads) < $minimum) {
-        $pool = $ads;
-        $i = 0;
-        while (count($ads) < $minimum) {
-            $ads[] = $pool[$i % count($pool)];
-            $i++;
-        }
-    }
-
-    return array_slice($ads, 0, $target);
-}
-
-function render_sidebar_ads($conn, int $target = 20): int
-{
-    $check = $conn->query("SHOW TABLES LIKE 'ads'");
-    if (!$check || $check->num_rows === 0) {
-        return 0;
-    }
-
-    $ads = build_sidebar_ad_slots($conn, $target, 15);
-    if (empty($ads)) {
-        return 0;
-    }
-
-    echo '<div class="sidebar-ad-stack">';
-    $rendered = 0;
-    foreach ($ads as $ad) {
-        if (render_ad_unit($ad, 'sidebar')) {
-            $rendered++;
-        }
-    }
-    echo '</div>';
-
-    return $rendered;
-}
-
-$check_tables = $conn->query("SHOW TABLES LIKE 'ads'");
-if ($check_tables && $check_tables->num_rows > 0) {
-    $check_sidebar = $conn->query("SELECT id FROM ads WHERE (status='active' OR status IS NULL OR status='')");
-    $has_sidebar = ($check_sidebar && $check_sidebar->num_rows > 0);
-} else {
-    $has_sidebar = false;
-}
+$has_sidebar = ad_count_displayable($conn) > 0;
 $col_class = $has_sidebar ? "col-lg-8" : "col-lg-10 mx-auto";
 
 // 7. COMMENT LOGIC
@@ -504,8 +311,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
 
     <article class="py-5">
         <div class="container">
-            <?php ob_start(); $header_ad_shown = get_ad('header', $conn); $header_ad_html = ob_get_clean(); ?>
-            <?php if ($header_ad_shown && trim($header_ad_html) !== ''): ?>
+            <?php
+            $header_ad_html = ad_get_html($conn, 'header', 'banner');
+            if ($header_ad_html !== ''):
+            ?>
             <div class="row justify-content-center"><div class="col-12"><?php echo $header_ad_html; ?></div></div>
             <?php endif; ?>
 
@@ -526,10 +335,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                     <div class="blog-content">
                         <?php 
                             $content = nectra_fix_mojibake($post['content']);
+                            $ad_html = ad_get_html($conn, 'content', 'banner');
                             
-                            ob_start(); get_ad('content', $conn); $ad_html = ob_get_clean();
-                            
-                            if($ad_html) {
+                            if($ad_html !== '') {
                                 $paragraphs = explode('</p>', $content);
                                 if(count($paragraphs) > 2) {
                                     array_splice($paragraphs, 2, 0, $ad_html);

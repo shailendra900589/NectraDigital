@@ -4,6 +4,8 @@ if (!isset($_SESSION['admin_logged_in'])) { header("Location: login.php"); exit;
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/blog_orphan.php';
+require_once __DIR__ . '/../includes/ads-engine.php';
+ads_ensure_schema($conn);
 try {
     blog_orphan_ensure_schema($conn);
 } catch (Throwable $e) {
@@ -418,15 +420,19 @@ admin_layout_start($pageTitles[$page], $page, [
     // 2. ADS MANAGEMENT (With Image Upload)
     // ==========================================
     elseif ($page == 'ads') {
+        ads_ensure_schema($conn);
+
         if(isset($_POST['save_ad'])){
             $title = clean_input($_POST['title']);
-            $type = $_POST['type'];
-            $placement = $_POST['placement'];
-            $code = $conn->real_escape_string($_POST['ad_code']);
-            $link = clean_input($_POST['link']);
+            $type = $_POST['type'] === 'code' ? 'code' : 'image';
+            $placement = in_array($_POST['placement'] ?? '', ['header', 'sidebar', 'content'], true)
+                ? $_POST['placement']
+                : 'sidebar';
+            $code = $conn->real_escape_string(trim((string)($_POST['ad_code'] ?? '')));
+            $link = clean_input($_POST['link'] ?? '');
             $img_path = "";
 
-            if ($type == 'image' && isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+            if ($type === 'image' && isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
                 $upload = upload_ad_image($_FILES['image']);
                 if (isset($upload['error'])) {
                     echo "<div class='alert alert-danger'>{$upload['error']}</div>";
@@ -435,7 +441,17 @@ admin_layout_start($pageTitles[$page], $page, [
                 }
             }
 
-            if (!isset($upload) || isset($upload['success'])) {
+            $canSave = !isset($upload) || isset($upload['success']);
+            if ($canSave && $type === 'code' && $code === '') {
+                echo "<div class='alert alert-danger'>Paste your Google AdSense snippet in the code box.</div>";
+                $canSave = false;
+            }
+            if ($canSave && $type === 'image' && $img_path === '') {
+                echo "<div class='alert alert-danger'>Upload an image for image ads.</div>";
+                $canSave = false;
+            }
+
+            if ($canSave) {
                 $conn->query("INSERT INTO ads (title, type, placement, image_path, ad_code, link, status) VALUES ('$title', '$type', '$placement', '$img_path', '$code', '$link', 'active')");
                 echo "<div class='alert alert-success'>Ad Campaign Launched!</div>";
             }
@@ -463,6 +479,20 @@ admin_layout_start($pageTitles[$page], $page, [
             echo "<tr><td>$preview</td><td>" . nectra_display_text($row['title']) . "</td><td><span class='badge bg-secondary'>{$row['type']}</span></td><td><span class='badge bg-info'>{$row['placement']}</span></td><td><a href='?page=ads&del_ad={$row['id']}' class='text-danger' onclick='return confirm(\"Delete Ad?\")'>Delete</a></td></tr>";
         }
         echo "</tbody></table></div></div>";
+        echo "<script>
+        function toggleAdType(val) {
+            var imgGroup = document.querySelector('.ad-image-group');
+            var codeGroup = document.querySelector('.ad-code-group');
+            if (!imgGroup || !codeGroup) return;
+            if (val === 'code') {
+                imgGroup.style.display = 'none';
+                codeGroup.style.display = 'block';
+            } else {
+                imgGroup.style.display = 'block';
+                codeGroup.style.display = 'none';
+            }
+        }
+        </script>";
     }
 
     // ==========================================
