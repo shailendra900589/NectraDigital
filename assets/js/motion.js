@@ -86,6 +86,7 @@
 
     function shouldSkipDiv(div) {
         if (!div || div.nodeType !== 1) return true;
+        if (div.closest && div.closest('a.blog-card--link')) return true;
         if (div.matches(divSkipSelector)) return true;
         if (div.closest(divSkipSelector)) return true;
         if (div.closest('header.svc-hero, .nd-hero-home') && !div.closest('.svc-hero-card, .nd-home-dashboard')) {
@@ -182,7 +183,7 @@
         '.nd-card-dark',
         '.svc-stat-box',
         '.aeo-card',
-        '.blog-card',
+        '.blog-card:not(.blog-card--link)',
         'article.card',
         '.nd-city-chips .btn',
         '.filter-btn'

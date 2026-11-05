@@ -76,6 +76,16 @@ function nectra_blog_byline(): string
     return 'admin';
 }
 
+/** Canonical URL for a blog post (pretty slug + post.php fallback). */
+function nectra_blog_post_href(string $slug): string
+{
+    $slug = trim($slug, '/');
+    if ($slug === '') {
+        return function_exists('nectra_nav_path') ? nectra_nav_path('/insights') : '/insights';
+    }
+    return function_exists('nectra_nav_path') ? nectra_nav_path('/' . $slug) : '/' . $slug;
+}
+
 function sanitize_db_text(?string $data): string
 {
     return stripslashes(nectra_fix_mojibake(trim((string) $data)));

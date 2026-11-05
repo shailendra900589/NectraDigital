@@ -90,7 +90,7 @@ if (!$dbUnavailable) {
                         $post_title = nectra_display_text($row['title']);
                         $post_category = nectra_display_text($row['category']);
                         $slug = ltrim((string)($row['slug'] ?? ''), '/');
-                        $post_href = nectra_nav_path('/' . $slug);
+                        $post_href = nectra_blog_post_href($slug);
                         $byline = nectra_blog_byline();
                 ?>
                 <div class="col-md-6">

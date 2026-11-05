@@ -58,6 +58,7 @@
             '.svc-challenge-card, .svc-benefit-card, .svc-tech-panel, .svc-sidebar-card, .svc-quick-answer, ' +
             '.aeo-card, .blog-card:not(.blog-card--link), .nd-home-dashboard, .svc-stat-box, .svc-glance-stat, .nd-process-step';
         document.querySelectorAll(cardSel).forEach(function (el) {
+            if (el.classList.contains('blog-card--link')) return;
             el.classList.add('nd-depth-card');
         });
 

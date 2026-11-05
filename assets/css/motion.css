@@ -141,7 +141,13 @@ a.blog-card--link {
     cursor: pointer;
     position: relative;
     z-index: 2;
+    pointer-events: auto;
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+/* Inner divs get nd-motion-div — must not steal clicks from the wrapping <a> */
+a.blog-card--link * {
+    pointer-events: none;
 }
 
 a.blog-card--link:hover {
