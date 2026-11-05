@@ -70,6 +70,12 @@ function nectra_display_text(?string $text): string
     return htmlspecialchars(nectra_fix_mojibake($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
 }
 
+/** Visible author on Insights list and blog post header. */
+function nectra_blog_byline(): string
+{
+    return 'admin';
+}
+
 function sanitize_db_text(?string $data): string
 {
     return stripslashes(nectra_fix_mojibake(trim((string) $data)));

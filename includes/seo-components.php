@@ -128,7 +128,8 @@ function render_geo_blocks($title, $content_excerpt = '') {
     echo '<li>Updated for 2026 best practices and algorithm changes</li></ul></div>';
     
     echo '<div class="p-4 border border-secondary rounded bg-glass mb-4"><h2 class="text-dark h6 mb-2"><i class="fas fa-lightbulb text-neon me-2"></i>Expert Insight</h2>';
-    echo '<p class="text-muted small mb-2"><strong class="text-dark">' . FOUNDER_NAME . '</strong>, ' . FOUNDER_TITLE . ':</p>';
+    $geoAuthor = function_exists('nectra_blog_byline') ? nectra_blog_byline() : FOUNDER_NAME;
+    echo '<p class="text-muted small mb-2"><strong class="text-dark">' . htmlspecialchars($geoAuthor) . '</strong>, Nectra Digital editorial:</p>';
     echo '<p class="text-muted small fst-italic mb-0">"The strategies outlined here reflect what we implement daily for clients achieving 340%+ organic growth. Focus on fundamentals first — technical SEO, content authority, and user experience — before chasing trends."</p></div>';
     echo '</div>';
 }

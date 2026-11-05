@@ -5,6 +5,7 @@ require_once 'includes/seo-components.php';
 require_once 'includes/i18n.php';
 require_once 'includes/blog_orphan.php';
 require_once 'includes/text-utils.php';
+require_once 'includes/nav-data.php';
 
 $dbUnavailable = !nectra_db_is_connected();
 if (!$dbUnavailable) {
@@ -49,7 +50,6 @@ if (!$dbUnavailable) {
     $sql = "SELECT * FROM blog_posts WHERE {$listWhere} ORDER BY created_at DESC LIMIT $posts_per_page OFFSET $offset";
     $result = $conn->query($sql);
 }
-$authorName = defined('FOUNDER_NAME') ? FOUNDER_NAME : 'Nectra Digital';
 ?>
 
 <main style="background: #F8FAFC; min-height: 100vh;">
@@ -89,14 +89,15 @@ $authorName = defined('FOUNDER_NAME') ? FOUNDER_NAME : 'Nectra Digital';
                         
                         $post_title = nectra_display_text($row['title']);
                         $post_category = nectra_display_text($row['category']);
-                        $post_link = '/' . ltrim((string)($row['slug'] ?? ''), '/');
-                        $byline = htmlspecialchars(trim((string)($row['author'] ?? $authorName)), ENT_QUOTES, 'UTF-8');
+                        $slug = ltrim((string)($row['slug'] ?? ''), '/');
+                        $post_href = nectra_nav_path('/' . $slug);
+                        $byline = nectra_blog_byline();
                 ?>
                 <div class="col-md-6">
-                    <article class="blog-card nd-card p-4 h-100 d-flex flex-column bg-white shadow-sm position-relative">
+                    <a href="<?php echo htmlspecialchars($post_href, ENT_QUOTES, 'UTF-8'); ?>" class="blog-card nd-card blog-card--link p-4 h-100 d-flex flex-column bg-white shadow-sm text-decoration-none text-dark">
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <span class="badge bg-light text-primary border fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                                <?php echo htmlspecialchars($post_category); ?>
+                                <?php echo $post_category; ?>
                             </span>
                             <span class="text-muted small" style="font-size: 0.75rem;">
                                 <i class="far fa-calendar me-1"></i> <?php echo htmlspecialchars($postDate); ?>
@@ -105,29 +106,27 @@ $authorName = defined('FOUNDER_NAME') ? FOUNDER_NAME : 'Nectra Digital';
 
                         <?php if (!empty($row['image']) && file_exists($row['image'])): ?>
                         <div class="mb-3 rounded-3 overflow-hidden border" style="height: 200px;">
-                            <img src="<?php echo htmlspecialchars($row['image']); ?>" class="w-100 h-100" style="object-fit: cover;" alt="<?php echo htmlspecialchars($post_title); ?>">
+                            <img src="<?php echo htmlspecialchars($row['image']); ?>" class="w-100 h-100" style="object-fit: cover;" alt="<?php echo strip_tags($post_title); ?>">
                         </div>
                         <?php endif; ?>
 
                         <h2 class="h5 fw-bold text-dark mb-2">
-                            <a href="<?php echo htmlspecialchars($post_link, ENT_QUOTES, 'UTF-8'); ?>" class="text-dark text-decoration-none stretched-link">
-                                <?php echo $post_title; ?>
-                            </a>
+                            <?php echo $post_title; ?>
                         </h2>
 
                         <p class="text-muted small mb-4 flex-grow-1" style="line-height: 1.6;">
-                            <?php echo $excerpt; ?>
+                            <?php echo htmlspecialchars($excerpt); ?>
                         </p>
 
                         <div class="d-flex align-items-center justify-content-between border-top pt-3 mt-auto">
                             <span class="text-muted small" style="font-size: 0.8rem;">
-                                <i class="far fa-user me-1 text-primary"></i> <?php echo $byline; ?>
+                                <i class="far fa-user me-1 text-primary"></i> <?php echo htmlspecialchars($byline); ?>
                             </span>
                             <span class="text-primary small fw-semibold">
                                 Read Article <i class="fas fa-arrow-right ms-1"></i>
                             </span>
                         </div>
-                    </article>
+                    </a>
                 </div>
                 <?php
                     }

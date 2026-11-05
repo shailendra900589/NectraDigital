@@ -327,7 +327,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
             </h1>
             
             <div class="blog-post-meta d-flex justify-content-center gap-4 flex-wrap">
-                <span><i class="far fa-user me-2 text-neon"></i> <?php echo FOUNDER_NAME; ?></span>
+                <span><i class="far fa-user me-2 text-neon"></i> <?php echo htmlspecialchars(nectra_blog_byline()); ?></span>
                 <span><i class="far fa-calendar me-2 text-neon"></i> Published <?php echo date('M j, Y', strtotime($post['created_at'])); ?></span>
                 <?php if (!empty($post['updated_at']) && date('Y-m-d', strtotime($post['updated_at'])) !== date('Y-m-d', strtotime($post['created_at']))): ?>
                 <span><i class="far fa-clock me-2 text-neon"></i> Updated <?php echo date('M j, Y', strtotime($post['updated_at'])); ?></span>
@@ -379,7 +379,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
                     
                     <?php 
                         render_geo_summary($decoded_title);
-                        render_author_bio();
 
                         $post_faqs = blog_faq_for_post($post);
                         render_faq_section($post_faqs, 'Article FAQ');
