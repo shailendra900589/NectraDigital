@@ -29,9 +29,11 @@ RewriteRule ^ - [S=10]
 RewriteCond %{HTTP_HOST} ^nectradigital\.com$ [NC]
 RewriteRule ^ https://www.nectradigital.com%{REQUEST_URI} [R=301,L]
 
-# 2) HTTP to HTTPS on www.nectradigital.com
+# 2) HTTP to HTTPS on www (skip when Hostinger/CDN already terminated SSL — avoids redirect loops)
 RewriteCond %{HTTP_HOST} ^www\.nectradigital\.com$ [NC]
 RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+RewriteCond %{HTTP:X-Forwarded-SSL} !on [NC]
 RewriteRule ^ https://www.nectradigital.com%{REQUEST_URI} [R=301,L]
 
 # Strip ?lang= on www (single hop to clean URL)

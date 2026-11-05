@@ -332,6 +332,7 @@ function nectra_enforce_preferred_host(): void
     }
 
     $preferred = strtolower(nectra_preferred_host());
+    $host = strtolower(preg_replace('/:\d+$/', '', (string)($_SERVER['HTTP_HOST'] ?? '')));
 
     if ($host === $preferred && nectra_is_https_request()) {
         return;
@@ -347,6 +348,12 @@ function nectra_enforce_preferred_host(): void
     }
     $qs = $query ? '?' . http_build_query($query) : '';
 
-    header('Location: https://' . $preferred . $path . $qs, true, 301);
+    $target = 'https://' . $preferred . $path . $qs;
+    $current = (nectra_is_https_request() ? 'https://' : 'http://') . $host . $uri;
+    if (rtrim($target, '/') === rtrim(strtok($current, '#') ?: $current, '/')) {
+        return;
+    }
+
+    header('Location: ' . $target, true, 301);
     exit;
 }
