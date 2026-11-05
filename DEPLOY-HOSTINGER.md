@@ -2,7 +2,18 @@
 
 **Git remote:** `https://github.com/shailendra900589/NectraDigital-V2.git` (branch `main`)
 
-**Auto-deploy:** hPanel → Websites → nectradigital.com → Git → connect GitHub repo `shailendra900589/NectraDigital-V2`, branch `main`, type PHP/static.
+**Auto-deploy (recommended):**
+
+1. hPanel → **Websites** → **nectradigital.com** → **Manage** → **Advanced** → **Git**
+2. Connect **GitHub** if not connected; grant access to **`NectraDigital-V2`**
+3. Repository: `shailendra900589/NectraDigital-V2`, branch **`main`**, deploy to **public_html** (root)
+4. Add Hostinger **SSH public key** (same Git screen) as a **Deploy key** on GitHub repo → Settings → Deploy keys
+
+If Git pull fails because an old manual `.git` exists, run in **SSH / Terminal**:
+
+```bash
+bash scripts/production-git-pull.sh
+```
 
 **DB (never commit):** `includes/db.local.php` on server only — copy from `includes/db.local.php.example` (hPanel → MySQL).
 
