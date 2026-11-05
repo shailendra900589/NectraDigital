@@ -12,15 +12,15 @@ if (empty($blog_faqs)) {
 ?>
 <div class="col-12 mb-3">
     <label class="d-block mb-2">FAQs (SEO + FAQPage schema)</label>
-    <p class="text-white-50 small mb-2">Add questions &amp; answers for this post. Leave empty to show default EEAT FAQs on the live article.</p>
-    <div id="blogFaqRepeater" class="border border-secondary rounded p-3" style="background:rgba(20,20,20,0.5);">
+    <p class="text-muted small mb-2">Add questions &amp; answers for this post. Leave empty to show default EEAT FAQs on the live article.</p>
+    <div id="blogFaqRepeater" class="ge-faq-repeater p-3">
         <?php foreach ($blog_faqs as $faq): ?>
         <div class="row g-2 mb-3 blog-faq-row">
             <div class="col-md-5">
-                <input type="text" name="faq_q[]" class="form-control bg-dark text-white" placeholder="Question" value="<?php echo htmlspecialchars($faq['q'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="text" name="faq_q[]" class="form-control" placeholder="Question" value="<?php echo htmlspecialchars($faq['q'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
             </div>
             <div class="col-md-6">
-                <textarea name="faq_a[]" class="form-control bg-dark text-white" rows="2" placeholder="Answer"><?php echo htmlspecialchars($faq['a'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
+                <textarea name="faq_a[]" class="form-control" rows="2" placeholder="Answer"><?php echo htmlspecialchars($faq['a'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
             </div>
             <div class="col-md-1 d-flex align-items-start">
                 <button type="button" class="btn btn-sm btn-outline-danger w-100 blog-faq-remove" title="Remove">&times;</button>
@@ -51,8 +51,8 @@ if (empty($blog_faqs)) {
     document.getElementById('blogFaqAdd')?.addEventListener('click', function () {
         var row = document.createElement('div');
         row.className = 'row g-2 mb-3 blog-faq-row';
-        row.innerHTML = '<div class="col-md-5"><input type="text" name="faq_q[]" class="form-control bg-dark text-white" placeholder="Question"></div>'
-            + '<div class="col-md-6"><textarea name="faq_a[]" class="form-control bg-dark text-white" rows="2" placeholder="Answer"></textarea></div>'
+        row.innerHTML = '<div class="col-md-5"><input type="text" name="faq_q[]" class="form-control" placeholder="Question"></div>'
+            + '<div class="col-md-6"><textarea name="faq_a[]" class="form-control" rows="2" placeholder="Answer"></textarea></div>'
             + '<div class="col-md-1 d-flex align-items-start"><button type="button" class="btn btn-sm btn-outline-danger w-100 blog-faq-remove" title="Remove">&times;</button></div>';
         repeater.appendChild(row);
         bindRemove(row.querySelector('.blog-faq-remove'));

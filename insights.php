@@ -1,27 +1,43 @@
 <?php 
 require_once 'includes/db.php';
+require_once 'includes/seo-data.php';
+require_once 'includes/seo-components.php';
+require_once 'includes/i18n.php';
 require_once 'includes/blog_orphan.php';
 require_once 'includes/text-utils.php';
-blog_orphan_ensure_schema($conn);
-$page_title = "Digital Intelligence & Insights";
-$page_desc = "Nectra Digital Insights. Deep dives into AI, Tech, and SEO protocols.";
+
+$dbUnavailable = !nectra_db_is_connected();
+if (!$dbUnavailable) {
+    blog_orphan_ensure_schema($conn);
+}
+$page_title = "SEO & Digital Marketing Blog | Nectra Digital Intel";
+$page_desc = "Expert SEO guides, Google algorithm updates, AI automation tips, and digital marketing strategies from India's leading SEO agency.";
+$canonical_url = nectra_page_canonical('/insights');
+
+$page_schema = [
+    get_breadcrumb_schema([
+        ['name' => 'Home', 'url' => SITE_URL . '/'],
+        ['name' => 'Insights', 'url' => SITE_URL . '/insights']
+    ])
+];
+
 include 'includes/header.php'; 
 
-// ==========================================
-// PAGINATION ENGINE
-// ==========================================
-$posts_per_page = 8; // Number of posts to show per page
+// Pagination Engine
+$posts_per_page = 8;
 $current_page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($current_page < 1) $current_page = 1;
 
 $offset = ($current_page - 1) * $posts_per_page;
-
-// Count total posts (listed only)
 $listWhere = blog_listable_sql();
+
 $total_rows = 0;
-$total_result = $conn->query("SELECT COUNT(*) as total FROM blog_posts WHERE {$listWhere}");
-if ($total_result) {
-    $total_rows = (int)($total_result->fetch_assoc()['total'] ?? 0);
+$result = null;
+if (!$dbUnavailable) {
+    $total_result = $conn->query("SELECT COUNT(*) as total FROM blog_posts WHERE {$listWhere}");
+    if ($total_result) {
+        $total_rows = (int)($total_result->fetch_assoc()['total'] ?? 0);
+    }
 }
 $total_pages = max(1, (int)ceil($total_rows / $posts_per_page));
 if ($current_page > $total_pages) {
@@ -29,169 +45,145 @@ if ($current_page > $total_pages) {
     $offset = ($current_page - 1) * $posts_per_page;
 }
 
-// FETCH POSTS — exclude orphan (direct-link-only) posts
-$sql = "SELECT * FROM blog_posts WHERE {$listWhere} ORDER BY created_at DESC LIMIT $posts_per_page OFFSET $offset";
-$result = $conn->query($sql);
+if (!$dbUnavailable) {
+    $sql = "SELECT * FROM blog_posts WHERE {$listWhere} ORDER BY created_at DESC LIMIT $posts_per_page OFFSET $offset";
+    $result = $conn->query($sql);
+}
 $authorName = defined('FOUNDER_NAME') ? FOUNDER_NAME : 'Nectra Digital';
 ?>
 
-<main>
-    <header class="py-5 text-center position-relative" style="background: linear-gradient(to bottom, #050505 0%, #0a1518 100%);">
-        <div class="container py-5 position-relative z-1">
-            <h6 class="text-neon text-uppercase mb-3" style="letter-spacing: 3px;">Knowledge Base</h6>
-            <h1 class="display-4 fw-bold text-white mb-4">DIGITAL <span class="text-neon">INTELLIGENCE</span></h1>
+<main style="background: #F8FAFC; min-height: 100vh;">
+    <!-- HERO (Dark Navy) -->
+    <header class="nd-page-hero nd-section-dark text-center position-relative overflow-hidden">
+        <div class="nd-page-hero-glow" aria-hidden="true"></div>
+        <div class="container position-relative z-1 py-2 py-md-3">
+            <?php render_breadcrumbs([['name' => 'Home', 'url' => '/'], ['name' => 'Insights', 'url' => '/insights']]); ?>
+            <h1 class="fw-bold text-white mb-3 nd-hero-title">Nectra <span class="nd-text-gradient">Intel</span></h1>
+            <p class="lead text-white-50 mx-auto nd-prose-width" style="line-height: 1.6;">
+                Actionable SEO guides, algorithm updates, AI automation playbooks, and growth strategies for Indian and global brands.
+            </p>
         </div>
-        <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(#00e5ff 1px, transparent 1px); background-size: 40px 40px; opacity: 0.05; pointer-events: none;"></div>
     </header>
 
+    <!-- TRUST STRIP -->
+    <?php include __DIR__ . '/includes/ui/trust-bar.php'; ?>
+
+    <!-- ARTICLES GRID -->
     <section class="py-5">
-        <div class="container">
-            <div class="row g-4">
-                
+        <div class="container py-3">
+            <?php if (!empty($dbUnavailable) && function_exists('nectra_is_local_environment') && nectra_is_local_environment()): ?>
+            <div class="alert alert-warning border-0 shadow-sm mb-4" role="status">
+                <strong>Local database offline.</strong> Start MySQL in XAMPP Control Panel. If you still see connection errors, run
+                <code>database/repair-xampp-mysql.bat</code> once (see instructions inside the file).
+            </div>
+            <?php endif; ?>
+            <div class="row g-4" data-nd-stagger>
                 <?php 
                 if ($result && $result->num_rows > 0) {
                     while($row = $result->fetch_assoc()) {
                         $excerpt = nectra_fix_mojibake(strip_tags($row['content'] ?? ''));
-                        $excerpt = mb_substr($excerpt, 0, 120) . '...';
+                        $excerpt = mb_substr($excerpt, 0, 140) . '...';
                         $postDate = !empty($row['created_at'])
                             ? date('M j, Y', strtotime($row['created_at']))
                             : '';
                         
-                        // Image Handling: Show Uploaded Image or Default Icon
-                        $thumb_html = '';
-                        if(!empty($row['image']) && file_exists($row['image'])) {
-                            $thumb_html = '<div class="mb-4 rounded overflow-hidden border border-secondary" style="height: 200px;">
-                                <img src="'.$row['image'].'" class="w-100 h-100 object-fit-cover" alt="'.nectra_display_text($row['title']).'">
-                            </div>';
-                        } else {
-                            $thumb_html = '<div class="d-flex justify-content-between align-items-start mb-4">
-                                <div class="bg-dark border border-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                    <i class="fas fa-bolt text-neon"></i>
-                                </div>
-                                <span class="text-white-50 x-small fw-bold text-uppercase" style="letter-spacing: 1px;">'.nectra_display_text($row['category']).'</span>
-                            </div>';
-                        }
-
                         $post_title = nectra_display_text($row['title']);
                         $post_category = nectra_display_text($row['category']);
                         $post_link = '/' . ltrim((string)($row['slug'] ?? ''), '/');
                         $byline = htmlspecialchars(trim((string)($row['author'] ?? $authorName)), ENT_QUOTES, 'UTF-8');
+                ?>
+                <div class="col-md-6">
+                    <article class="blog-card nd-card p-4 h-100 d-flex flex-column bg-white shadow-sm position-relative">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="badge bg-light text-primary border fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                <?php echo htmlspecialchars($post_category); ?>
+                            </span>
+                            <span class="text-muted small" style="font-size: 0.75rem;">
+                                <i class="far fa-calendar me-1"></i> <?php echo htmlspecialchars($postDate); ?>
+                            </span>
+                        </div>
 
-                        echo '
-                        <div class="col-md-6">
-                            <article class="card h-100 bg-glass border border-secondary service-card p-0 overflow-hidden">
-                                <div class="card-body p-4 d-flex flex-column">
-                                    
-                                    '.$thumb_html.'
-                                    
-                                    '.((!empty($row['image'])) ? '<div class="mb-3"><span class="badge border border-secondary text-white-50">'.$post_category.'</span></div>' : '').'
+                        <?php if (!empty($row['image']) && file_exists($row['image'])): ?>
+                        <div class="mb-3 rounded-3 overflow-hidden border" style="height: 200px;">
+                            <img src="<?php echo htmlspecialchars($row['image']); ?>" class="w-100 h-100" style="object-fit: cover;" alt="<?php echo htmlspecialchars($post_title); ?>">
+                        </div>
+                        <?php endif; ?>
 
-                                    <h3 class="h4 text-white mb-3">
-                                        <a href="'.htmlspecialchars($post_link, ENT_QUOTES, 'UTF-8').'" class="text-white text-decoration-none stretched-link hover-neon">
-                                            '.$post_title.'
-                                        </a>
-                                    </h3>
-                                    <p class="text-white-50 small mb-4">
-                                        '.$excerpt.'
-                                    </p>
-                                    
-                                    <div class="d-flex align-items-center justify-content-between border-top border-secondary pt-3 mt-auto flex-wrap gap-2">
-                                        <span class="text-white-50 x-small"><i class="far fa-user me-1"></i> '.$byline.' · <i class="far fa-calendar ms-2 me-1"></i> '.htmlspecialchars($postDate, ENT_QUOTES, 'UTF-8').'</span>
-                                        <span class="text-neon x-small fw-bold">Read article <i class="fas fa-chevron-right ms-1"></i></span>
-                                    </div>
-                                </div>
-                            </article>
-                        </div>';
+                        <h2 class="h5 fw-bold text-dark mb-2">
+                            <a href="<?php echo htmlspecialchars($post_link, ENT_QUOTES, 'UTF-8'); ?>" class="text-dark text-decoration-none stretched-link">
+                                <?php echo $post_title; ?>
+                            </a>
+                        </h2>
+
+                        <p class="text-muted small mb-4 flex-grow-1" style="line-height: 1.6;">
+                            <?php echo $excerpt; ?>
+                        </p>
+
+                        <div class="d-flex align-items-center justify-content-between border-top pt-3 mt-auto">
+                            <span class="text-muted small" style="font-size: 0.8rem;">
+                                <i class="far fa-user me-1 text-primary"></i> <?php echo $byline; ?>
+                            </span>
+                            <span class="text-primary small fw-semibold">
+                                Read Article <i class="fas fa-arrow-right ms-1"></i>
+                            </span>
+                        </div>
+                    </article>
+                </div>
+                <?php
                     }
                 } else {
-                    echo "<div class='col-12 text-center py-5'><p class='text-white-50'>No intelligence reports found in the mainframe.</p></div>";
+                    echo "<div class='col-12 text-center py-5'><p class='text-muted'>No articles currently published in this section.</p></div>";
                 }
                 ?>
-
             </div>
 
-            <?php 
-            // ==========================================
-            // DYNAMIC NEON PAGINATION BUTTONS
-            // ==========================================
-            if ($total_pages > 1) {
-                echo '<div class="row mt-5 pt-4">';
-                echo '<div class="col-12 d-flex justify-content-center">';
-                echo '<nav aria-label="Intelligence Pagination">';
-                echo '<ul class="pagination pagination-neon mb-0">';
-                
-                // PREV Button
-                if ($current_page > 1) {
-                    echo '<li class="page-item"><a class="page-link" href="?page='.($current_page - 1).'"><i class="fas fa-chevron-left me-1"></i> PREV</a></li>';
-                } else {
-                    echo '<li class="page-item disabled"><span class="page-link"><i class="fas fa-chevron-left me-1"></i> PREV</span></li>';
-                }
+            <!-- SERVER-SIDE PAGINATION -->
+            <?php if ($total_pages > 1): ?>
+            <div class="row mt-5 pt-3">
+                <div class="col-12 d-flex justify-content-center">
+                    <nav aria-label="Insights Pagination">
+                        <ul class="pagination mb-0 gap-2">
+                            <?php if ($current_page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link rounded-3 px-3 py-2 text-dark border fw-medium" href="?page=<?php echo ($current_page - 1); ?>">
+                                    <i class="fas fa-chevron-left me-1"></i> Previous
+                                </a>
+                            </li>
+                            <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link rounded-3 px-3 py-2 border text-muted">Previous</span>
+                            </li>
+                            <?php endif; ?>
 
-                // Page Numbers
-                for ($i = 1; $i <= $total_pages; $i++) {
-                    if ($i == $current_page) {
-                        echo '<li class="page-item active" aria-current="page"><span class="page-link">'.$i.'</span></li>';
-                    } else {
-                        echo '<li class="page-item"><a class="page-link" href="?page='.$i.'">'.$i.'</a></li>';
-                    }
-                }
+                            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <li class="page-item <?php echo $i == $current_page ? 'active' : ''; ?>">
+                                <a class="page-link rounded-3 px-3 py-2 fw-semibold <?php echo $i == $current_page ? 'bg-primary text-white border-primary' : 'bg-white text-dark border'; ?>" href="?page=<?php echo $i; ?>">
+                                    <?php echo $i; ?>
+                                </a>
+                            </li>
+                            <?php endfor; ?>
 
-                // NEXT Button
-                if ($current_page < $total_pages) {
-                    echo '<li class="page-item"><a class="page-link" href="?page='.($current_page + 1).'">NEXT <i class="fas fa-chevron-right ms-1"></i></a></li>';
-                } else {
-                    echo '<li class="page-item disabled"><span class="page-link">NEXT <i class="fas fa-chevron-right ms-1"></i></span></li>';
-                }
-
-                echo '</ul>';
-                echo '</nav>';
-                echo '</div>';
-                echo '</div>';
-            }
-            ?>
-
+                            <?php if ($current_page < $total_pages): ?>
+                            <li class="page-item">
+                                <a class="page-link rounded-3 px-3 py-2 text-dark border fw-medium" href="?page=<?php echo ($current_page + 1); ?>">
+                                    Next <i class="fas fa-chevron-right ms-1"></i>
+                                </a>
+                            </li>
+                            <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link rounded-3 px-3 py-2 border text-muted">Next</span>
+                            </li>
+                            <?php endif; ?>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
     </section>
+
+    <!-- FINAL CTA -->
+    <?php include __DIR__ . '/includes/ui/cta.php'; ?>
 </main>
-
-<style>
-/* Utilities */
-.object-fit-cover { object-fit: cover; }
-.hover-neon:hover { color: var(--nectra-neon) !important; text-shadow: 0 0 10px rgba(0,229,255,0.4); transition: 0.3s; }
-
-/* Custom Neon Pagination Styling */
-.pagination-neon {
-    gap: 8px;
-}
-.pagination-neon .page-link {
-    background-color: transparent;
-    border: 1px solid #333;
-    color: #a0a0a0;
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    padding: 10px 18px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-}
-.pagination-neon .page-link:hover {
-    background-color: rgba(0, 229, 255, 0.05);
-    border-color: #00e5ff;
-    color: #00e5ff;
-    box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
-}
-.pagination-neon .page-item.active .page-link {
-    background-color: rgba(0, 229, 255, 0.15);
-    border-color: #00e5ff;
-    color: #00e5ff;
-    box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
-}
-.pagination-neon .page-item.disabled .page-link {
-    background-color: transparent;
-    border-color: #1a1a1a;
-    color: #444;
-    cursor: not-allowed;
-}
-</style>
 
 <?php include 'includes/footer.php'; ?>

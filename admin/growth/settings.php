@@ -113,4 +113,19 @@ ge_admin_layout_start('Settings', 'settings');
     <a href="../../database/migrate.php" target="_blank" class="btn btn-outline-secondary">Run Migration</a>
 </div>
 
+<div class="ge-card mt-4">
+    <h2 class="h6 mb-2">Advanced modules</h2>
+    <p class="text-muted small mb-3">Power-user tools — not needed for day-to-day work.</p>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="industries.php" class="btn btn-sm btn-outline-secondary">Industries</a>
+        <a href="keywords.php" class="btn btn-sm btn-outline-secondary">Keywords</a>
+        <a href="authors.php" class="btn btn-sm btn-outline-secondary">Authors</a>
+        <a href="knowledge-base.php" class="btn btn-sm btn-outline-secondary">Knowledge base</a>
+        <a href="competitor.php" class="btn btn-sm btn-outline-secondary">Competitor intel</a>
+        <a href="tools.php" class="btn btn-sm btn-outline-secondary">Tools</a>
+        <a href="analytics.php" class="btn btn-sm btn-outline-secondary">Analytics</a>
+        <a href="../export-urls.php?type=all" class="btn btn-sm btn-outline-secondary">Export URLs</a>
+    </div>
+</div>
+
 <?php ge_admin_layout_end(); ?>

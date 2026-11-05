@@ -21,3 +21,6 @@ assets/uploads/*
 
 # Hostinger / cPanel temp
 default.php
+
+# Local docs / audits (not for repo)
+*.pdf

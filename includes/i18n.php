@@ -126,6 +126,11 @@ function nectra_normalize_canonical_url(string $urlOrPath): string
     $path = preg_replace('#\.php$#i', '', $path);
     $path = strtolower($path);
 
+    $installBase = function_exists('nectra_site_base_path') ? nectra_site_base_path() : '';
+    if ($installBase !== '' && str_starts_with($path, strtolower($installBase))) {
+        $path = substr($path, strlen($installBase)) ?: '/';
+    }
+
     if (in_array($path, ['/', '/index', '/index.html', '/home'], true)) {
         return $site;
     }
@@ -153,7 +158,12 @@ function nectra_enforce_index_redirect(): void
     }
 
     $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-    if (preg_match('#^/index(\.php|\.html)?$#i', $path)) {
+    if (preg_match('#/(nectradigital_final/)?index(\.php|\.html)?$#i', $path)) {
+        if (function_exists('nectra_is_local_environment') && nectra_is_local_environment()) {
+            $base = defined('SITE_URL') ? SITE_URL : '/';
+            header('Location: ' . rtrim($base, '/') . '/', true, 301);
+            exit;
+        }
         header('Location: ' . nectra_site_base_url() . '/', true, 301);
         exit;
     }
@@ -175,7 +185,15 @@ function nectra_redirect_without_lang_param(int $status = 301): void
     }
     unset($query['lang']);
     $qs = $query ? '?' . http_build_query($query) : '';
-    $target = nectra_site_base_url() . $path . $qs;
+    if (function_exists('nectra_is_local_environment') && nectra_is_local_environment()) {
+        $base = nectra_site_base_path();
+        if ($base !== '' && str_starts_with($path, $base)) {
+            $path = substr($path, strlen($base)) ?: '/';
+        }
+        $target = ($base !== '' ? rtrim($base, '/') : '') . $path . $qs;
+    } else {
+        $target = nectra_site_base_url() . $path . $qs;
+    }
 
     header('Location: ' . $target, true, $status);
     exit;

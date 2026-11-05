@@ -1,104 +1,140 @@
-/* --- NECTRA BRAND GUIDELINES --- */
+/**
+ * Nectra Digital — Production Master Stylesheet
+ * Integrates Design System, Reusable Components, and Public Layouts
+ */
+
+@import url('design-system.css');
+@import url('components.css');
+@import url('public.css?v=21');
+@import url('home-sections.css');
+@import url('service-pages.css');
+@import url('faq-section.css');
+@import url('contact-section.css');
+@import url('motion.css');
+@import url('depth-3d.css');
+
+/* Backward Compatibility Tokens & Class Mappings */
 :root {
-    --void-black: #050505;  /* Deep Space Black */
-    --nectra-neon: #00E5FF; /* Rahu's Electric Blue */
-    --cyber-silver: #E0E0E0;
-    --dark-surface: rgba(10, 10, 10, 0.8);
-    --font-heading: 'Orbitron', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    --void-black: var(--nd-brand-navy);
+    --nectra-neon: var(--nd-cyan);
+    --cyber-silver: var(--nd-text-secondary);
+    --dark-surface: rgba(11, 31, 58, 0.85);
+    --font-heading: var(--nd-font-family);
+    --font-body: var(--nd-font-family);
 }
 
-body {
-    background-color: var(--void-black);
-    color: var(--cyber-silver);
-    font-family: var(--font-body);
-    overflow-x: hidden;
+/* Smooth Transition Helper */
+.transition {
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* PARTICLES CONTAINER */
-#particles-js {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background-color: var(--void-black);
-    z-index: -1; /* Behind everything */
+.hover-effect:hover {
+    transform: translateY(-3px);
+    border-color: var(--nd-primary-blue) !important;
 }
 
-/* TYPOGRAPHY */
-h1, h2, h3, .navbar-brand, .btn-nectra {
-    font-family: var(--font-heading);
-    letter-spacing: 1px;
-}
-.text-neon { color: var(--nectra-neon); text-shadow: 0 0 15px rgba(0, 229, 255, 0.6); }
-
-/* NAVBAR */
-.navbar {
-    background: rgba(5, 5, 5, 0.9);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0, 229, 255, 0.15);
-}
-.nav-link { color: #fff !important; transition: 0.3s; font-size: 0.9rem; text-transform: uppercase; }
-.nav-link:hover { color: var(--nectra-neon) !important; text-shadow: 0 0 8px var(--nectra-neon); }
-
-/* BUTTONS (Mars Energy) */
-.btn-nectra {
-    border: 1px solid var(--nectra-neon);
-    color: var(--nectra-neon);
-    background: transparent;
-    padding: 12px 35px;
-    font-weight: 700;
-    text-transform: uppercase;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-.btn-nectra:hover {
-    background: var(--nectra-neon);
-    color: #000;
-    box-shadow: 0 0 25px var(--nectra-neon);
+.hover-neon:hover {
+    color: var(--nd-cyan) !important;
 }
 
-/* CARDS */
-.service-card {
-    background: rgba(20, 20, 20, 0.6); /* Semi-transparent */
-    border: 1px solid #333;
-    padding: 2.5rem;
-    border-radius: 8px;
-    transition: 0.4s;
-    height: 100%;
-    backdrop-filter: blur(5px);
-}
-.service-card:hover {
-    border-color: var(--nectra-neon);
-    transform: translateY(-7px);
-    box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+/* Legacy accent (dark sections) */
+.text-neon {
+    color: var(--nd-cyan, #38bdf8) !important;
 }
 
-/* FORMS */
-.form-control, .form-select {
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid #444;
-    color: #fff;
-    padding: 15px;
-}
-.form-control:focus {
-    background: rgba(0, 0, 0, 0.8);
-    border-color: var(--nectra-neon);
-    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
-    color: #fff;
+/* Glass — dark surfaces (legacy PHP: bg-darker + text-white) */
+.bg-glass {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
-/* SEO COMPONENTS */
-.bg-glass { background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(5px); }
-.bg-darker { background: #0a0a0a; }
-.breadcrumb-item + .breadcrumb-item::before { color: #666; }
-.accordion-button { box-shadow: none !important; }
-.accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(0,229,255,0.15) !important; }
-.accordion-item { background: transparent; }
-.dropdown-menu-dark { background: rgba(10,10,10,0.95); }
-.dropdown-item:hover { background: rgba(0,229,255,0.1); color: var(--nectra-neon); }
-.geo-blocks h2 { font-size: 1rem; }
-.hover-effect { transition: all 0.3s ease; }
-.hover-effect:hover { transform: translateY(-3px); border-color: var(--nectra-neon) !important; }
+.bg-darker {
+    background: var(--nd-brand-navy);
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.bg-darker .bg-glass,
+.bg-darker a.bg-glass,
+.nd-section-dark .bg-glass {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.bg-darker a.bg-glass,
+.bg-darker a.bg-glass:link,
+.bg-darker a.bg-glass:visited {
+    color: #ffffff;
+}
+
+.bg-darker a.bg-glass .text-white,
+.bg-darker a.bg-glass span.text-white,
+.bg-darker .bg-glass .text-white,
+.bg-darker a.bg-glass span {
+    color: #ffffff !important;
+}
+
+/* Glass on light article / prose (blog geo blocks, author bio) */
+article .geo-blocks .bg-glass,
+article .geo-blocks + .bg-glass,
+article .bg-glass,
+.nd-section:not(.nd-section-dark) .bg-glass-light {
+    background: var(--nd-surface, #ffffff);
+    border-color: var(--nd-border, #e2e8f0) !important;
+}
+
+article .geo-blocks .text-white,
+article .geo-blocks .bg-glass .text-white,
+article .bg-glass .text-white,
+article .geo-blocks .bg-glass h2.text-white {
+    color: var(--nd-text-main, #0f172a) !important;
+}
+
+article .geo-blocks .text-white-50,
+article .bg-glass .text-white-50 {
+    color: var(--nd-text-muted, #64748b) !important;
+}
+
+article .geo-blocks .text-neon,
+article .bg-glass .text-neon {
+    color: var(--nd-primary-blue, #2563eb) !important;
+}
+
+/* Fix for pre-existing bootstrap tables and elements */
+.border-neon {
+    border-color: var(--nd-cyan) !important;
+}
+
+/* Ready to Grow? — anchor tiles (also in public.css; here for master cache bust) */
+a.nd-cta-tile,
+a.nd-cta-tile:link,
+a.nd-cta-tile:visited,
+a.nd-cta-tile:hover,
+a.nd-cta-tile:focus-visible {
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+.nd-cta-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.15rem 0.85rem;
+    text-align: center;
+    border-radius: var(--nd-radius-lg, 14px);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.nd-cta-tile__icon {
+    color: var(--nd-tech-blue, #38bdf8);
+}
+
+.nd-cta-tile__label {
+    color: #ffffff !important;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.35;
+}

@@ -205,7 +205,7 @@ ge_admin_layout_start('Indexing Manager', 'indexing');
         <h2 class="h6 mb-0">Queue Progress</h2>
         <span class="small text-muted">Completed + failed vs total · <strong id="idx-queue-pct"><?php echo $queueProgressPct; ?>%</strong></span>
     </div>
-    <div class="progress mb-3" style="height:12px;background:var(--ge-surface-2);">
+    <div class="progress mb-3" style="height:12px;">
         <div id="idxQueueProgress" class="progress-bar bg-info" role="progressbar" style="width:<?php echo $queueProgressPct; ?>%;" aria-valuenow="<?php echo $queueProgressPct; ?>" aria-valuemin="0" aria-valuemax="100"></div>
     </div>
     <div class="row g-3 text-center">

@@ -179,6 +179,7 @@ if (!isset($pageTitles[$page])) {
 
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/includes/admin-layout.php';
+require_once __DIR__ . '/includes/admin-dashboard-home.php';
 
 $dashboardAlerts = [];
 if ($growthMsg) {
@@ -199,87 +200,7 @@ admin_layout_start($pageTitles[$page], $page, [
     // HOME — Unified Dashboard Overview
     // ==========================================
     if ($page == 'home') {
-        $leadCount = $conn->query("SELECT COUNT(*) AS c FROM leads")->fetch_assoc()['c'] ?? 0;
-        $hireCount = $conn->query("SELECT COUNT(*) AS c FROM hire_requests WHERE status='new'")->fetch_assoc()['c'] ?? 0;
-        echo '<div class="row g-3 mb-4">';
-        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value">'.number_format($leadCount).'</div><div class="ge-stat-label">Contact Leads</div></div></div>';
-        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value">'.number_format($hireCount).'</div><div class="ge-stat-label">New Hire Requests</div></div></div>';
-        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value">'.number_format($growthStats['cities']).'</div><div class="ge-stat-label">Active Cities</div></div></div>';
-        echo '<div class="col-6 col-md-3"><div class="ge-stat-card"><div class="ge-stat-value">'.number_format($growthStats['pages']).'</div><div class="ge-stat-label">Landing Pages</div></div></div>';
-        echo '</div>';
-
-        echo '<div class="ge-card mb-4"><div class="ge-section-head">Quick Actions</div><div class="ge-quick-grid">';
-        $quickLinks = [
-            ['create_post.php', 'fa-pen-to-square', 'New Blog Post'],
-            ['?page=leads', 'fa-inbox', 'Contact Leads'],
-            ['growth/indexing.php', 'fa-search-plus', 'Auto Indexing'],
-            ['growth/generate.php', 'fa-wand-magic-sparkles', 'Generate Pages'],
-            ['growth/leads.php', 'fa-address-book', 'CRM Pipeline'],
-            ['export-urls.php?type=all', 'fa-download', 'Export URLs'],
-        ];
-        foreach ($quickLinks as [$href, $icon, $label]) {
-            $url = (str_starts_with($href, '?')) ? 'dashboard.php' . $href : $href;
-            echo '<a href="'.htmlspecialchars($url).'" class="ge-quick-link"><i class="fas '.$icon.'"></i><span>'.htmlspecialchars($label).'</span></a>';
-        }
-        echo '</div></div>';
-
-        echo '<div class="row g-4">';
-        echo '<div class="col-lg-6"><div class="ge-card"><h5 class="ge-section-head"><i class="fas fa-map-marker-alt text-info me-2"></i>Quick Add City</h5>';
-        echo '<form method="POST" action="?page=cities"><input type="hidden" name="growth_action" value="add_city">';
-        echo '<div class="row g-2"><div class="col-md-6"><input type="text" name="name" class="form-control" placeholder="City Name *" required></div>';
-        echo '<div class="col-md-6"><input type="text" name="state" class="form-control" placeholder="State"></div>';
-        echo '<div class="col-md-6"><input type="text" name="country" class="form-control" value="India" placeholder="Country"></div>';
-        echo '<div class="col-md-6"><input type="number" name="population" class="form-control" placeholder="Population"></div>';
-        echo '<div class="col-12"><button type="submit" class="btn btn-info w-100">Add City</button></div></div></form>';
-        echo '<p class="small text-muted mt-2 mb-0"><a href="?page=cities">Manage all cities →</a> · <a href="growth/cities.php?action=import">Bulk import</a></p></div></div>';
-
-        echo '<div class="col-lg-6"><div class="ge-card"><h5 class="ge-section-head"><i class="fas fa-rocket text-info me-2"></i>Auto Indexing Status</h5>';
-        echo '<div class="d-flex justify-content-between mb-2"><span class="text-white-50">Indexed</span><strong class="text-success">'.number_format($growthStats['indexed']).'</strong></div>';
-        echo '<div class="d-flex justify-content-between mb-2"><span class="text-white-50">Pending</span><strong class="text-warning">'.number_format($growthStats['pending_index']).'</strong></div>';
-        echo '<div class="d-flex justify-content-between mb-3"><span class="text-white-50">Queue</span><strong>'.number_format($growthStats['queue_pending']).'</strong></div>';
-        echo '<form method="POST" action="growth/indexing.php" class="d-grid gap-2"><input type="hidden" name="action" value="submit_all_indexnow">';
-        echo '<button type="submit" class="btn btn-warning text-dark"><i class="fas fa-paper-plane"></i> Submit ALL URLs to IndexNow</button></form>';
-        echo '<form method="POST" action="growth/indexing.php" class="d-grid gap-2 mt-2"><input type="hidden" name="action" value="queue_and_process">';
-        echo '<button type="submit" class="btn btn-success"><i class="fas fa-bolt"></i> Queue & Submit (IndexNow + Bing + DDG)</button></form>';
-        echo '<p class="small text-muted mt-2 mb-0"><a href="growth/indexing.php">Full indexing panel →</a> · <a href="export-urls.php?type=all">Download all URLs</a></p></div></div>';
-        echo '</div>';
-
-        if ($growthStats['ready']) {
-            $cityHubs = function_exists('admin_city_hub_urls') ? admin_city_hub_urls() : [];
-            $allUrlCount = function_exists('admin_all_indexable_urls') ? count(admin_all_indexable_urls()) : 0;
-            echo '<div class="ge-card mt-4"><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">';
-            echo '<h5 class="ge-section-head mb-0"><i class="fas fa-link text-info me-2"></i>City Hub URLs</h5>';
-            echo '<div class="d-flex flex-wrap gap-2">';
-            echo '<a href="export-urls.php?type=cities" class="btn btn-sm btn-outline-info"><i class="fas fa-download"></i> Download City URLs</a>';
-            echo '<a href="export-urls.php?type=landing" class="btn btn-sm btn-outline-info"><i class="fas fa-download"></i> Download Landing URLs</a>';
-            echo '<a href="export-urls.php?type=all" class="btn btn-sm btn-info"><i class="fas fa-download"></i> Download All (' . number_format($allUrlCount) . ')</a>';
-            echo '</div></div>';
-            echo '<p class="text-white-50 small">Har city ka hub page — Google Search Console / Bing me manual listing ke liye. Service×city pages alag se <code>export-urls.php?type=landing</code> se download karein.</p>';
-            echo '<div class="ge-table-wrap" style="max-height:360px;overflow-y:auto;"><table class="table ge-table table-sm mb-0"><thead><tr><th>City</th><th>Hub URL</th><th></th></tr></thead><tbody>';
-            foreach ($cityHubs as $hub) {
-                $url = htmlspecialchars($hub['hub_url']);
-                echo '<tr><td><strong>' . htmlspecialchars($hub['name']) . '</strong><br><span class="text-muted small">' . htmlspecialchars($hub['state']) . '</span></td>';
-                echo '<td class="small"><code>' . $url . '</code></td><td class="text-nowrap">';
-                echo '<a href="' . $url . '" target="_blank" class="btn btn-sm btn-outline-secondary me-1" title="Open"><i class="fas fa-external-link-alt"></i></a>';
-                echo '<button type="button" class="btn btn-sm btn-outline-info" onclick="navigator.clipboard.writeText(\'' . addslashes($hub['hub_url']) . '\');this.innerHTML=\'Copied!\';setTimeout(()=>this.innerHTML=\'<i class=&quot;fas fa-copy&quot;></i>\',1500)" title="Copy URL"><i class="fas fa-copy"></i></button>';
-                echo '</td></tr>';
-            }
-            if (empty($cityHubs)) {
-                echo '<tr><td colspan="3" class="text-center text-muted py-3">No cities — <a href="?page=cities">add cities</a> first.</td></tr>';
-            }
-            echo '</tbody></table></div></div>';
-        }
-
-        if ($growthStats['ready']) {
-            $pct = $growthStats['potential'] > 0 ? min(100, round(($growthStats['pages'] / $growthStats['potential']) * 100)) : 0;
-            echo '<div class="ge-card mt-4"><h5 class="ge-section-head">Programmatic SEO Matrix</h5>';
-            echo '<p class="text-white-50 small">Services × Cities × Industries = '.$growthStats['services'].' × '.$growthStats['cities'].' × '.max(1,$growthStats['industries']+1).' = <strong>'.number_format($growthStats['potential']).'</strong> possible pages</p>';
-            echo '<div class="progress mb-2" style="height:10px;background:#333;"><div class="progress-bar bg-info" style="width:'.$pct.'%"></div></div>';
-            echo '<p class="small text-muted">'.$pct.'% generated ('.number_format($growthStats['pages']).' / '.number_format($growthStats['potential']).')</p>';
-            echo '<a href="growth/generate.php" class="btn btn-sm btn-info me-2">Generate Pages</a>';
-            echo '<a href="growth/services.php" class="btn btn-sm btn-outline-secondary me-2">Services</a>';
-            echo '<a href="growth/industries.php" class="btn btn-sm btn-outline-secondary">Industries</a></div>';
-        }
+        admin_render_dashboard_home($conn, $growthStats);
     }
 
     // ==========================================
@@ -312,23 +233,12 @@ admin_layout_start($pageTitles[$page], $page, [
         echo '</tbody></table></div><p class="small text-muted mt-2 mb-0">'.count($cities).' cities · Used for programmatic landing pages</p></div>';
 
         if ($growthStats['ready']) {
-            $cityHubs = function_exists('admin_city_hub_urls') ? admin_city_hub_urls() : [];
-            $landingCount = (int)($growthStats['pages'] ?? 0);
-            echo '<div class="ge-card mt-4"><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">';
-            echo '<h5 class="ge-section-head mb-0"><i class="fas fa-link text-info me-2"></i>Generated City Hub Links</h5>';
-            echo '<div class="d-flex flex-wrap gap-2">';
-            echo '<a href="export-urls.php?type=cities" class="btn btn-sm btn-outline-info"><i class="fas fa-download"></i> Export City URLs</a>';
-            echo '<a href="export-urls.php?type=all" class="btn btn-sm btn-info"><i class="fas fa-download"></i> Export All URLs</a>';
-            echo '</div></div>';
-            echo '<p class="text-white-50 small mb-3">City hub pages + <strong>' . number_format($landingCount) . '</strong> service×city landing pages. Download list for Google Search Console bulk indexing.</p>';
-            echo '<div class="ge-table-wrap" style="max-height:420px;overflow-y:auto;"><table class="table ge-table table-sm mb-0"><thead><tr><th>City</th><th>Slug</th><th>Hub URL</th><th></th></tr></thead><tbody>';
-            foreach ($cityHubs as $hub) {
-                $url = htmlspecialchars($hub['hub_url']);
-                echo '<tr><td>'.htmlspecialchars($hub['name']).'</td><td><code class="small">'.htmlspecialchars($hub['slug']).'</code></td>';
-                echo '<td class="small"><a href="'.$url.'" target="_blank" class="text-info text-decoration-none">'.$url.'</a></td>';
-                echo '<td><button type="button" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(\''.addslashes($hub['hub_url']).'\')" title="Copy"><i class="fas fa-copy"></i></button></td></tr>';
-            }
-            echo '</tbody></table></div></div>';
+            echo '<div class="ge-card mt-4 ge-card--muted">';
+            echo '<p class="text-muted small mb-2">Export city hub and landing URLs for Search Console bulk indexing.</p>';
+            echo '<a href="export-urls.php?type=cities" class="btn btn-sm btn-outline-secondary me-2"><i class="fas fa-download me-1"></i>City URLs</a>';
+            echo '<a href="export-urls.php?type=landing" class="btn btn-sm btn-outline-secondary me-2"><i class="fas fa-download me-1"></i>Landing URLs</a>';
+            echo '<a href="export-urls.php?type=all" class="btn btn-sm btn-ge-primary"><i class="fas fa-download me-1"></i>All URLs</a>';
+            echo '</div>';
         }
     }
 
@@ -342,11 +252,16 @@ admin_layout_start($pageTitles[$page], $page, [
         $siteBase = rtrim(SITE_URL, '/');
 
         echo '<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                <p class="text-muted mb-0">Create, edit, and index blog posts.</p>
-                <div class="d-flex gap-2">
-                <a href="?page=blog&rebuild_blog_static=1" class="btn btn-outline-secondary btn-sm" title="Rebuild static HTML for Bing/Google crawlers">Rebuild Snapshots</a>
-                <a href="?page=blog&fix_blog_encoding=1" class="btn btn-outline-warning btn-sm" title="Fix mojibake / Indiax typos in all posts" onclick="return confirm(&quot;Repair UTF-8 encoding in all blog posts?&quot;)">Fix Encoding</a>
-                <a href="create_post.php" class="btn btn-ge-primary"><i class="fas fa-plus"></i> New Post</a>
+                <p class="text-muted mb-0">Manage Insights posts, visibility, and indexing.</p>
+                <div class="d-flex gap-2 align-items-center">
+                <div class="dropdown">
+                  <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Maintenance</button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="?page=blog&rebuild_blog_static=1">Rebuild crawler snapshots</a></li>
+                    <li><a class="dropdown-item" href="?page=blog&fix_blog_encoding=1" onclick="return confirm(\'Repair UTF-8 encoding in all posts?\');">Fix text encoding</a></li>
+                  </ul>
+                </div>
+                <a href="create_post.php" class="btn btn-ge-primary"><i class="fas fa-plus"></i> New post</a>
                 </div>
               </div>';
         if(isset($_GET['msg']) && $_GET['msg'] == 'deleted') echo "<div class='alert alert-danger'>Post deleted.</div>";
@@ -607,7 +522,7 @@ admin_layout_start($pageTitles[$page], $page, [
                             <a href='?page=hire_requests&del_hire={$row['id']}' class='btn btn-sm btn-outline-danger ms-1' onclick='return confirm(\"Delete this lead?\")'><i class='fas fa-trash'></i></a>
                         </td>
                       </tr>
-                      <tr id='details-{$row['id']}' style='display:none; background-color: #1a1a1a;'>
+                      <tr id='details-{$row['id']}' class='ge-detail-row' style='display:none;'>
                           <td colspan='5' class='p-3 border-bottom border-secondary'>
                               <h6 class='text-info mb-2'>Project Details</h6>
                               <p class='mb-0 text-white-50 small' style='white-space: pre-wrap;'>".htmlspecialchars($row['project_details'])."</p>

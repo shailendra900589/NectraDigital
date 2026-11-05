@@ -1,0 +1,307 @@
+/**
+ * Nectra Digital — 3D depth, ambient backgrounds, premium UI motion
+ */
+
+:root {
+    --nd-3d-perspective: 1100px;
+    --nd-3d-lift: 14px;
+}
+
+/* —— Global ambient background (fixed, subtle) —— */
+body.nd-depth-active {
+    background-color: var(--nd-bg, #f8fafc);
+}
+
+body.nd-depth-active::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(37, 99, 235, 0.09), transparent 55%),
+        radial-gradient(ellipse 60% 45% at 90% 10%, rgba(14, 165, 233, 0.08), transparent 50%),
+        radial-gradient(ellipse 70% 55% at 50% 100%, rgba(124, 58, 237, 0.06), transparent 55%);
+    animation: ndBgOrbDrift 22s ease-in-out infinite alternate;
+}
+
+body.nd-depth-active::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image:
+        linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 85% 75% at 50% 40%, #000 20%, transparent 75%);
+}
+
+@keyframes ndBgOrbDrift {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(0, -24px, 0) scale(1.04); }
+}
+
+/* —— Sections —— */
+.nd-depth-section {
+    position: relative;
+    transform-style: preserve-3d;
+    perspective: var(--nd-3d-perspective);
+}
+
+.nd-depth-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    background: linear-gradient(
+        125deg,
+        rgba(37, 99, 235, 0.04) 0%,
+        transparent 40%,
+        rgba(14, 165, 233, 0.05) 100%
+    );
+}
+
+.nd-depth-section.nd-depth-visible::before {
+    opacity: 1;
+}
+
+.nd-depth-section > .container,
+.nd-depth-section > .container-fluid {
+    position: relative;
+    z-index: 1;
+    transform: translateZ(0);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nd-depth-section.nd-depth-visible > .container,
+.nd-depth-section.nd-depth-visible > .container-fluid {
+    transform: translateZ(8px);
+}
+
+.nd-section-dark.nd-depth-section::before,
+.svc-hero.nd-depth-section::before,
+.nd-hero-home.nd-depth-section::before {
+    background: linear-gradient(
+        160deg,
+        rgba(56, 189, 248, 0.08) 0%,
+        transparent 45%,
+        rgba(37, 99, 235, 0.1) 100%
+    );
+}
+
+/* —— Containers (floating panel feel) —— */
+.nd-depth-container {
+    transform-style: preserve-3d;
+}
+
+/* Section titles use motion on the block only — never hide the h2 alone */
+.nd-section-head .nd-section-title,
+.svc-hero .nd-hero-title,
+.nd-page-hero .nd-hero-title,
+.nd-hero-home .nd-hero-title {
+    opacity: 1;
+    transform: none;
+}
+
+/* —— Headings —— */
+.nd-depth-heading {
+    transform-style: preserve-3d;
+    transition: transform 0.35s ease, text-shadow 0.35s ease;
+}
+
+.nd-depth-heading.nd-depth-visible {
+    animation: ndHeadingDepth 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--nd-reveal-delay, 0ms);
+}
+
+@keyframes ndHeadingDepth {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 22px, -40px) rotateX(8deg);
+        text-shadow: none;
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotateX(0);
+        text-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.8),
+            0 8px 24px rgba(37, 99, 235, 0.12);
+    }
+}
+
+.nd-section-dark .nd-depth-heading.nd-depth-visible,
+.svc-hero .nd-depth-heading.nd-depth-visible,
+.nd-hero-home .nd-depth-heading.nd-depth-visible {
+    animation-name: ndHeadingDepthDark;
+}
+
+@keyframes ndHeadingDepthDark {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 24px, -50px) rotateX(10deg);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+        text-shadow:
+            0 2px 0 rgba(0, 0, 0, 0.35),
+            0 12px 32px rgba(37, 99, 235, 0.25);
+    }
+}
+
+.nd-text-gradient.nd-depth-heading {
+    background-size: 200% auto;
+    animation: ndHeadingDepth 0.85s forwards, ndGradientShift 6s ease-in-out infinite;
+}
+
+@keyframes ndGradientShift {
+    0%, 100% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+}
+
+/* —— Cards —— */
+.nd-depth-card {
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease;
+    will-change: transform;
+}
+
+.nd-depth-card.nd-depth-visible {
+    animation: ndCardDepthIn 0.75s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+    animation-delay: var(--nd-reveal-delay, 0ms);
+}
+
+@keyframes ndCardDepthIn {
+    from {
+        opacity: 0;
+        transform: perspective(var(--nd-3d-perspective)) rotateX(12deg) translateY(24px) translateZ(-30px);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    }
+    to {
+        opacity: 1;
+        transform: perspective(var(--nd-3d-perspective)) rotateX(0) translateY(0) translateZ(0);
+        box-shadow:
+            0 4px 6px rgba(15, 23, 42, 0.04),
+            0 18px 40px rgba(37, 99, 235, 0.1);
+    }
+}
+
+.nd-depth-card:hover {
+    box-shadow:
+        0 8px 16px rgba(15, 23, 42, 0.06),
+        0 28px 56px rgba(37, 99, 235, 0.16);
+}
+
+.nd-depth-card.nd-depth-tilt-active {
+    transition: transform 0.08s linear, box-shadow 0.35s ease;
+}
+
+/* —— Buttons —— */
+.nd-depth-btn {
+    transform-style: preserve-3d;
+    position: relative;
+    transition:
+        transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.25s ease;
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.25) inset,
+        0 4px 0 rgba(29, 78, 216, 0.35),
+        0 8px 20px rgba(37, 99, 235, 0.25);
+}
+
+.btn-nectra-outline-light.nd-depth-btn,
+.btn-outline-light.nd-depth-btn {
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.15) inset,
+        0 4px 0 rgba(255, 255, 255, 0.08),
+        0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.nd-depth-btn:hover {
+    transform: translateY(-3px) translateZ(6px);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.3) inset,
+        0 6px 0 rgba(29, 78, 216, 0.3),
+        0 14px 28px rgba(37, 99, 235, 0.32);
+}
+
+.nd-depth-btn:active {
+    transform: translateY(2px) translateZ(0);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.2) inset,
+        0 2px 0 rgba(29, 78, 216, 0.35),
+        0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* —— Icons —— */
+.nd-depth-icon {
+    display: inline-block;
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nd-depth-icon-wrap {
+    transform-style: preserve-3d;
+    transition: transform 0.4s ease;
+}
+
+.nd-depth-icon-wrap:hover .nd-depth-icon,
+.nd-depth-icon-wrap:hover i.nd-depth-icon {
+    transform: perspective(500px) rotateY(-18deg) rotateX(8deg) translateZ(10px) scale(1.08);
+}
+
+.nd-card-icon.nd-depth-icon-wrap:hover {
+    transform: perspective(600px) rotateY(-12deg) translateZ(12px);
+}
+
+/* —— Div blocks (paired with nd-motion-div) —— */
+.nd-motion-div.nd-depth-block.nd-depth-visible {
+    animation-name: ndBlockDepthIn;
+}
+
+@keyframes ndBlockDepthIn {
+    from {
+        opacity: 0;
+        transform: perspective(900px) rotateX(8deg) translateY(16px) translateZ(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: perspective(900px) rotateX(0) translateY(0) translateZ(0);
+    }
+}
+
+/* —— CTA / dark panels —— */
+.nd-cta-card.nd-depth-card,
+.nd-home-dashboard.nd-depth-card {
+    background: rgba(11, 31, 58, 0.92);
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* —— Footer —— */
+.nd-footer.nd-depth-section {
+    perspective: var(--nd-3d-perspective);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.nd-depth-active::before,
+    body.nd-depth-active::after {
+        animation: none;
+    }
+    .nd-depth-card,
+    .nd-depth-btn,
+    .nd-depth-heading,
+    .nd-depth-icon {
+        animation: none !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}

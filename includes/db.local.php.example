@@ -3,6 +3,7 @@
  * Hostinger / production DB credentials — copy to db.local.php (never commit db.local.php)
  * hPanel → Databases → MySQL Databases
  */
+/** On Hostinger PHP use localhost; local XAMPP use 127.0.0.1 */
 $host = 'localhost';
 $user = 'u991240931_YOUR_DB_USER';
 $pass = 'YOUR_DB_PASSWORD';

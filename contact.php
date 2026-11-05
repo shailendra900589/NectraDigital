@@ -4,15 +4,25 @@ require_once 'includes/seo-components.php';
 require_once 'includes/i18n.php';
 require_once 'includes/site-contact.php';
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 $page_title = "Contact Nectra Digital | Free SEO Audit & Consultation";
-$page_desc = "Contact Nectra Digital in Lucknow — SEO, paid media, web development & AI automation. Call, email, or request a free audit. Reply within 24 hours.";
+$page_desc = "Contact Nectra Digital for SEO, digital marketing, AI automation, and development. Free audit and strategy call — we respond within one business day.";
+$isDarkHeader = true;
 $canonical_url = nectra_page_canonical('/contact');
+
 $page_schema = [
     get_breadcrumb_schema([
         ['name' => 'Home', 'url' => SITE_URL . '/'],
         ['name' => 'Contact', 'url' => SITE_URL . '/contact'],
     ]),
 ];
+
 include 'includes/header.php';
 ?>
 
@@ -21,7 +31,7 @@ include 'includes/header.php';
   "@context": "https://schema.org",
   "@type": "ContactPage",
   "name": "Contact Nectra Digital",
-  "description": "Global HQ and Project Initialization Center",
+  "description": "Global Headquarters and Project Consultation Center",
   "mainEntity": {
     "@type": "ProfessionalService",
     "name": "Nectra Digital",
@@ -37,9 +47,7 @@ include 'includes/header.php';
     },
     "openingHoursSpecification": {
       "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
-      ],
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
       "opens": "09:00",
       "closes": "18:00"
     }
@@ -47,148 +55,161 @@ include 'includes/header.php';
 }
 </script>
 
-<main>
-    <header class="d-flex align-items-center justify-content-center text-center" style="min-height: 40vh; background: linear-gradient(to bottom, #050505 0%, #0a1518 100%);">
-        <div class="container">
+<main style="background: #F8FAFC; min-height: 100vh;">
+    <!-- HERO (Dark Navy) -->
+    <header class="nd-page-hero nd-section-dark text-center position-relative overflow-hidden">
+        <div class="nd-page-hero-glow" aria-hidden="true"></div>
+        <div class="container position-relative z-1 py-2 py-md-3">
             <?php render_breadcrumbs([['name' => 'Home', 'url' => '/'], ['name' => 'Contact', 'url' => '/contact']]); ?>
-            <h1 class="display-5 fw-bold text-white mb-3">Contact <span class="text-neon">Nectra Digital</span></h1>
-            <p class="lead text-white-50 mx-auto mb-4" style="max-width: 640px;">Get a free SEO audit or project proposal. Our team in Lucknow serves clients across India and globally — SEO, ads, web, and AI automation.</p>
-            <a href="#contactPageForm" class="btn btn-nectra btn-lg">Request Free Audit</a>
+            <h1 class="fw-bold text-white mb-3 nd-hero-title">Let's Grow Your <span class="nd-text-gradient">Organic Traffic</span></h1>
+            <p class="lead text-white-50 mx-auto nd-prose-width" style="line-height: 1.6;">
+                Request a free SEO audit, book a consultation, or ask about AI automation and development — our team responds within one business day.
+            </p>
         </div>
     </header>
 
-    <section class="py-5 border-top border-secondary" style="border-color: #222 !important;">
-        <div class="container">
+    <!-- TRUST STRIP -->
+    <?php include __DIR__ . '/includes/ui/trust-bar.php'; ?>
+
+    <!-- MAIN CONTACT SECTION -->
+    <section class="py-5">
+        <div class="container py-3">
             <div class="row g-5">
-                
+                <!-- Left Column: Company & Operations Details -->
                 <div class="col-lg-5">
-                    <div class="p-4 bg-glass border border-secondary rounded h-100">
-                        <h2 class="text-white h4 mb-4">GLOBAL <span class="text-neon">HQ</span></h2>
-                        
-                        <address class="mb-4">
-                            <div class="d-flex align-items-start mb-4">
-                                <div class="me-3 mt-1" aria-hidden="true"><i class="fas fa-map-marker-alt fa-lg text-neon"></i></div>
-                                <div>
-                                    <h3 class="text-white h6 mb-1">Base of Operations</h3>
-                                    <p class="text-white-50 small mb-0">Lucknow, Uttar Pradesh, India.<br>Operating Globally.</p>
-                                </div>
-                            </div>
+                    <div class="p-4 p-md-5 bg-white border rounded-4 shadow-sm h-100">
+                        <h2 class="h4 fw-bold text-dark mb-4 nd-section-title">Operations &amp; Support</h2>
 
-                            <div class="d-flex align-items-start mb-4">
-                                <div class="me-3 mt-1" aria-hidden="true"><i class="fas fa-phone fa-lg text-neon"></i></div>
-                                <div>
-                                    <h3 class="text-white h6 mb-1">Phone</h3>
-                                    <p class="text-white-50 small mb-0"><a href="tel:<?php echo NECTRA_PHONE_E164; ?>" class="text-neon text-decoration-none"><?php echo NECTRA_PHONE_DISPLAY; ?></a></p>
-                                </div>
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary me-3 mt-1 flex-shrink-0" style="width: 40px; height: 40px;">
+                                <i class="fas fa-map-marker-alt"></i>
                             </div>
-
-                            <div class="d-flex align-items-start mb-4">
-                                <div class="me-3 mt-1" aria-hidden="true"><i class="fas fa-envelope fa-lg text-neon"></i></div>
-                                <div>
-                                    <h3 class="text-white h6 mb-1">Email</h3>
-                                    <p class="text-white-50 small mb-0"><?php echo nectra_email_html_link('text-neon text-decoration-none'); ?></p>
-                                </div>
+                            <div>
+                                <h3 class="h6 fw-bold text-dark mb-1">Base of Operations</h3>
+                                <p class="text-muted small mb-0">Lucknow, Uttar Pradesh, India.<br>Serving clients Pan-India &amp; Internationally.</p>
                             </div>
-                        </address>
+                        </div>
 
-                        <div class="border-top border-secondary pt-4 mt-4">
-                            <h3 class="text-white-50 text-uppercase h6 small mb-3">Live Operations</h3>
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary me-3 mt-1 flex-shrink-0" style="width: 40px; height: 40px;">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <h3 class="h6 fw-bold text-dark mb-1">Direct Phone</h3>
+                                <p class="text-muted small mb-0">
+                                    <a href="tel:<?php echo NECTRA_PHONE_E164; ?>" class="text-primary text-decoration-none fw-semibold"><?php echo NECTRA_PHONE_DISPLAY; ?></a>
+                                    <span class="d-block text-muted" style="font-size: 0.75rem;">Mon - Fri: 9:00 AM - 6:00 PM IST</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary me-3 mt-1 flex-shrink-0" style="width: 40px; height: 40px;">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h3 class="h6 fw-bold text-dark mb-1">Electronic Mail</h3>
+                                <p class="text-muted small mb-0"><?php echo nectra_email_html_link('text-primary text-decoration-none fw-semibold'); ?></p>
+                            </div>
+                        </div>
+
+                        <!-- Live Time Zones -->
+                        <div class="border-top pt-4 mt-4">
+                            <h3 class="text-dark h6 fw-bold small text-uppercase mb-3" style="letter-spacing: 0.5px;">Active Time Zones</h3>
                             <div class="row g-2">
                                 <div class="col-4">
-                                    <div class="p-2 bg-dark rounded text-center border border-secondary">
-                                        <span class="d-block text-white-50" style="font-size: 10px;">INDIA (IST)</span>
-                                        <span class="text-white fw-bold small" id="time-ist">Loading...</span>
+                                    <div class="p-2 rounded text-center" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                        <span class="d-block text-muted" style="font-size: 0.65rem;">INDIA (IST)</span>
+                                        <span class="text-dark fw-bold small" id="time-ist">--:--</span>
                                     </div>
                                 </div>
                                 <div class="col-4">
-                                    <div class="p-2 bg-dark rounded text-center border border-secondary">
-                                        <span class="d-block text-white-50" style="font-size: 10px;">NEW YORK</span>
-                                        <span class="text-neon fw-bold small" id="time-est">Loading...</span>
+                                    <div class="p-2 rounded text-center" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                        <span class="d-block text-muted" style="font-size: 0.65rem;">NEW YORK (EST)</span>
+                                        <span class="text-primary fw-bold small" id="time-est">--:--</span>
                                     </div>
                                 </div>
                                 <div class="col-4">
-                                    <div class="p-2 bg-dark rounded text-center border border-secondary">
-                                        <span class="d-block text-white-50" style="font-size: 10px;">LONDON</span>
-                                        <span class="text-white fw-bold small" id="time-gmt">Loading...</span>
+                                    <div class="p-2 rounded text-center" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                        <span class="d-block text-muted" style="font-size: 0.65rem;">LONDON (GMT)</span>
+                                        <span class="text-dark fw-bold small" id="time-gmt">--:--</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <nav class="mt-4 pt-4 border-top border-secondary" aria-label="Social Media Links">
-                            <h3 class="text-white-50 text-uppercase h6 small mb-3">Secure Networks</h3>
-                            <div class="d-flex gap-3">
-                                <a href="#" class="btn btn-outline-light btn-sm" aria-label="Connect on LinkedIn"><i class="fab fa-linkedin" aria-hidden="true"></i> LinkedIn</a>
-                                <a href="#" class="btn btn-outline-light btn-sm" aria-label="Follow on Instagram"><i class="fab fa-instagram" aria-hidden="true"></i> Instagram</a>
-                                <a href="#" class="btn btn-outline-light btn-sm" aria-label="Follow on Twitter"><i class="fab fa-twitter" aria-hidden="true"></i> X</a>
+                        <!-- Professional Socials -->
+                        <div class="mt-4 pt-3 border-top">
+                            <span class="text-dark fw-bold small d-block mb-2">Verified Channels</span>
+                            <div class="d-flex gap-2">
+                                <a href="https://www.linkedin.com/company/nectradigital" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary" aria-label="LinkedIn"><i class="fab fa-linkedin me-1"></i> LinkedIn</a>
+                                <a href="https://twitter.com/nectradigital" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary" aria-label="Twitter"><i class="fab fa-twitter me-1"></i> Twitter</a>
                             </div>
-                        </nav>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Right Column: Project Inquiry Form -->
                 <div class="col-lg-7">
-                    <div class="p-4 border border-secondary rounded h-100" style="background: rgba(0,229,255,0.02);">
-                        <h2 class="text-white h4 mb-2">DEPLOY <span class="text-neon">REQUEST</span></h2>
-                        <p class="text-white-50 small mb-4">Fill out the intel below. The Architect will review your project.</p>
-                        
+                    <div class="p-4 p-md-5 bg-white border rounded-4 shadow-sm h-100" id="contactPageFormWrap">
+                        <h2 class="h3 fw-bold text-dark mb-1 nd-section-title">Request a Free Proposal</h2>
+                        <p class="text-muted small mb-4">Complete the briefing below. A senior strategist will review your requirements.</p>
+
                         <form id="contactPageForm" novalidate>
-                            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                            
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+                            <!-- Honeypot -->
                             <div style="display:none; opacity:0; visibility:hidden;">
-                                <label for="website_url_hp">Keep this blank</label>
+                                <label for="website_url_hp">Leave blank</label>
                                 <input type="text" name="website_url" id="website_url_hp" tabindex="-1" autocomplete="off">
                             </div>
-                            
+
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label for="name" class="form-label text-white-50 small">Full Name</label>
-                                    <input type="text" name="name" id="name" class="form-control" required autocomplete="name">
+                                    <label for="name" class="form-label text-dark small fw-semibold">Full Name *</label>
+                                    <input type="text" name="name" id="name" class="form-control" placeholder="John Doe" required autocomplete="name">
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="email" class="form-label text-white-50 small">Business Email</label>
-                                    <input type="email" name="email" id="email" class="form-control" required autocomplete="email">
+                                    <label for="email" class="form-label text-dark small fw-semibold">Business Email *</label>
+                                    <input type="email" name="email" id="email" class="form-control" placeholder="john@company.com" required autocomplete="email">
                                 </div>
 
                                 <div class="col-12">
-                                    <label for="service" class="form-label text-white-50 small">Project Category</label>
-                                    <select name="service" id="service" class="form-select text-white" required>
-                                        <option value="" disabled selected>Select Mission Type...</option>
-                                        <option value="Web Development">Web Architecture (Next.js/WP)</option>
-                                        <option value="App Development">Mobile App (React Native)</option>
-                                        <option value="AI Automation">AI & Automation</option>
-                                        <option value="Growth Marketing">Growth & SEO Marketing</option>
-                                        <option value="Full Suite">Full Digital Transformation</option>
+                                    <label for="service" class="form-label text-dark small fw-semibold">Project Requirement *</label>
+                                    <?php
+                                    $preselectService = isset($_GET['service']) ? (string)$_GET['service'] : null;
+                                    nectra_render_project_requirement_select('service', true, 'service', $preselectService);
+                                    ?>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="budget" class="form-label text-dark small fw-semibold">Estimated Budget</label>
+                                    <select name="budget" id="budget" class="form-select">
+                                        <option value="₹25k - ₹50k">₹25,000 - ₹50,000 ($300 - $600)</option>
+                                        <option value="₹50k - ₹1.5L">₹50,000 - ₹1,50,000 ($600 - $1,800)</option>
+                                        <option value="₹1.5L - ₹5L">₹1,50,000 - ₹5,00,000 ($1,800 - $6,000)</option>
+                                        <option value="Enterprise / $10k+">Enterprise / Customized Scope</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="budget" class="form-label text-white-50 small">Estimated Budget (USD)</label>
-                                    <select name="budget" id="budget" class="form-select" required>
-                                        <option value="$1k - $5k">$1,000 - $5,000</option>
-                                        <option value="$5k - $10k">$5,000 - $10,000</option>
-                                        <option value="$10k+">$10,000+ (Enterprise)</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <label for="timeline" class="form-label text-white-50 small">Desired Timeline</label>
-                                    <select name="timeline" id="timeline" class="form-select" required>
-                                        <option value="ASAP">Urgent (ASAP)</option>
-                                        <option value="1-3 Months">1-3 Months</option>
-                                        <option value="Flexible">Flexible</option>
+                                    <label for="timeline" class="form-label text-dark small fw-semibold">Target Timeline</label>
+                                    <select name="timeline" id="timeline" class="form-select">
+                                        <option value="Immediate">Immediate (Within 2 Weeks)</option>
+                                        <option value="1-3 Months">1 - 3 Months</option>
+                                        <option value="Exploratory">Planning / Exploratory</option>
                                     </select>
                                 </div>
 
                                 <div class="col-12">
-                                    <label for="message" class="form-label text-white-50 small">Project Briefing</label>
-                                    <textarea name="message" id="message" class="form-control" rows="4" placeholder="Describe your vision..." required></textarea>
+                                    <label for="message" class="form-label text-dark small fw-semibold">Brief Project Summary *</label>
+                                    <textarea name="message" id="message" class="form-control" rows="4" placeholder="Describe your current bottleneck, target metrics, or project scope..." required></textarea>
                                 </div>
 
                                 <div class="col-12 mt-4">
-                                    <button type="submit" class="btn btn-nectra w-100 py-3">
-                                        Send Message <i class="fas fa-paper-plane ms-2" aria-hidden="true"></i>
+                                    <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold">
+                                        Submit Request <i class="fas fa-paper-plane ms-2"></i>
                                     </button>
-                                    <div id="pageFormResponse" class="mt-3 text-center fw-bold" aria-live="polite"></div>
+                                    <div id="pageFormResponse" class="mt-3 text-center small fw-bold" aria-live="polite"></div>
                                 </div>
                             </div>
                         </form>
@@ -198,8 +219,9 @@ include 'includes/header.php';
         </div>
     </section>
 
-    <section class="border-top border-secondary" aria-label="Office Location Map">
-        <div style="width: 100%; height: 400px; filter: invert(90%) hue-rotate(180deg) contrast(90%); overflow: hidden; background: #222;">
+    <!-- LOCATION MAP -->
+    <section class="border-top" aria-label="HQ Map Location">
+        <div style="width: 100%; height: 350px; overflow: hidden; background: #E2E8F0;">
             <iframe 
                 title="Nectra Digital HQ Map"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d227822.5503903933!2d80.80242469608678!3d26.84862299412656!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399bfd991f32b16b%3A0x93ccba8909978be7!2sLucknow%2C%20Uttar%20Pradesh!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
@@ -211,78 +233,59 @@ include 'includes/header.php';
                 referrerpolicy="no-referrer-when-downgrade">
             </iframe>
         </div>
-        <div style="margin-top: -400px; height: 400px; width: 100%; background: rgba(0, 229, 255, 0.05); pointer-events: none; position: relative;"></div>
     </section>
 </main>
 
-<?php render_money_services_strip(null, 'Popular Services — Get a Quote'); ?>
-
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    
-    // 1. CLOCK FUNCTION (Efficient Update)
     function updateTime() {
         const now = new Date();
         const options = { hour: '2-digit', minute:'2-digit', hour12: true };
         
-        // India
         const timeIst = document.getElementById('time-ist');
-        if(timeIst) timeIst.textContent = now.toLocaleTimeString("en-US", { ...options, timeZone: "Asia/Kolkata" });
+        if (timeIst) timeIst.textContent = now.toLocaleTimeString("en-US", { ...options, timeZone: "Asia/Kolkata" });
         
-        // New York
         const timeEst = document.getElementById('time-est');
-        if(timeEst) timeEst.textContent = now.toLocaleTimeString("en-US", { ...options, timeZone: "America/New_York" });
+        if (timeEst) timeEst.textContent = now.toLocaleTimeString("en-US", { ...options, timeZone: "America/New_York" });
         
-        // London
         const timeGmt = document.getElementById('time-gmt');
-        if(timeGmt) timeGmt.textContent = now.toLocaleTimeString("en-US", { ...options, timeZone: "Europe/London" });
+        if (timeGmt) timeGmt.textContent = now.toLocaleTimeString("en-US", { ...options, timeZone: "Europe/London" });
     }
-    
     updateTime();
-    setInterval(updateTime, 60000); 
+    setInterval(updateTime, 60000);
 
-    // 2. FORM HANDLING
     const form = document.getElementById('contactPageForm');
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            // Basic HTML5 Validation Check
             if (!form.checkValidity()) {
                 e.stopPropagation();
                 form.classList.add('was-validated');
                 return;
             }
 
-            const btn = form.querySelector('button');
+            const btn = form.querySelector('button[type="submit"]');
             const resp = document.getElementById('pageFormResponse');
             const originalText = btn.innerHTML;
-            
-            // Visual Feedback
-            btn.innerHTML = 'ENCRYPTING & SENDING...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Submitting...';
             btn.disabled = true;
 
-            // Prepare Data
-            const formData = new FormData(this);
-
-            // AJAX Request
-            fetch('/process', {
+            fetch(typeof nectraWebPath === 'function' ? nectraWebPath('/process') : '/process', {
                 method: 'POST',
-                body: formData
+                body: new FormData(this)
             })
             .then(response => response.json())
             .then(data => {
-                if(data.status === 'success') {
-                    // Redirect to Thank You Page on Success
-                    window.location.href = "thank-you.php";
+                if (data.status === 'success') {
+                    window.location.href = "/thank-you";
                 } else {
-                    resp.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> ${data.message}</span>`;
+                    resp.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i> ${data.message || 'Submission error'}</span>`;
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 }
             })
-            .catch(error => {
-                resp.innerHTML = '<span class="text-danger">Transmission Error. Try again.</span>';
+            .catch(() => {
+                resp.innerHTML = '<span class="text-danger">Submission error. Please email contact@nectradigital.com</span>';
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             });

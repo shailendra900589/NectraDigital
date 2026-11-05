@@ -1,0 +1,279 @@
+/**
+ * Nectra Digital — Enterprise Design System (Tokens & Variables)
+ * Production Architecture v2.0
+ */
+
+:root {
+    --nd-primary: #2563EB;
+    --nd-navbar-height: 76px;
+    /* --- COLOR TOKENS --- */
+    --nd-brand-navy: #081426;
+    --nd-dark-navy: #0B1F3A;
+    --nd-primary-blue: #2563EB;
+    --nd-primary-blue-hover: #1D4ED8;
+    --nd-primary-blue-light: rgba(37, 99, 235, 0.1);
+    --nd-tech-blue: #0EA5E9;
+    --nd-cyan: #06B6D4;
+    --nd-ai-violet: #7C3AED;
+    --nd-ai-violet-light: rgba(124, 58, 237, 0.12);
+
+    /* Feedback & Status */
+    --nd-success: #10B981;
+    --nd-success-bg: rgba(16, 185, 129, 0.1);
+    --nd-warning: #F59E0B;
+    --nd-warning-bg: rgba(245, 158, 11, 0.1);
+    --nd-danger: #EF4444;
+    --nd-danger-bg: rgba(239, 68, 68, 0.1);
+
+    /* Surfaces & Backgrounds */
+    --nd-bg: #F8FAFC;
+    --nd-bg-secondary: #F1F5F9;
+    --nd-surface: #FFFFFF;
+    --nd-surface-card: #FFFFFF;
+    --nd-surface-elevated: #FFFFFF;
+
+    /* Text */
+    --nd-text-main: #0F172A;
+    --nd-text-secondary: #475569;
+    --nd-text-muted: #64748B;
+    --nd-text-inverted: #FFFFFF;
+    --nd-text-inverted-muted: rgba(255, 255, 255, 0.72);
+
+    /* Borders & Lines */
+    --nd-border: #E2E8F0;
+    --nd-border-subtle: #F1F5F9;
+    --nd-border-dark: rgba(255, 255, 255, 0.12);
+
+    /* Gradients */
+    --nd-grad-primary: linear-gradient(135deg, #2563EB 0%, #06B6D4 100%);
+    --nd-grad-ai: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+    --nd-grad-dark-hero: linear-gradient(135deg, #081426 0%, #0B1F3A 100%);
+    --nd-grad-card-glow: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+    --nd-grad-subtle-glow: radial-gradient(circle at top right, rgba(6, 182, 212, 0.12) 0%, transparent 60%);
+
+    /* Shadows */
+    --nd-shadow-sm: 0 4px 16px rgba(15, 23, 42, 0.06);
+    --nd-shadow-md: 0 12px 32px rgba(15, 23, 42, 0.08);
+    --nd-shadow-lg: 0 20px 60px rgba(15, 23, 42, 0.10);
+    --nd-shadow-ai: 0 12px 36px rgba(124, 58, 237, 0.15);
+    --nd-shadow-blue: 0 10px 30px rgba(37, 99, 235, 0.2);
+
+    /* Radius */
+    --nd-radius-sm: 8px;
+    --nd-radius-md: 12px;
+    --nd-radius-lg: 16px;
+    --nd-radius-xl: 20px;
+    --nd-radius-full: 9999px;
+
+    /* Typography */
+    --nd-font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --nd-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --nd-heading-page: clamp(1.5rem, 2.45vw, 1.95rem);
+    --nd-heading-section: clamp(1.3rem, 1.9vw, 1.65rem);
+    --nd-heading-section-sm: clamp(1.15rem, 1.6vw, 1.4rem);
+    --nd-text-lead: 1.125rem;
+    --nd-text-deck: 1.2rem;
+
+    /* Content Widths */
+    --nd-content-width-prose: 740px;
+    --nd-content-width-normal: 1140px;
+    --nd-content-width-wide: 1320px;
+
+    /* Section Spacing */
+    --nd-section-py-desktop: 96px;
+    --nd-section-py-tablet: 72px;
+    --nd-section-py-mobile: 56px;
+
+    /* Transitions */
+    --nd-transition-fast: 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    --nd-transition-normal: 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    --nd-transition-smooth: 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    /* Z-Index Scales */
+    --nd-z-navbar: 1030;
+    --nd-z-dropdown: 1050;
+    --nd-z-modal: 1070;
+    --nd-z-toast: 1090;
+}
+
+/* Base Document Reset & Typography Defaults */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: var(--nd-font-family);
+    background-color: var(--nd-bg);
+    color: var(--nd-text-main);
+    font-size: 1rem;
+    line-height: 1.65;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body.nd-has-fixed-nav {
+    padding-top: var(--nd-navbar-height);
+}
+
+/* Typography hierarchy — unified with --nd-heading-* tokens */
+.nd-hero-title {
+    font-size: var(--nd-heading-page);
+    font-weight: 700;
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+    color: var(--nd-text-main);
+}
+
+h1, .nd-h1 {
+    font-size: var(--nd-heading-page);
+    font-weight: 700;
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+    color: var(--nd-text-main);
+}
+
+h2, .nd-h2 {
+    font-size: var(--nd-heading-section);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    color: var(--nd-text-main);
+}
+
+h3, .nd-h3 {
+    font-size: var(--nd-heading-section-sm);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+    color: var(--nd-text-main);
+}
+
+h4, .nd-h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--nd-text-main);
+}
+
+h5, .nd-h5 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--nd-text-main);
+}
+
+h6, .nd-h6 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--nd-text-muted);
+}
+
+p, .nd-body {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--nd-text-secondary);
+}
+
+.nd-body-lg {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: var(--nd-text-secondary);
+}
+
+.nd-small {
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.nd-x-small {
+    font-size: 0.785rem;
+    line-height: 1.4;
+}
+
+/* Text Width Constraints */
+.nd-prose {
+    max-width: var(--nd-content-width-prose);
+}
+
+/* Accent Text Utilities */
+.text-brand-gradient {
+    background: var(--nd-grad-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text-ai-gradient {
+    background: var(--nd-grad-ai);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text-tech-blue { color: var(--nd-tech-blue) !important; }
+.text-ai-violet { color: var(--nd-ai-violet) !important; }
+.text-primary-blue { color: var(--nd-primary-blue) !important; }
+
+/* Subtle Background Grid Pattern for Tech Sections */
+.nd-bg-grid-subtle {
+    background-size: 40px 40px;
+    background-image: 
+        linear-gradient(to right, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+}
+
+.nd-bg-grid-dark {
+    background-size: 40px 40px;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* Animation Keyframes */
+@keyframes ndFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ndFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes ndPulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 35px rgba(37, 99, 235, 0.4);
+    }
+}
+
+.nd-fade-up {
+    animation: ndFadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Reduced Motion Override (WCAG AA Compliance) */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

@@ -1,0 +1,75 @@
+/* Homepage / landing contact lead block */
+.nd-contact-section {
+    padding: 3rem 0 3.25rem;
+    background: linear-gradient(180deg, var(--nd-bg-secondary, #f1f5f9) 0%, var(--nd-bg, #f8fafc) 100%);
+}
+
+.nd-contact-shell {
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.nd-contact-head {
+    margin-bottom: 1.35rem;
+}
+
+.nd-contact-head .nd-section-title {
+    margin-bottom: 0.5rem;
+}
+
+.nd-contact-panel {
+    background: #fff;
+    border: 1px solid var(--nd-border, #e2e8f0);
+    border-radius: var(--nd-radius-lg, 16px);
+    box-shadow: 0 10px 36px rgba(15, 23, 42, 0.08);
+    padding: 1.35rem 1.45rem 1.25rem;
+}
+
+.nd-contact-panel .form-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--nd-text-main, #0f172a);
+    margin-bottom: 0.35rem;
+}
+
+.nd-contact-panel .form-control,
+.nd-contact-panel .form-select {
+    border-radius: 10px;
+    border-color: #cbd5e1;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9375rem;
+}
+
+.nd-contact-panel .form-control:focus,
+.nd-contact-panel .form-select:focus {
+    border-color: var(--nd-primary-blue, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.nd-contact-panel .mb-3:last-of-type {
+    margin-bottom: 1rem !important;
+}
+
+.nd-contact-panel .btn-nectra-primary {
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+    font-weight: 600;
+}
+
+.nd-contact-panel .response-msg:empty {
+    display: none;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+}
+
+@media (max-width: 575px) {
+    .nd-contact-section {
+        padding: 2.25rem 0 2.5rem;
+    }
+
+    .nd-contact-panel {
+        padding: 1.15rem 1.15rem 1.1rem;
+    }
+}

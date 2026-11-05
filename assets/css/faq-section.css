@@ -1,0 +1,62 @@
+/* FAQ blocks — homepage, service pages, city hubs */
+.nd-faq-section--dark {
+    background: linear-gradient(180deg, #081426 0%, #0b1f3a 100%);
+}
+
+.nd-faq-accordion {
+    --bs-accordion-border-radius: var(--nd-radius-md, 12px);
+    --bs-accordion-inner-border-radius: var(--nd-radius-md, 12px);
+}
+
+.nd-faq-section--light .nd-faq-accordion .accordion-item {
+    border-radius: var(--nd-radius-md, 12px);
+    margin-bottom: 0.65rem;
+    overflow: hidden;
+    border: 1px solid var(--nd-border) !important;
+}
+
+.nd-faq-section--light .accordion-button {
+    background: #fff;
+    color: var(--nd-text-main);
+    font-weight: 600;
+    font-size: 0.98rem;
+    padding: 1rem 1.15rem;
+}
+
+.nd-faq-section--light .accordion-button:not(.collapsed) {
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--nd-primary-blue);
+    box-shadow: none;
+}
+
+.nd-faq-section--dark .nd-faq-item-dark {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: var(--nd-radius-md, 12px);
+    margin-bottom: 0.65rem;
+    overflow: hidden;
+}
+
+.nd-faq-btn-dark {
+    background: rgba(11, 31, 58, 0.6);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.98rem;
+    padding: 1rem 1.15rem;
+}
+
+.nd-faq-btn-dark:not(.collapsed) {
+    background: rgba(37, 99, 235, 0.15);
+    color: #fff;
+    box-shadow: none;
+}
+
+.nd-faq-section--dark .accordion-body {
+    font-size: var(--nd-text-lead, 1.125rem);
+    line-height: 1.65;
+}
+
+.nd-faq-section--light .accordion-body {
+    font-size: var(--nd-text-lead, 1.125rem);
+    line-height: 1.65;
+}

@@ -1,0 +1,918 @@
+/**
+ * Nectra Digital — Public Website Styles
+ * Production Architecture v2.0
+ */
+
+/* ==========================================================================
+   1. NAVIGATION & STICKY HEADER
+   ========================================================================== */
+
+.nd-navbar {
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--nd-border);
+    padding: 0.9rem 0;
+    transition: all var(--nd-transition-normal);
+    z-index: var(--nd-z-navbar);
+}
+
+.nd-navbar.scrolled {
+    padding: 0.6rem 0;
+    background-color: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+}
+
+/* Dark mode navbar variant when over dark hero */
+.nd-navbar-dark {
+    background-color: rgba(8, 20, 38, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nd-navbar-dark.scrolled {
+    background-color: rgba(8, 20, 38, 0.98);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.nd-navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--nd-brand-navy);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.nd-navbar-brand .nd-brand-accent {
+    color: var(--nd-primary-blue);
+}
+
+.nd-navbar-dark .nd-navbar-brand {
+    color: #FFFFFF;
+}
+
+.nd-nav-link {
+    color: var(--nd-text-main);
+    font-size: 0.925rem;
+    font-weight: 500;
+    padding: 0.5rem 0.85rem !important;
+    text-decoration: none;
+    transition: color var(--nd-transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.nd-nav-link:hover {
+    color: var(--nd-primary-blue);
+}
+
+.nd-nav-link.active,
+.nd-nav-link.nd-nav-link--current {
+    color: var(--nd-primary-blue);
+    font-weight: 600;
+}
+
+.nd-navbar-dark .nd-nav-link,
+.nd-navbar-dark .nd-nav-link:visited {
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.nd-navbar-dark .nd-nav-link:hover,
+.nd-navbar-dark .nd-nav-link:focus-visible {
+    color: #ffffff;
+}
+
+.nd-navbar-dark .nd-nav-link.active,
+.nd-navbar-dark .nd-nav-link.nd-nav-link--current,
+.nd-navbar-dark .nd-nav-link.active:visited,
+.nd-navbar-dark .nd-nav-link.nd-nav-link--current:visited,
+.nd-navbar-dark .nd-nav-link[aria-current="page"],
+.nd-navbar-dark .nd-nav-link[aria-current="page"]:visited {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.nd-navbar-dark.scrolled .nd-nav-link,
+.nd-navbar-dark.scrolled .nd-nav-link:visited,
+.nd-navbar-dark.scrolled .nd-nav-link.active,
+.nd-navbar-dark.scrolled .nd-nav-link.nd-nav-link--current {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.nd-navbar:not(.nd-navbar-dark) .nd-nav-link:visited {
+    color: var(--nd-text-main);
+}
+
+.nd-navbar-dark .btn-outline-secondary {
+    color: rgba(255, 255, 255, 0.92);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.nd-navbar-dark .btn-outline-secondary:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.55);
+}
+
+.nd-navbar:not(.nd-navbar-dark) .nectra-lang-toggle {
+    border-color: var(--nd-border, #e2e8f0);
+    background: rgba(37, 99, 235, 0.06);
+    color: var(--nd-text-main, #0f172a);
+}
+
+.nd-navbar:not(.nd-navbar-dark) .nectra-lang-toggle .fa-globe {
+    color: var(--nd-primary-blue, #2563eb);
+}
+
+.nd-navbar:not(.nd-navbar-dark) .nectra-lang-toggle:hover,
+.nd-navbar:not(.nd-navbar-dark) .nectra-lang-switcher.is-open .nectra-lang-toggle {
+    border-color: rgba(37, 99, 235, 0.45);
+    background: rgba(37, 99, 235, 0.1);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
+    color: var(--nd-text-main, #0f172a);
+}
+
+/* ==========================================================================
+   2. 4-COLUMN MEGA MENU
+   ========================================================================== */
+
+.nd-dropdown-mega {
+    position: static !important;
+}
+
+.nd-mega-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin-top: 0;
+    background-color: var(--nd-surface);
+    border: 1px solid var(--nd-border);
+    border-top: 2px solid var(--nd-primary-blue);
+    border-radius: 0 0 var(--nd-radius-lg) var(--nd-radius-lg);
+    box-shadow: var(--nd-shadow-lg);
+    padding: 2.25rem 0;
+    display: none;
+    z-index: var(--nd-z-dropdown);
+    animation: ndFadeIn 0.2s ease-out;
+}
+
+.nd-dropdown-mega:hover .nd-mega-menu,
+.nd-dropdown-mega.show .nd-mega-menu,
+.nd-dropdown-mega:focus-within .nd-mega-menu {
+    display: block;
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .nd-desktop-nav .nd-nav-link {
+        padding: 0.5rem 0.55rem !important;
+        font-size: 0.875rem;
+    }
+    .nd-desktop-nav .btn-nectra-sm {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.78rem;
+    }
+}
+
+.nd-mega-col-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--nd-text-muted);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nd-mega-col-title i {
+    color: var(--nd-primary-blue);
+}
+
+.nd-mega-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--nd-radius-md);
+    text-decoration: none;
+    color: inherit;
+    transition: background-color var(--nd-transition-fast), transform var(--nd-transition-fast);
+    margin-bottom: 0.35rem;
+}
+
+.nd-mega-item:hover {
+    background-color: var(--nd-bg-secondary);
+    transform: translateX(3px);
+}
+
+.nd-mega-item-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--nd-radius-sm);
+    background-color: var(--nd-primary-blue-light);
+    color: var(--nd-primary-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.nd-mega-item-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--nd-text-main);
+    line-height: 1.25;
+}
+
+.nd-mega-item-desc {
+    font-size: 0.775rem;
+    color: var(--nd-text-muted);
+    line-height: 1.35;
+    margin-top: 0.2rem;
+}
+
+/* ==========================================================================
+   3. MOBILE OFFCANVAS
+   ========================================================================== */
+
+.nd-offcanvas {
+    background-color: var(--nd-brand-navy);
+    color: #FFFFFF;
+    width: 320px !important;
+}
+
+.nd-offcanvas .offcanvas-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.25rem 1.5rem;
+}
+
+.nd-offcanvas .btn-close {
+    filter: invert(1);
+}
+
+.nd-offcanvas .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    padding: 0.65rem 0;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.nd-offcanvas .nav-link:hover {
+    color: var(--nd-cyan);
+}
+
+/* ==========================================================================
+   4. HERO SECTIONS
+   ========================================================================== */
+
+.nd-hero-dark {
+    background: var(--nd-grad-dark-hero);
+    color: #FFFFFF;
+    position: relative;
+    padding-top: 130px;
+    padding-bottom: 80px;
+    overflow: hidden;
+}
+
+.nd-hero-glow-1 {
+    position: absolute;
+    top: -10%;
+    right: 5%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, transparent 65%);
+    pointer-events: none;
+}
+
+.nd-hero-glow-2 {
+    position: absolute;
+    bottom: -15%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.14) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.nd-hero-title-dark {
+    font-size: var(--nd-heading-page);
+    font-weight: 700;
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+    color: #FFFFFF;
+}
+
+.nd-hero-subtitle-dark {
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    line-height: 1.6;
+    color: var(--nd-text-inverted-muted);
+    max-width: 680px;
+}
+
+/* Hero Right Composition Card (Product UI mock) */
+.nd-hero-mockup {
+    background: rgba(11, 31, 58, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--nd-radius-xl);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    position: relative;
+}
+
+.nd-mockup-header {
+    background: rgba(8, 20, 38, 0.85);
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nd-mockup-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.nd-mockup-dot.red { background-color: #EF4444; }
+.nd-mockup-dot.yellow { background-color: #F59E0B; }
+.nd-mockup-dot.green { background-color: #10B981; }
+
+.nd-mockup-body {
+    padding: 1.75rem;
+}
+
+/* ==========================================================================
+   5. SECTIONS & SPACING
+   ========================================================================== */
+
+.nd-section {
+    padding: var(--nd-section-py-desktop) 0;
+}
+
+.nd-section-alt {
+    background-color: var(--nd-bg-secondary);
+}
+
+.nd-section-dark {
+    background-color: var(--nd-brand-navy);
+    color: #FFFFFF;
+}
+
+.nd-section-ai {
+    background: linear-gradient(180deg, #081426 0%, #0F172A 100%);
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+}
+
+.nd-section-title-wrap {
+    margin-bottom: 3.5rem;
+}
+
+.nd-section-title {
+    font-size: var(--nd-heading-section);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--nd-text-main);
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
+
+/* Page heroes — one size sitewide (same or smaller than service hero) */
+.svc-hero-title,
+.nd-hero-title,
+.nd-home-h1,
+.nd-page-hero .display-4,
+.nd-page-hero .display-5,
+.nd-hero-home .display-4,
+.nd-hero-home .display-5,
+.svc-hero .display-4,
+header.nd-page-hero h1,
+header.svc-hero h1 {
+    font-size: var(--nd-heading-page);
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+}
+
+main h2.nd-section-title.h4,
+main h2.nd-section-title.h5 {
+    font-size: var(--nd-heading-section-sm);
+}
+
+.nd-section-sub,
+.nd-section-head .nd-section-sub {
+    font-size: var(--nd-text-lead);
+    line-height: 1.65;
+}
+
+.nd-page-hero .lead,
+.nd-hero-home .lead,
+.svc-hero .lead,
+.nd-home-lead,
+main header .lead,
+main .nd-legal-hero .lead,
+main .gl-hero .lead {
+    font-size: var(--nd-text-lead);
+    line-height: 1.7;
+}
+
+/* —— Sitewide: all public pages (beats Bootstrap display-* + stray inline sizes) —— */
+main header h1,
+main .nd-page-hero h1,
+main .nd-legal-hero h1,
+main .svc-hero h1,
+main .gl-hero h1,
+.nd-hero-home h1 {
+    font-size: var(--nd-heading-page);
+    line-height: 1.28;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+main h1.display-4,
+main h1.display-5,
+.nd-hero-home h1.display-4 {
+    font-size: var(--nd-heading-page);
+}
+
+main h2.nd-section-title,
+.nd-section-head .nd-section-title,
+.nd-section-head h2,
+main section > .container h2.h3.fw-bold,
+main section .container > h2.h3.fw-bold.text-dark {
+    font-size: var(--nd-heading-section);
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+main h2.h4.fw-bold.nd-section-title,
+main h2.h4.fw-bold.text-dark.mb-4 {
+    font-size: var(--nd-heading-section);
+}
+
+main h2.h5.fw-bold.nd-section-title,
+main h2.h5.fw-bold.text-dark.nd-section-title {
+    font-size: var(--nd-heading-section-sm);
+}
+
+.nd-cta-card h2,
+.nd-cta-card .display-6 {
+    font-size: var(--nd-heading-section);
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.svc-quick-answer p.fw-medium,
+.aeo-card p.fw-medium,
+.gl-hero .lead,
+main header .lead[style*="font-size"],
+main .nd-legal-hero .lead[style*="font-size"] {
+    font-size: var(--nd-text-lead);
+    line-height: 1.7;
+}
+
+.nd-page-404 .nd-page-404-code {
+    font-size: clamp(2.75rem, 10vw, 3.5rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+
+.nd-page-404 .nd-page-404-heading {
+    font-size: var(--nd-heading-section);
+}
+
+main .card.text-secondary,
+.nd-legal-body {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+}
+
+.nd-text-lead {
+    font-size: var(--nd-text-lead);
+    line-height: 1.7;
+}
+
+.nd-section-eyebrow {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--nd-primary-blue);
+    margin-bottom: 0.6rem;
+    display: inline-block;
+}
+
+.nd-section-eyebrow-dark {
+    color: var(--nd-cyan);
+}
+
+.nd-section-eyebrow-ai {
+    color: #A78BFA;
+}
+
+/* ==========================================================================
+   6. TECH STACK BADGES & GRIDS
+   ========================================================================== */
+
+.nd-tech-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--nd-surface);
+    border: 1px solid var(--nd-border);
+    border-radius: var(--nd-radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--nd-text-main);
+    box-shadow: var(--nd-shadow-sm);
+    transition: transform var(--nd-transition-fast), border-color var(--nd-transition-fast);
+}
+
+.nd-tech-pill:hover {
+    transform: translateY(-2px);
+    border-color: var(--nd-primary-blue);
+    color: var(--nd-primary-blue);
+}
+
+/* ==========================================================================
+   7. CASE STUDY CARDS
+   ========================================================================== */
+
+.nd-case-study-card {
+    background-color: var(--nd-surface);
+    border: 1px solid var(--nd-border);
+    border-radius: var(--nd-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--nd-shadow-sm);
+    transition: transform var(--nd-transition-normal), box-shadow var(--nd-transition-normal);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.nd-case-study-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--nd-shadow-md);
+    border-color: #CBD5E1;
+}
+
+.nd-case-study-metric {
+    background: var(--nd-primary-blue-light);
+    border-left: 3px solid var(--nd-primary-blue);
+    padding: 0.75rem 1rem;
+    border-radius: 0 var(--nd-radius-sm) var(--nd-radius-sm) 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--nd-primary-blue);
+    margin-bottom: 1rem;
+}
+
+/* ==========================================================================
+   8. AUTHOR / EEAT PROFILE BOX
+   ========================================================================== */
+
+.nd-author-box {
+    background-color: var(--nd-surface);
+    border: 1px solid var(--nd-border);
+    border-radius: var(--nd-radius-lg);
+    padding: 2rem;
+    box-shadow: var(--nd-shadow-sm);
+}
+
+.nd-author-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--nd-primary-blue);
+}
+
+/* ==========================================================================
+   9. CALL TO ACTION (CTA) WRAPPERS
+   ========================================================================== */
+
+.nd-cta-card {
+    background: var(--nd-grad-dark-hero);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--nd-radius-xl);
+    padding: 4rem 2rem;
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--nd-shadow-lg);
+}
+
+.nd-cta-glow {
+    position: absolute;
+    top: -40%;
+    right: -20%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, transparent 65%);
+    pointer-events: none;
+}
+
+/* Homepage multi-CTA band (Ready to Grow?) */
+.nd-cta-band {
+    background: var(--nd-brand-navy, #081426);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nd-cta-band__title {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.nd-cta-band__sub {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+a.nd-cta-tile,
+a.nd-cta-tile:link,
+a.nd-cta-tile:visited {
+    color: #ffffff;
+}
+
+.nd-cta-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 100%;
+    padding: 1.15rem 0.85rem;
+    text-align: center;
+    text-decoration: none;
+    border-radius: var(--nd-radius-lg, 14px);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.nd-cta-tile:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(56, 189, 248, 0.45);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.nd-cta-tile__icon {
+    color: var(--nd-tech-blue, #38bdf8);
+}
+
+.nd-cta-tile__label {
+    display: block;
+    color: #ffffff !important;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.nd-cta-tile:hover .nd-cta-tile__label,
+.nd-cta-tile:focus-visible .nd-cta-tile__label {
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   10. FOOTER
+   ========================================================================== */
+
+.nd-footer {
+    background-color: var(--nd-brand-navy);
+    color: rgba(255, 255, 255, 0.85);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 5rem;
+    padding-bottom: 2.5rem;
+    font-size: 0.9rem;
+}
+
+.nd-footer-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #FFFFFF;
+    margin-bottom: 1.25rem;
+}
+
+.nd-footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nd-footer-links li {
+    margin-bottom: 0.65rem;
+}
+
+.nd-footer-links a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: color var(--nd-transition-fast);
+}
+
+.nd-footer-links a:hover {
+    color: #FFFFFF;
+}
+
+.nd-footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 3.5rem;
+    padding-top: 2rem;
+    font-size: 0.825rem;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.nd-social-link {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--nd-radius-sm);
+    background: rgba(255, 255, 255, 0.08);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all var(--nd-transition-fast);
+}
+
+.nd-social-link:hover {
+    background-color: var(--nd-primary-blue);
+    color: #FFFFFF;
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   11. RESPONSIVENESS OVERRIDES
+   ========================================================================== */
+
+@media (max-width: 991px) {
+    .nd-hero-dark {
+        padding-top: 110px;
+        padding-bottom: 60px;
+    }
+    .nd-section {
+        padding: var(--nd-section-py-tablet) 0;
+    }
+    .nd-cta-card {
+        padding: 2.5rem 1.5rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .nd-section {
+        padding: var(--nd-section-py-mobile) 0;
+    }
+}
+
+/* Breadcrumb UI removed site-wide (JSON-LD breadcrumbs remain for SEO) */
+.nd-breadcrumb,
+nav[aria-label="breadcrumb"] {
+    display: none !important;
+}
+
+/* Legacy breadcrumb token styles (unused in UI) */
+.nd-breadcrumb--hero .nd-breadcrumb-link {
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.nd-breadcrumb--hero .nd-breadcrumb-link:hover {
+    color: #fff;
+}
+
+.nd-breadcrumb--hero .breadcrumb-item.active {
+    color: #fff;
+    font-weight: 600;
+}
+
+.nd-breadcrumb--hero .breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.nd-breadcrumb--light .nd-breadcrumb-link {
+    color: var(--nd-text-muted, #64748b);
+    text-decoration: none;
+}
+
+.nd-breadcrumb--light .nd-breadcrumb-link:hover {
+    color: var(--nd-primary, #2563eb);
+}
+
+.nd-breadcrumb--light .breadcrumb-item.active {
+    color: var(--nd-text-main, #0f172a);
+    font-weight: 600;
+}
+
+.nd-breadcrumb--light .breadcrumb-item + .breadcrumb-item::before {
+    color: #94a3b8;
+}
+
+.nd-page-hero {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+}
+
+/* Dark heroes sit flush under fixed navbar (no white body gap). */
+body.nd-has-fixed-nav > section.nd-hero-home:first-of-type,
+body.nd-has-fixed-nav > header.svc-hero:first-of-type,
+body.nd-has-fixed-nav > main > header.nd-page-hero:first-child,
+body.nd-has-fixed-nav > main > header.svc-hero:first-child,
+body.nd-has-fixed-nav > main.svc-page > header.svc-hero:first-child {
+    margin-top: calc(-1 * var(--nd-navbar-height, 76px));
+    padding-top: calc(var(--nd-navbar-height, 76px) + 1.75rem);
+}
+
+.nd-prose-width {
+    max-width: 680px;
+}
+
+/* Equal-height 50/50 hero / feature splits (all pages) */
+.nd-hero-split-row {
+    align-items: stretch;
+}
+
+.nd-hero-split-row > [class*="col"] {
+    display: flex;
+    flex-direction: column;
+}
+
+.nd-hero-split-row .nd-hero-panel,
+.nd-hero-split-row .svc-hero-card,
+.nd-hero-split-row .nd-home-dashboard {
+    flex: 1 1 auto;
+    width: 100%;
+}
+
+.nd-legal-hero {
+    background: linear-gradient(135deg, #081426 0%, #0b1f3a 100%);
+    color: #fff;
+}
+
+.nd-page-hero-glow {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(700px, 120%);
+    height: 400px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, rgba(8, 20, 38, 0) 70%);
+    pointer-events: none;
+}
+
+@media (max-width: 767px) {
+    body.nd-has-fixed-nav > section.nd-hero-home:first-of-type,
+    body.nd-has-fixed-nav > header.svc-hero:first-of-type,
+    body.nd-has-fixed-nav > main > header.nd-page-hero:first-child,
+    body.nd-has-fixed-nav > main > header.svc-hero:first-child,
+    body.nd-has-fixed-nav > main.svc-page > header.svc-hero:first-child {
+        padding-top: calc(var(--nd-navbar-height, 76px) + 1.25rem);
+    }
+    .nd-page-hero .display-4,
+    .nd-page-hero .display-5,
+    .nd-hero-title,
+    .svc-hero-title {
+        font-size: clamp(1.4rem, 5vw, 1.85rem);
+    }
+
+    .nd-section-title {
+        font-size: clamp(1.2rem, 4.5vw, 1.5rem);
+    }
+}
+
+.nd-footer-toggle {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.75rem 0;
+    margin-bottom: 0.25rem;
+}
+
+.nd-footer-links a {
+    display: block;
+    padding: 0.55rem 0;
+    min-height: 44px;
+    line-height: 1.4;
+}

@@ -3,10 +3,11 @@
 ob_start();
 header('Content-Type: text/html; charset=utf-8');
 
-require_once 'includes/db.php';
-require_once 'includes/blog_orphan.php';
-require_once 'includes/blog_faq.php';
-require_once 'includes/ads-engine.php';
+require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/blog_orphan.php';
+require_once __DIR__ . '/includes/blog_faq.php';
+require_once __DIR__ . '/includes/ads-engine.php';
 ads_ensure_schema($conn);
 
 // FORCE DB CHARSET
@@ -25,10 +26,6 @@ if (!function_exists('clean_input')) {
         }
         return ($conn) ? $conn->real_escape_string($data) : $data;
     }
-}
-
-if(!defined('SITE_URL')) {
-    define('SITE_URL', 'https://www.nectradigital.com');
 }
 
 // 3. FETCH POST DATA
@@ -127,7 +124,7 @@ require_once 'includes/seo-data.php';
 $page_schema = [
     get_breadcrumb_schema([
         ['name' => 'Home', 'url' => SITE_URL . '/'],
-        ['name' => 'Intel', 'url' => SITE_URL . '/insights'],
+        ['name' => 'Insights', 'url' => SITE_URL . '/insights'],
         ['name' => $decoded_title, 'url' => SITE_URL . '/' . $post['slug']]
     ]),
     [
@@ -145,6 +142,8 @@ $page_schema = [
         'inLanguage' => 'en-IN'
     ]
 ];
+
+$isDarkHeader = true;
 
 // 5. INJECT HEADER & BASE TAG
 include 'includes/header.php';
@@ -189,50 +188,81 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_comment'])) {
 }
 ?>
 
-<canvas id="nectra-canvas"></canvas>
-
 <style>
-    html, body { margin: 0; padding: 0; width: 100%; min-height: 100vh; background-color: #050505 !important; color: #e0e0e0 !important; overflow-x: hidden; }
-    #nectra-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
-    .post-hero-header { position: relative; z-index: 2; padding-top: 100px; padding-bottom: 50px; background: transparent; border-bottom: 1px solid rgba(255,255,255,0.1); margin-top: 0; }
+    .post-hero-header {
+        position: relative;
+        padding-top: 48px;
+        padding-bottom: 48px;
+        background: var(--nd-navy, #081426);
+        color: #FFFFFF;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        margin-top: 0;
+    }
     .post-hero-header .blog-post-title {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-        font-size: clamp(1.85rem, 3.2vw, 2.65rem);
+        font-size: var(--nd-heading-page);
         font-weight: 700;
         line-height: 1.28;
-        letter-spacing: -0.025em;
-        max-width: 820px;
+        letter-spacing: -0.02em;
+        max-width: 860px;
         margin: 0 auto 1.25rem;
-        text-shadow: none;
-        color: #fff !important;
+        color: #FFFFFF !important;
         text-wrap: balance;
     }
     .post-hero-header .blog-post-category {
         font-family: 'Inter', sans-serif;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         font-weight: 600;
         letter-spacing: 0.08em;
     }
     .post-hero-header .blog-post-meta {
         font-family: 'Inter', sans-serif;
         font-size: 0.875rem;
-        color: rgba(255, 255, 255, 0.65);
+        color: rgba(255, 255, 255, 0.7);
     }
-    .post-hero-header .blog-post-meta i { color: #00e5ff; opacity: 0.9; }
-    main { position: relative; z-index: 2; }
-    .blog-content { font-family: 'Inter', sans-serif; font-size: 1.15rem; line-height: 1.8; color: #d4d4d4; }
-    h1, h2, h3, h4, h5 { color: #fff !important; font-weight: 700; margin-top: 2rem; }
-    .text-neon { color: #00f2ff !important; text-shadow: 0 0 10px rgba(0,242,255,0.5); }
-    img.img-fluid { border: 1px solid #333; border-radius: 8px; background: #000; max-width: 100%; height: auto; }
-    a { text-decoration: none; color: #00f2ff; }
-    a:hover { color: #fff; text-shadow: 0 0 8px #00f2ff; }
+    .post-hero-header .blog-post-meta i { color: #38BDF8; opacity: 0.9; }
+    main { position: relative; background: #F8FAFC; min-height: 100vh; }
+    .post-article-wrap {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: 0 4px 20px rgba(15,23,42,0.04);
+    }
+    .blog-content {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.125rem;
+        line-height: 1.85;
+        color: #334155;
+    }
+    .blog-content h1, .blog-content h2, .blog-content h3, .blog-content h4 {
+        color: #0F172A !important;
+        font-weight: 700;
+        margin-top: 2.25rem;
+        margin-bottom: 0.75rem;
+    }
+    .blog-content p {
+        margin-bottom: 1.5rem;
+    }
+    .blog-content ul, .blog-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+    .blog-content li {
+        margin-bottom: 0.5rem;
+    }
+    img.img-fluid {
+        border-radius: 12px;
+        max-width: 100%;
+        height: auto;
+    }
     .card-img-top-wrapper { height: 200px; overflow: hidden; position: relative; }
     .card-img-top-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
-    .hover-neon-border:hover img { transform: scale(1.05); }
-    .recent-intel-section { width: 100%; background: rgba(0, 0, 0, 0.35); }
+    .recent-intel-section { width: 100%; background: #F1F5F9; }
     .recent-intel-section .card-img-top-wrapper {
         height: auto;
         aspect-ratio: 16 / 9;
+
         overflow: hidden;
         position: relative;
         background: #0a0a0a;

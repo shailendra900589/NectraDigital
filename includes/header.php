@@ -1,5 +1,6 @@
 <?php 
-require_once __DIR__ . '/config.php'; 
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/brand-config.php'; 
 require_once __DIR__ . '/text-utils.php';
 require_once __DIR__ . '/seo-data.php';
 require_once __DIR__ . '/growth/helpers.php';
@@ -11,14 +12,16 @@ $nectra_lang = nectra_get_user_lang();
 $title_min = isset($seo_title_min) ? (int) $seo_title_min : 30;
 $title_max = isset($seo_title_max) ? (int) $seo_title_max : 60;
 
-$request_uri = strtok($_SERVER["REQUEST_URI"] ?? '/', '?');
-$clean_uri = str_replace('.php', '', $request_uri);
+$request_uri = strtok($_SERVER['REQUEST_URI'] ?? '/', '?');
+$page_path = nectra_uri_path_for_canonical($request_uri);
 
 if (!empty($canonical_url)) {
     $canonical_href = nectra_normalize_canonical_url($canonical_url);
 } else {
-    $canonical_href = nectra_normalize_canonical_url($clean_uri ?: '/');
+    $canonical_href = nectra_normalize_canonical_url($page_path ?: '/');
 }
+
+$nectra_base_path = nectra_site_base_path();
 
 if (!headers_sent()) {
     header('Link: <' . $canonical_href . '>; rel="canonical"', false);
@@ -56,7 +59,10 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <?php if ($nectra_base_path !== ''): ?>
+    <base href="<?php echo htmlspecialchars(rtrim(SITE_URL, '/') . '/'); ?>">
+    <?php endif; ?>
+
     <title><?php echo nectra_display_text($meta_title); ?></title>
     <meta name="description" content="<?php echo nectra_display_text($meta_desc); ?>">
     <link rel="canonical" href="<?php echo htmlspecialchars($canonical_href); ?>">
@@ -84,11 +90,17 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css?v=21">
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/i18n.css?v=3">
+    <script>window.NectraSite = { basePath: <?php echo json_encode(nectra_site_base_path(), JSON_UNESCAPED_UNICODE); ?> };
+    window.nectraWebPath = function (p) {
+        if (!p || p.charAt(0) !== '/') return p;
+        var b = (window.NectraSite && window.NectraSite.basePath) || '';
+        return b + p;
+    };</script>
     <script>window.NectraI18n = <?php echo json_encode(nectra_i18n_config_js(), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP); ?>;</script>
     <?php if ($nectra_lang !== 'en'):
         $nectra_gcode = nectra_google_lang_code($nectra_lang);
@@ -155,57 +167,18 @@ $meta_og_type = (!empty($og_type)) ? $og_type : 'website';
     </script>
     <?php endif; ?>
 </head>
-<body<?php echo $nectra_lang !== 'en' ? ' class="nectra-translated nectra-lang-' . htmlspecialchars($nectra_lang) . '"' : ''; ?>>
+<?php
+$isDarkHeader = nectra_page_uses_dark_header($page_path);
 
-<div id="particles-js"></div>
+$ndBodyClass = 'nd-has-fixed-nav';
+if ($nectra_lang !== 'en') {
+    $ndBodyClass .= ' nectra-translated nectra-lang-' . htmlspecialchars($nectra_lang);
+}
+if ($isDarkHeader) {
+    $ndBodyClass .= ' nd-nav-dark-context';
+}
+?>
+<body class="<?php echo $ndBodyClass; ?>"<?php echo $isDarkHeader ? ' data-nd-nav-theme="dark"' : ''; ?>>
 
-<nav class="navbar navbar-expand-lg fixed-top">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center notranslate" href="/" aria-label="Nectra Digital Home">
-            <span class="text-white fw-bold">NECTRA</span><span class="text-neon">DIGITAL</span>
-        </a>
-        
-        <button class="navbar-toggler bg-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="/services" id="servicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Services</a>
-                    <ul class="dropdown-menu dropdown-menu-dark border-secondary" aria-labelledby="servicesDropdown">
-                        <?php
-                        $nav_primary = get_primary_services();
-                        $nav_all = get_services_data();
-                        foreach ($nav_primary as $nav_slug):
-                            if (!isset($nav_all[$nav_slug])) continue;
-                            $nav_label = $nav_all[$nav_slug]['h1'];
-                        ?>
-                        <li><a class="dropdown-item" href="/<?php echo htmlspecialchars($nav_slug); ?>"><?php echo htmlspecialchars($nav_label); ?></a></li>
-                        <?php endforeach; ?>
-                        <li><hr class="dropdown-divider border-secondary"></li>
-                        <?php foreach (get_nav_secondary_services() as $nav_slug):
-                            if (!isset($nav_all[$nav_slug])) continue;
-                        ?>
-                        <li><a class="dropdown-item" href="/<?php echo htmlspecialchars($nav_slug); ?>"><?php echo htmlspecialchars($nav_all[$nav_slug]['h1']); ?></a></li>
-                        <?php endforeach; ?>
-                        <li><hr class="dropdown-divider border-secondary"></li>
-                        <li><a class="dropdown-item" href="/services">All Services</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
-                <li class="nav-item"><a class="nav-link" href="/portfolio">Portfolio</a></li>
-                <li class="nav-item"><a class="nav-link" href="/hire-experts"><b>Hire Experts</b></a></li>
-                <li class="nav-item"><a class="nav-link" href="/insights">Intel</a></li>
-                <li class="nav-item"><a class="nav-link" href="/careers">Careers</a></li>
-                <li class="nav-item">
-                    <?php include __DIR__ . '/language-switcher.php'; ?>
-                </li>
-                <li class="nav-item ms-lg-3">
-                    <a href="/contact" class="btn btn-nectra btn-sm">FREE AUDIT <i class="fas fa-bolt"></i></a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-<br><br>
+<?php include __DIR__ . '/ui/navbar.php'; ?>
+

@@ -1,0 +1,660 @@
+/**
+ * Nectra Digital — Reusable Component Library
+ * Production Architecture v2.0
+ */
+
+/* ==========================================================================
+   1. BUTTONS & ACTIONS
+   ========================================================================== */
+
+.btn-nectra-primary,
+.btn-nectra {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: var(--nd-primary-blue);
+    color: #FFFFFF !important;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    padding: 0.75rem 1.75rem;
+    border-radius: var(--nd-radius-md);
+    border: 1px solid var(--nd-primary-blue);
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
+    transition: all var(--nd-transition-normal);
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.btn-nectra-primary:hover,
+.btn-nectra:hover {
+    background-color: var(--nd-primary-blue-hover);
+    border-color: var(--nd-primary-blue-hover);
+    color: #FFFFFF !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.32);
+}
+
+.btn-nectra-primary:active,
+.btn-nectra:active {
+    transform: translateY(0);
+}
+
+.btn-nectra-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: var(--nd-surface);
+    color: var(--nd-text-main) !important;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    padding: 0.75rem 1.65rem;
+    border-radius: var(--nd-radius-md);
+    border: 1px solid var(--nd-border);
+    text-decoration: none;
+    box-shadow: var(--nd-shadow-sm);
+    transition: all var(--nd-transition-normal);
+}
+
+.btn-nectra-secondary:hover {
+    background-color: var(--nd-bg-secondary);
+    border-color: #CBD5E1;
+    color: var(--nd-primary-blue) !important;
+    transform: translateY(-2px);
+    box-shadow: var(--nd-shadow-md);
+}
+
+.btn-nectra-outline-light {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF !important;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    padding: 0.75rem 1.65rem;
+    border-radius: var(--nd-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    backdrop-filter: blur(8px);
+    transition: all var(--nd-transition-normal);
+}
+
+.btn-nectra-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #FFFFFF !important;
+    transform: translateY(-2px);
+}
+
+.btn-nectra-ai {
+    background: var(--nd-grad-ai);
+    color: #FFFFFF !important;
+    border: none;
+    box-shadow: var(--nd-shadow-ai);
+}
+
+.btn-nectra-ai:hover {
+    opacity: 0.95;
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-nectra-sm {
+    padding: 0.45rem 1rem;
+    font-size: 0.825rem;
+    border-radius: var(--nd-radius-sm);
+}
+
+.btn-nectra-lg {
+    padding: 0.95rem 2.25rem;
+    font-size: 1.05rem;
+    border-radius: var(--nd-radius-lg);
+}
+
+/* ==========================================================================
+   2. CARDS
+   ========================================================================== */
+
+.nd-card {
+    background-color: var(--nd-surface);
+    border: 1px solid var(--nd-border);
+    border-radius: var(--nd-radius-lg);
+    padding: 2rem;
+    box-shadow: var(--nd-shadow-sm);
+    transition: transform var(--nd-transition-normal), border-color var(--nd-transition-normal), box-shadow var(--nd-transition-normal);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.nd-card.nd-card-fit {
+    height: auto;
+    min-height: 0;
+}
+
+.nd-contact-form-card .form-label {
+    margin-bottom: 0.35rem;
+}
+
+.nd-contact-form-card .mb-3:last-of-type {
+    margin-bottom: 1rem !important;
+}
+
+.nd-card:hover {
+    transform: translateY(-4px);
+    border-color: #CBD5E1;
+    box-shadow: var(--nd-shadow-md);
+}
+
+.nd-card-clickable {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.nd-card-dark {
+    background-color: rgba(11, 31, 58, 0.7);
+    border: 1px solid var(--nd-border-dark);
+    backdrop-filter: blur(12px);
+    color: #FFFFFF;
+}
+
+.nd-card-dark:hover {
+    border-color: rgba(37, 99, 235, 0.5);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+}
+
+.nd-card-ai {
+    background: linear-gradient(180deg, rgba(124, 58, 237, 0.05) 0%, rgba(11, 31, 58, 0.9) 100%);
+    border: 1px solid rgba(124, 58, 237, 0.25);
+}
+
+.nd-card-ai:hover {
+    border-color: rgba(124, 58, 237, 0.6);
+    box-shadow: var(--nd-shadow-ai);
+}
+
+.nd-card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--nd-radius-md);
+    background-color: var(--nd-primary-blue-light);
+    color: var(--nd-primary-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    margin-bottom: 1.25rem;
+    flex-shrink: 0;
+}
+
+.nd-card-icon-ai {
+    background-color: var(--nd-ai-violet-light);
+    color: var(--nd-ai-violet);
+}
+
+.nd-card-icon-dark {
+    background: rgba(37, 99, 235, 0.15);
+    border: 1px solid rgba(37, 99, 235, 0.3);
+    color: var(--nd-cyan);
+}
+
+/* ==========================================================================
+   3. BADGES & PILLS
+   ========================================================================== */
+
+.nd-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.775rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-radius: var(--nd-radius-full);
+    border: 1px solid var(--nd-border);
+    background-color: var(--nd-surface);
+    color: var(--nd-text-secondary);
+}
+
+.nd-badge-dark {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #E2E8F0;
+}
+
+.nd-badge-primary {
+    background-color: var(--nd-primary-blue-light);
+    border-color: rgba(37, 99, 235, 0.25);
+    color: var(--nd-primary-blue);
+}
+
+.nd-badge-ai {
+    background-color: var(--nd-ai-violet-light);
+    border-color: rgba(124, 58, 237, 0.3);
+    color: #A78BFA;
+}
+
+.nd-badge-success {
+    background-color: var(--nd-success-bg);
+    border-color: rgba(16, 185, 129, 0.25);
+    color: #059669;
+}
+
+/* ==========================================================================
+   4. TRUST STRIP & METRICS
+   ========================================================================== */
+
+.nd-trust-strip {
+    background-color: var(--nd-surface);
+    border-top: 1px solid var(--nd-border);
+    border-bottom: 1px solid var(--nd-border);
+    padding: 1rem 0;
+    margin: 0;
+}
+
+.nd-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--nd-text-secondary);
+}
+
+.nd-trust-item i {
+    color: var(--nd-primary-blue);
+    font-size: 1.05rem;
+}
+
+.nd-stat-box {
+    background-color: var(--nd-surface);
+    border: 1px solid var(--nd-border);
+    border-radius: var(--nd-radius-md);
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--nd-shadow-sm);
+    height: 100%;
+}
+
+.nd-stat-number {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--nd-primary-blue);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.nd-stat-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--nd-text-muted);
+    margin-top: 0.4rem;
+}
+
+/* ==========================================================================
+   5. TIMELINE / PROCESS
+   ========================================================================== */
+
+.nd-process-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.5rem;
+    position: relative;
+}
+
+.nd-process-grid-7 {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.nd-process-timeline {
+    display: grid;
+    gap: 1.25rem;
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.nd-process-timeline--7 {
+    max-width: 1280px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .nd-process-timeline--7 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .nd-process-timeline--7 {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1rem;
+    }
+}
+
+.nd-process-step {
+    background-color: var(--nd-surface);
+    border: 1px solid var(--nd-border);
+    border-radius: var(--nd-radius-lg);
+    padding: 1.75rem 1.25rem;
+    position: relative;
+    box-shadow: var(--nd-shadow-sm);
+    transition: transform var(--nd-transition-normal), box-shadow var(--nd-transition-normal);
+}
+
+.nd-process-step--pro {
+    padding: 1.5rem 1rem 1.35rem;
+    text-align: center;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-color: rgba(148, 163, 184, 0.35);
+    height: 100%;
+}
+
+@media (min-width: 1200px) {
+    .nd-process-step--pro {
+        padding: 1.65rem 0.85rem 1.4rem;
+    }
+}
+
+.nd-process-step--pro:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+    border-color: rgba(37, 99, 235, 0.25);
+}
+
+.nd-process-step-icon {
+    width: 3rem;
+    height: 3rem;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.875rem;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(37, 99, 235, 0.04) 100%);
+    color: var(--nd-primary-blue);
+    font-size: 1.15rem;
+    transition: transform var(--nd-transition-normal), background var(--nd-transition-normal);
+}
+
+.nd-process-step--pro:hover .nd-process-step-icon {
+    transform: scale(1.06);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.18) 0%, rgba(37, 99, 235, 0.08) 100%);
+}
+
+.nd-process-connector {
+    display: none;
+}
+
+@media (min-width: 1200px) {
+    .nd-process-timeline--7 .nd-process-step--pro .nd-process-connector {
+        display: block;
+        position: absolute;
+        top: 2.85rem;
+        left: calc(50% + 1.65rem);
+        width: calc(100% - 0.75rem);
+        height: 2px;
+        background: linear-gradient(90deg, rgba(37, 99, 235, 0.35), rgba(148, 163, 184, 0.2));
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .nd-process-timeline--7 .nd-process-step--pro:last-child .nd-process-connector {
+        display: none;
+    }
+}
+
+.nd-process-step-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--nd-text-dark, #0f172a);
+    margin: 0 0 0.65rem;
+    line-height: 1.3;
+}
+
+.nd-process-step-desc {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--nd-text-muted);
+    margin: 0;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (min-width: 1200px) {
+    .nd-process-step-desc {
+        font-size: 0.72rem;
+        line-height: 1.45;
+    }
+}
+
+.nd-process-step:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--nd-shadow-md);
+    border-color: #CBD5E1;
+}
+
+@media (max-width: 991px) {
+    .nd-process-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .nd-process-timeline--7 {
+        grid-template-columns: 1fr;
+        max-width: 420px;
+    }
+}
+
+/* ==========================================================================
+   6. FORMS & INPUTS
+   ========================================================================== */
+
+.nd-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.nd-form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--nd-text-main);
+    margin-bottom: 0.4rem;
+}
+
+.nd-form-control,
+.form-control.nd-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    color: var(--nd-text-main);
+    background-color: var(--nd-surface);
+    border: 1px solid var(--nd-border);
+    border-radius: var(--nd-radius-md);
+    transition: border-color var(--nd-transition-fast), box-shadow var(--nd-transition-fast);
+}
+
+.nd-form-control:focus,
+.form-control.nd-input:focus {
+    outline: none;
+    border-color: var(--nd-primary-blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    background-color: var(--nd-surface);
+}
+
+.nd-form-control::placeholder {
+    color: #94A3B8;
+}
+
+.nd-form-dark .nd-form-control {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #FFFFFF;
+}
+
+.nd-form-dark .nd-form-control:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--nd-primary-blue);
+}
+
+.nd-form-dark .nd-form-control::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* ==========================================================================
+   7. ACCORDION (FAQ)
+   ========================================================================== */
+
+.nd-accordion .accordion-item {
+    background-color: var(--nd-surface);
+    border: 1px solid var(--nd-border);
+    border-radius: var(--nd-radius-md) !important;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+}
+
+.nd-accordion .accordion-button {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--nd-text-main);
+    background-color: var(--nd-surface);
+    padding: 1.25rem 1.5rem;
+    box-shadow: none !important;
+}
+
+.nd-accordion .accordion-button:not(.collapsed) {
+    color: var(--nd-primary-blue);
+    background-color: var(--nd-bg-secondary);
+}
+
+.nd-accordion .accordion-button::after {
+    transition: transform var(--nd-transition-normal);
+}
+
+.nd-accordion .accordion-body {
+    padding: 1.25rem 1.5rem 1.5rem;
+    color: var(--nd-text-secondary);
+    line-height: 1.7;
+    background-color: var(--nd-surface);
+}
+
+/* Dark Accordion Variation */
+.nd-accordion-dark .accordion-item {
+    background-color: rgba(11, 31, 58, 0.6);
+    border-color: var(--nd-border-dark);
+}
+
+.nd-accordion-dark .accordion-button {
+    background-color: transparent;
+    color: #FFFFFF;
+}
+
+.nd-accordion-dark .accordion-button:not(.collapsed) {
+    background-color: rgba(37, 99, 235, 0.15);
+    color: var(--nd-cyan);
+}
+
+.nd-accordion-dark .accordion-button::after {
+    filter: invert(1);
+}
+
+.nd-accordion-dark .accordion-body {
+    background-color: transparent;
+    color: var(--nd-text-inverted-muted);
+}
+
+/* ==========================================================================
+   8. AEO QUICK ANSWER & INSIGHT CALLOUTS
+   ========================================================================== */
+
+.nd-quick-answer {
+    background-color: #F8FAFC;
+    border-left: 4px solid var(--nd-primary-blue);
+    border-top: 1px solid var(--nd-border);
+    border-right: 1px solid var(--nd-border);
+    border-bottom: 1px solid var(--nd-border);
+    border-radius: 0 var(--nd-radius-md) var(--nd-radius-md) 0;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.nd-quick-answer-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--nd-primary-blue);
+    margin-bottom: 0.5rem;
+}
+
+.nd-quick-answer p {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--nd-text-main);
+    margin: 0;
+}
+
+/* Dark Quick Answer */
+.nd-quick-answer-dark {
+    background-color: rgba(11, 31, 58, 0.8);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    border-left: 4px solid var(--nd-cyan);
+    border-radius: var(--nd-radius-md);
+    padding: 1.5rem;
+}
+
+.nd-quick-answer-dark .nd-quick-answer-title {
+    color: var(--nd-cyan);
+}
+
+.nd-quick-answer-dark p {
+    color: #FFFFFF;
+}
+
+/* ==========================================================================
+   9. EMPTY STATES & ALERTS
+   ========================================================================== */
+
+.nd-empty-state {
+    text-align: center;
+    padding: 3.5rem 1.5rem;
+}
+
+.nd-empty-state-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1.25rem;
+    border-radius: 50%;
+    background-color: var(--nd-bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--nd-text-muted);
+}
+
+.nd-empty-state-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--nd-text-main);
+    margin-bottom: 0.5rem;
+}
+
+.nd-empty-state-desc {
+    font-size: 0.925rem;
+    color: var(--nd-text-muted);
+    max-width: 420px;
+    margin: 0 auto 1.5rem;
+}

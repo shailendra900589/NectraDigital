@@ -48,7 +48,7 @@ function admin_layout_start(string $title, string $activePage = '', array $optio
     $growthReady = function_exists('ge_is_ready') ? ge_is_ready() : null;
     ?>
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -58,7 +58,7 @@ function admin_layout_start(string $title, string $activePage = '', array $optio
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="<?php echo htmlspecialchars($ctx['assets']); ?>css/growth-admin.css?v=5">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($ctx['assets']); ?>css/growth-admin.css?v=9">
     <?php if ($includeCkeditor): ?>
         <?php require_once dirname(__DIR__, 2) . '/includes/ckeditor.php'; nectra_ckeditor_styles(); ?>
     <?php endif; ?>
@@ -69,7 +69,7 @@ function admin_layout_start(string $title, string $activePage = '', array $optio
     <aside class="ge-sidebar" id="adminSidebar">
         <div class="ge-brand ge-sidebar-brand">
             <span class="ge-brand-text">NECTRA</span><span class="ge-brand-accent">ADMIN</span>
-            <small class="d-block text-muted mt-1">Control Center v<?php echo htmlspecialchars(admin_platform_version()); ?></small>
+            <small class="d-block ge-sidebar-version mt-1">Nectra Digital</small>
         </div>
         <nav class="ge-nav ge-sidebar-scroll" aria-label="Admin navigation">
             <?php foreach (admin_nav_items() as $item): ?>
@@ -102,11 +102,20 @@ function admin_layout_start(string $title, string $activePage = '', array $optio
                 <h1 class="ge-page-title"><?php echo htmlspecialchars($title); ?></h1>
             </div>
             <div class="ge-topbar-actions">
-                <button type="button" class="btn btn-sm ge-theme-toggle" id="themeToggle" title="Toggle theme">
+                <?php if ($activePage === 'home'): ?>
+                <a href="<?php echo htmlspecialchars($ctx['root']); ?>create_post.php" class="btn btn-sm btn-ge-primary d-none d-sm-inline-flex align-items-center gap-1">
+                    <i class="fas fa-plus"></i> New post
+                </a>
+                <?php elseif ($activePage === 'blog'): ?>
+                <a href="<?php echo htmlspecialchars($ctx['root']); ?>create_post.php" class="btn btn-sm btn-ge-primary d-none d-sm-inline-flex align-items-center gap-1">
+                    <i class="fas fa-plus"></i> New post
+                </a>
+                <?php endif; ?>
+                <button type="button" class="btn btn-sm ge-theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">
                     <i class="fas fa-moon"></i>
                 </button>
-                <a href="<?php echo htmlspecialchars(admin_site_url()); ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary d-none d-sm-inline-flex">
-                    <i class="fas fa-external-link-alt"></i> View Site
+                <a href="<?php echo htmlspecialchars(admin_site_url()); ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary d-none d-md-inline-flex align-items-center gap-1">
+                    <i class="fas fa-external-link-alt"></i> Website
                 </a>
             </div>
         </header>
@@ -123,11 +132,11 @@ function admin_layout_start(string $title, string $activePage = '', array $optio
                 <?php if (!empty($alert['dismiss'])): ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button><?php endif; ?>
             </div>
             <?php endforeach; ?>
-            <?php if ($showGrowthWarning && $growthReady === false): ?>
-            <div class="alert alert-warning">
+            <?php if ($showGrowthWarning && $growthReady === false && $activePage !== 'home'): ?>
+            <div class="alert alert-warning alert-dismissible fade show">
                 <strong>Growth database not ready.</strong>
-                Run <a href="<?php echo htmlspecialchars($ctx['root']); ?>../database/migrate.php" target="_blank" class="alert-link">database/migrate.php</a>
-                or import SQL via phpMyAdmin to enable Cities, Landing Pages, and Auto Indexing.
+                Run <a href="<?php echo htmlspecialchars($ctx['root']); ?>../database/migrate.php" target="_blank" class="alert-link">database/migrate.php</a> once to enable cities and landing pages.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             <?php endif; ?>
     <?php
@@ -209,7 +218,7 @@ function admin_layout_end(array $options = []): void
     </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?php echo htmlspecialchars($ctx['assets']); ?>js/growth-admin.js?v=2"></script>
+<script src="<?php echo htmlspecialchars($ctx['assets']); ?>js/growth-admin.js?v=3"></script>
 <?php if ($includeCkeditor): ?>
     <?php nectra_ckeditor_scripts($ctx['assets']); ?>
 <?php endif; ?>

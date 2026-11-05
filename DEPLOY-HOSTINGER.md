@@ -1,4 +1,12 @@
-# Hostinger deploy — copy this entire block
+# Hostinger deploy — NectraDigital-V2
+
+**Git remote:** `https://github.com/shailendra900589/NectraDigital-V2.git` (branch `main`)
+
+**Auto-deploy:** hPanel → Websites → nectradigital.com → Git → connect GitHub repo `shailendra900589/NectraDigital-V2`, branch `main`, type PHP/static.
+
+**DB (never commit):** `includes/db.local.php` on server only — copy from `includes/db.local.php.example` (hPanel → MySQL).
+
+After any manual git pull on server:
 
 ```bash
 cd ~/domains/nectradigital.com/public_html
@@ -6,8 +14,6 @@ cd ~/domains/nectradigital.com/public_html
 cp includes/db.local.php ~/db.local.php.bak
 cp includes/config.local.php ~/config.local.php.bak 2>/dev/null || true
 
-git fetch origin main
-git checkout origin/main -- includes/db.php includes/header.php includes/seo-components.php includes/config.php
 git pull origin main || git reset --hard origin/main
 
 cp ~/db.local.php.bak includes/db.local.php
@@ -16,8 +22,6 @@ cp ~/config.local.php.bak includes/config.local.php 2>/dev/null || true
 php -l includes/db.local.php
 php database/test-db.php
 php -l admin/growth/init.php
-php -l admin/growth/generate.php
-ls -la admin/growth/init.php cron/process-indexing.php
 ```
 
 ## Test after deploy

@@ -19,8 +19,8 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #00f2ff;
-    color: #050505;
+    background: var(--nd-cyan, #06B6D4);
+    color: #081426;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -29,7 +29,7 @@
     border: none;
     padding: 0;
     margin: 0;
-    box-shadow: 0 4px 16px rgba(0, 242, 255, 0.4);
+    box-shadow: 0 4px 16px rgba(6, 182, 212, 0.35);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     isolation: isolate;
 }

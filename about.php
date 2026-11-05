@@ -1,14 +1,15 @@
 <?php 
 require_once 'includes/seo-data.php';
 require_once 'includes/seo-components.php';
-
-$page_title = "About Nectra Digital | Founder Ravindra Kumar Chauhan — SEO Expert India";
-$page_desc = "Meet Ravindra Kumar Chauhan, Founder & CEO of Nectra Digital. 5+ years expertise in SEO, digital marketing, AI automation, and software development. India's trusted digital transformation company.";
-$page_keys = "About Nectra Digital, Ravindra Kumar Chauhan, SEO Expert India, Digital Marketing Founder, AI Agency India Founder";
 require_once 'includes/i18n.php';
-$canonical_url = nectra_page_canonical('/');
+require_once 'includes/eeat-copy.php';
+require_once 'includes/nav-data.php';
 
-require_once __DIR__ . '/includes/eeat-copy.php';
+$page_title = "About Nectra Digital | SEO & Digital Marketing Agency India";
+$page_desc = "Meet Nectra Digital — SEO, AI automation, and full-stack digital agency in Lucknow serving 200+ clients across India and globally with measurable growth.";
+$page_keys = "About Nectra Digital, SEO company India, digital marketing agency Lucknow, AI automation agency";
+$isDarkHeader = true;
+$canonical_url = nectra_page_canonical('/about');
 
 $page_schema = [
     get_breadcrumb_schema([
@@ -21,112 +22,116 @@ $page_schema = [
 include 'includes/header.php';
 ?>
 
-<main>
-    <header class="d-flex align-items-center justify-content-center text-center position-relative overflow-hidden" style="min-height: 55vh; background: #050505;">
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.05) 0%, rgba(5,5,5,1) 70%);"></div>
-        <div class="container position-relative z-1">
+<main style="background: #F8FAFC; min-height: 100vh;">
+    <!-- HERO -->
+    <header class="nd-page-hero nd-section-dark text-center position-relative overflow-hidden">
+        <div class="nd-page-hero-glow" aria-hidden="true"></div>
+        <div class="container position-relative z-1 py-2 py-md-3">
             <?php render_breadcrumbs([['name' => 'Home', 'url' => '/'], ['name' => 'About', 'url' => '/about']]); ?>
-            <span class="badge border border-neon text-neon px-3 py-2 mb-3 rounded-pill">Founder-Led Agency · Editorial Standards</span>
-            <h1 class="display-4 fw-bold text-white mb-3">About Nectra Digital — <span class="text-neon">SEO Expert India</span></h1>
-            <p class="lead text-white-50 mx-auto" style="max-width: 700px;">A founder-led digital marketing and software development company engineering measurable growth through SEO, AI automation, and performance marketing.</p>
+            <h1 class="fw-bold text-white mb-3 nd-hero-title">About Nectra Digital — <span class="nd-text-gradient">Growth Partner</span></h1>
+            <p class="lead text-white-50 mx-auto nd-prose-width" style="line-height: 1.6;">
+                A founder-led SEO and digital marketing agency combining search expertise, AI automation, and custom software to deliver compounding organic traffic and revenue for brands in India and worldwide.
+            </p>
         </div>
     </header>
 
-    <section class="py-5 border-top border-secondary">
+    <!-- TRUST BAR -->
+    <?php include __DIR__ . '/includes/ui/trust-bar.php'; ?>
+
+    <!-- FOUNDER & LEADERSHIP STORY -->
+    <section class="py-5 bg-white border-bottom">
         <div class="container py-4">
-            <div class="row align-items-center">
-                <div class="col-lg-4 mb-4 mb-lg-0 text-center">
-                    <div class="mx-auto rounded-circle border border-neon d-flex align-items-center justify-content-center bg-dark" style="width:220px;height:220px;" itemscope itemtype="https://schema.org/Person">
-                        <meta itemprop="name" content="<?php echo FOUNDER_NAME; ?>">
-                        <meta itemprop="jobTitle" content="<?php echo FOUNDER_TITLE; ?>">
-                        <i class="fas fa-user-tie fa-5x text-neon opacity-75"></i>
+            <div class="row align-items-center g-5">
+                <div class="col-lg-4 text-center">
+                    <div class="p-4 rounded-4 shadow-sm bg-white border d-inline-block">
+                        <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary mb-3" style="width:160px; height:160px;">
+                            <i class="fas fa-user-tie fa-4x"></i>
+                        </div>
+                        <h2 class="h5 fw-bold text-dark mb-1"><?php echo FOUNDER_NAME; ?></h2>
+                        <span class="badge bg-primary px-3 py-1 mb-2"><?php echo FOUNDER_TITLE; ?></span>
+                        <p class="text-muted small mb-3"><?php echo FOUNDER_EXPERIENCE; ?> Practical Industry Experience</p>
+                        <a href="<?php echo FOUNDER_LINKEDIN; ?>" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fab fa-linkedin me-2"></i>Connect on LinkedIn
+                        </a>
                     </div>
                 </div>
+
                 <div class="col-lg-8">
-                    <h2 class="text-white h3 mb-2"><?php echo FOUNDER_NAME; ?></h2>
-                    <p class="text-neon text-uppercase small mb-3"><?php echo FOUNDER_TITLE; ?> · <?php echo FOUNDER_EXPERIENCE; ?> Experience</p>
-                    <p class="text-white-50 mb-4">Ravindra Kumar Chauhan founded Nectra Digital with a clear mission: bridge the gap between complex technology and measurable business profit. With <?php echo FOUNDER_EXPERIENCE; ?> of hands-on experience in SEO, digital marketing, AI automation, web development, and software development, he has built Nectra Digital into one of India's most trusted digital agencies — serving 200+ clients with an average 340% organic traffic growth.</p>
-                    <p class="text-white-50 mb-4">"We don't sell templates. We build digital assets engineered for speed, security, and scale. Every SEO strategy, every line of code, every marketing campaign is designed to generate ROI — not vanity metrics."</p>
+                    <h2 class="h3 fw-bold text-dark mb-3 nd-section-title">Engineering Discipline Meets Growth Marketing</h2>
+                    <p class="text-muted" style="line-height: 1.7;">
+                        Ravindra Kumar Chauhan founded Nectra Digital with a clear objective: eliminate the disconnect between technical engineering and revenue-generating digital marketing. With <?php echo FOUNDER_EXPERIENCE; ?> of hands-on experience across SEO architecture, algorithmic search optimization, AI agent pipelines, and web engineering, he has scaled Nectra Digital into a trusted partner for over 200+ organizations across India and international markets.
+                    </p>
+                    <blockquote class="p-3 rounded-3 bg-light border-start border-primary border-4 my-4">
+                        <p class="fst-italic text-dark mb-0 small" style="line-height: 1.6;">
+                            "We do not sell cookie-cutter templates or empty retainer hours. We build digital assets engineered for speed, security, and algorithmic authority. Every SEO strategy, line of code, and automation workflow is designed with a direct link to ROI."
+                        </p>
+                    </blockquote>
+                    <h3 class="h6 fw-bold text-dark mb-2">Core Competencies</h3>
                     <div class="d-flex flex-wrap gap-2 mb-4">
                         <?php foreach (FOUNDER_EXPERTISE as $skill): ?>
-                        <span class="badge bg-dark border border-secondary text-white-50"><?php echo $skill; ?></span>
+                        <span class="badge bg-light text-secondary border px-3 py-2" style="font-size: 0.8rem;"><?php echo htmlspecialchars($skill); ?></span>
                         <?php endforeach; ?>
                     </div>
-                    <a href="<?php echo FOUNDER_LINKEDIN; ?>" target="_blank" rel="noopener noreferrer" class="btn btn-nectra btn-sm"><i class="fab fa-linkedin me-2"></i>Connect on LinkedIn</a>
-                    <a href="/contact" class="btn btn-outline-light btn-sm ms-2">Schedule Strategy Call</a>
+                    <div class="d-flex gap-3">
+                        <a href="<?php echo nectra_nav_path('/contact'); ?>" class="btn btn-primary px-4 fw-medium">Schedule Strategy Session</a>
+                        <a href="<?php echo nectra_nav_path('/portfolio'); ?>" class="btn btn-outline-secondary px-4">View Case Studies</a>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="py-5 bg-darker border-top border-secondary">
+    <!-- CORE COMPANY VALUES / CODE -->
+    <section class="py-5" style="background: #F8FAFC;">
         <div class="container py-4">
             <div class="text-center mb-5">
-                <h2 class="text-white">Our <span class="text-neon">Code</span></h2>
-                <p class="text-white-50">Three principles governing every project we deliver.</p>
+                <h2 class="h3 fw-bold text-dark nd-section-title">Our Engineering Code</h2>
+                <p class="text-muted mx-auto" style="max-width: 600px;">The non-negotiable principles governing every single client deliverable.</p>
             </div>
             <div class="row g-4">
                 <div class="col-md-4">
-                    <div class="p-4 border border-secondary rounded bg-glass h-100 text-center">
-                        <i class="fas fa-tachometer-alt fa-2x text-neon mb-3"></i>
-                        <h3 class="text-white h5">Speed Is Priority</h3>
-                        <p class="text-white-50 small mb-0">Millisecond performance in websites, SEO results within 90 days, and rapid project delivery without compromising quality.</p>
+                    <div class="nd-card p-4 h-100 text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary mb-3" style="width: 48px; height: 48px;">
+                            <i class="fas fa-gauge-high fa-lg"></i>
+                        </div>
+                        <h3 class="h6 fw-bold text-dark mb-2">Velocity &amp; Precision</h3>
+                        <p class="text-muted small mb-0">Sub-second Core Web Vitals, organic search traction within measurable windows, and zero technical bloat in our builds.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="p-4 border border-secondary rounded bg-glass h-100 text-center">
-                        <i class="fas fa-shield-alt fa-2x text-neon mb-3"></i>
-                        <h3 class="text-white h5">Transparency & Editorial Standards</h3>
-                        <p class="text-white-50 small mb-0">Expert-authored content, verified credentials, published editorial guidelines, and transparent reporting on KPIs that matter.</p>
+                    <div class="nd-card p-4 h-100 text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary mb-3" style="width: 48px; height: 48px;">
+                            <i class="fas fa-shield-halved fa-lg"></i>
+                        </div>
+                        <h3 class="h6 fw-bold text-dark mb-2">Transparency &amp; E-E-A-T</h3>
+                        <p class="text-muted small mb-0">Verified expert attribution, published editorial standards, and transparent reporting on KPIs tied directly to business cash flow.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="p-4 border border-secondary rounded bg-glass h-100 text-center">
-                        <i class="fas fa-chart-line fa-2x text-neon mb-3"></i>
-                        <h3 class="text-white h5">ROI or Nothing</h3>
-                        <p class="text-white-50 small mb-0">We measure success in revenue, leads, and conversions. If it doesn't generate business value, we don't do it.</p>
+                    <div class="nd-card p-4 h-100 text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary mb-3" style="width: 48px; height: 48px;">
+                            <i class="fas fa-brain fa-lg"></i>
+                        </div>
+                        <h3 class="h6 fw-bold text-dark mb-2">Automation First</h3>
+                        <p class="text-muted small mb-0">We actively automate manual lead routing, client CRM updates, and technical auditing so our clients scale without proportional headcounts.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="py-5 border-top border-secondary">
-        <div class="container py-4">
-            <h2 class="text-white h4 mb-4">Contact Authority</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="p-4 border border-secondary rounded bg-glass">
-                        <i class="fas fa-map-marker-alt text-neon mb-2"></i>
-                        <h3 class="text-white h6">Headquarters</h3>
-                        <p class="text-white-50 small mb-0">Lucknow, Uttar Pradesh, India<br>Serving 20+ cities nationwide</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="p-4 border border-secondary rounded bg-glass">
-                        <i class="fas fa-envelope text-neon mb-2"></i>
-                        <h3 class="text-white h6">Direct Contact</h3>
-                        <p class="text-white-50 small mb-0"><?php require_once __DIR__ . '/includes/site-contact.php'; echo nectra_email_html_link('text-neon'); ?></p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="p-4 border border-secondary rounded bg-glass">
-                        <i class="fas fa-file-alt text-neon mb-2"></i>
-                        <h3 class="text-white h6">Legal & Editorial</h3>
-                        <p class="text-white-50 small mb-0">
-                            <a href="/editorial-guidelines" class="text-neon d-block">Editorial Guidelines</a>
-                            <a href="/privacy" class="text-white-50 d-block">Privacy Policy</a>
-                            <a href="/terms" class="text-white-50 d-block">Terms & Conditions</a>
-                            <a href="/disclaimer" class="text-white-50 d-block">Disclaimer</a>
-                        </p>
-                    </div>
-                </div>
+    <section class="py-5 bg-white">
+        <div class="container py-2">
+            <div class="text-center mb-5">
+                <h2 class="h3 fw-bold text-dark nd-section-title">How We Work</h2>
+                <p class="text-muted mx-auto mb-0" style="max-width: 36rem;">Our full delivery model — discover, build, test, launch, and scale with you.</p>
             </div>
+            <?php include __DIR__ . '/includes/ui/process.php'; ?>
         </div>
     </section>
 
-    <?php render_money_services_strip(['seo-services', 'performance-marketing-services', 'web-development-services', 'ai-automation-services'], 'Services We Deliver'); ?>
-    <?php render_cta_blocks('compact'); ?>
+    <!-- FINAL CTA -->
+    <?php include __DIR__ . '/includes/ui/cta.php'; ?>
 </main>
 
 <?php include 'includes/footer.php'; ?>

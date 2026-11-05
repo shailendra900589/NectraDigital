@@ -240,7 +240,7 @@ function service_content_overrides(): array {
         ],
         'web-development-services' => [
             'tagline' => 'Websites Built for Speed, SEO & Conversions.',
-            'overview' => '<p>Your website is your most important digital asset. Our web development agency builds fast, mobile-first, SEO-optimized websites that load in under 2 seconds, rank on Google, and convert visitors into customers.</p><p>From corporate sites to complex web applications, we use React, Next.js, WordPress, and Laravel to deliver pixel-perfect experiences engineered for growth.</p>',
+            'overview' => '<p>Your website is your most important digital asset. Our web development agency builds fast, mobile-first, SEO-optimized websites that load in under 2 seconds, rank on Google, and convert visitors into customers.</p><p>From corporate sites to complex web applications, we use React, Next.js, WordPress, and Laravel to deliver pixel-perfect experiences engineered for growth.</p><p>Every build includes performance tuning, accessibility basics, analytics setup, and SEO-ready structure — so marketing and engineering stay aligned after launch.</p>',
             'benefits' => [
                 ['icon' => 'fa-tachometer-alt', 'title' => 'Lightning Fast', 'desc' => 'Sub-2-second load times with Core Web Vitals optimization.'],
                 ['icon' => 'fa-search', 'title' => 'SEO-Ready Architecture', 'desc' => 'Clean code, schema markup, and semantic HTML from day one.'],
@@ -276,7 +276,7 @@ function service_content_overrides(): array {
         ],
         'ecommerce-development' => [
             'tagline' => 'Online Stores Engineered to Sell.',
-            'overview' => '<p>Ecommerce success requires more than a pretty storefront — it demands fast checkout, smart product discovery, payment flexibility, and SEO architecture that drives organic sales. Our ecommerce development company builds high-converting stores on Shopify, WooCommerce, and custom platforms.</p><p>From catalog setup to GST-compliant checkout, we launch stores that sell from day one.</p>',
+            'overview' => '<p>Ecommerce success requires more than a pretty storefront — it demands fast checkout, smart product discovery, payment flexibility, and SEO architecture that drives organic sales. Our ecommerce development company builds high-converting stores on Shopify, WooCommerce, and custom platforms.</p><p>From catalog setup to GST-compliant checkout, we launch stores that sell from day one.</p><p>We also integrate inventory, payments, shipping, and remarketing pixels so your store runs as one connected revenue system.</p>',
             'benefits' => [
                 ['icon' => 'fa-shopping-cart', 'title' => 'Conversion-Optimized UX', 'desc' => 'Checkout flows designed to minimize cart abandonment.'],
                 ['icon' => 'fa-credit-card', 'title' => 'Payment Gateways', 'desc' => 'Razorpay, PayU, COD, and international payments.'],

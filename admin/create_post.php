@@ -83,65 +83,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = 'Server error while saving. Please try again. (' . $e->getMessage() . ')';
     }
 }
+
+require_once __DIR__ . '/includes/admin-layout.php';
+admin_layout_start('Create Blog Post', 'blog', ['ckeditor' => true]);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Create Protocol</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <?php nectra_ckeditor_styles(); ?>
-    <style>body{background:#111; color:#fff;} body.admin-editor { padding: 2rem; }</style>
-</head>
-<body class="admin-editor p-5">
-    <div class="container">
-        <h3>Create New Intelligence</h3>
-        <?php if($error): ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
-        <form method="POST" class="mt-4" enctype="multipart/form-data">
+        <?php if ($error): ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
+        <div class="ge-card ge-editor-form">
+        <p class="text-muted small mb-4">Publish to Insights with SEO fields, optional schedule, and FAQ schema.</p>
+        <form method="POST" enctype="multipart/form-data">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label>Title</label>
-                    <input type="text" name="title" id="post_title" class="form-control bg-dark text-white" required>
+                    <label class="form-label">Title</label>
+                    <input type="text" name="title" id="post_title" class="form-control" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label>Custom URL Slug (Optional)</label>
-                    <input type="text" name="slug" id="post_slug" class="form-control bg-dark text-white" placeholder="Leave blank to auto-generate">
+                    <label class="form-label">Custom URL slug (optional)</label>
+                    <input type="text" name="slug" id="post_slug" class="form-control" placeholder="Leave blank to auto-generate">
                 </div>
                 <div class="col-md-3 mb-3">
-                    <label>Category</label>
-                    <input type="text" name="category" class="form-control bg-dark text-white" placeholder="e.g. AI, SEO" required>
+                    <label class="form-label">Category</label>
+                    <input type="text" name="category" class="form-control" placeholder="e.g. AI, SEO" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label>Featured Image (Max 500KB - WebP/SVG)</label>
-                    <input type="file" name="image" class="form-control bg-dark text-white" accept=".webp,.svg,image/webp,image/svg+xml" required>
+                    <label class="form-label">Featured image (max 500KB — WebP/SVG)</label>
+                    <input type="file" name="image" class="form-control" accept=".webp,.svg,image/webp,image/svg+xml" required>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <label>Schedule (Optional)</label>
-                    <input type="datetime-local" name="scheduled_time" class="form-control bg-dark text-white text-secondary">
+                    <label class="form-label">Schedule (optional)</label>
+                    <input type="datetime-local" name="scheduled_time" class="form-control">
                 </div>
                 <div class="col-12 mb-3">
-                    <label>SEO Meta Description (Max 160 chars)</label>
-                    <textarea name="meta_description" class="form-control bg-dark text-white" rows="2" maxlength="160" placeholder="Plain text summary for search engines..."></textarea>
+                    <label class="form-label">SEO meta description (max 160 chars)</label>
+                    <textarea name="meta_description" class="form-control" rows="2" maxlength="160" placeholder="Plain text summary for search engines…"></textarea>
                 </div>
                 <div class="col-12 mb-3">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" role="switch" name="is_orphan" id="is_orphan" value="1">
                         <label class="form-check-label" for="is_orphan">
-                            <strong>Orphan post</strong> — direct URL only, hidden from Insights &amp; site listings, still auto-indexed (sitemap + IndexNow)
+                            <strong>Orphan post</strong> — direct URL only, hidden from Insights listings, still indexed
                         </label>
                     </div>
                 </div>
                 <div class="col-12 mb-3">
-                    <label>Content Protocol</label>
+                    <label class="form-label">Content</label>
                     <textarea id="post_content" name="content" class="ckeditor-full"></textarea>
                 </div>
                 <?php $blog_faqs = []; include __DIR__ . '/includes/blog-faq-form.php'; ?>
             </div>
-            <button type="submit" class="btn btn-info">PUBLISH / SCHEDULE</button>
-            <a href="dashboard.php?page=blog" class="btn btn-outline-secondary ms-2">CANCEL</a>
+            <div class="ge-form-actions">
+                <button type="submit" class="btn btn-ge-primary"><i class="fas fa-paper-plane me-2"></i>Publish / schedule</button>
+                <a href="dashboard.php?page=blog" class="btn btn-outline-secondary">Cancel</a>
+            </div>
         </form>
-    </div>
-    <?php nectra_ckeditor_scripts('../assets'); ?>
-    <script>
+        </div>
+        <script>
         document.getElementById('post_title').addEventListener('input', function() {
             var slug = document.getElementById('post_slug');
             if (!slug.dataset.manual) {
@@ -151,6 +146,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         document.getElementById('post_slug').addEventListener('input', function() {
             this.dataset.manual = '1';
         });
-    </script>
-</body>
-</html>
+        </script>
+<?php
+admin_layout_end(['ckeditor' => true]);

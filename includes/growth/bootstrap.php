@@ -35,9 +35,9 @@ spl_autoload_register(function ($class) {
     }
 });
 
-function ge_conn(): mysqli {
+function ge_conn(): ?mysqli {
     global $conn;
-    return $conn;
+    return ($conn instanceof \mysqli) ? $conn : null;
 }
 
 function ge_setting(string $key, $default = null) {
@@ -49,6 +49,9 @@ function ge_setting(string $key, $default = null) {
         return $default;
     }
     $db = ge_conn();
+    if (!$db) {
+        return $default;
+    }
     $stmt = $db->prepare("SELECT setting_value FROM ge_settings WHERE setting_key = ? LIMIT 1");
     if (!$stmt) {
         return $default;
@@ -69,6 +72,9 @@ function ge_table_exists(string $table): bool {
         return $cache[$table];
     }
     $db = ge_conn();
+    if (!$db) {
+        return false;
+    }
     $table = $db->real_escape_string($table);
     $r = $db->query("SHOW TABLES LIKE '$table'");
     $cache[$table] = $r && $r->num_rows > 0;

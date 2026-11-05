@@ -11,22 +11,22 @@ $form_id = 'serviceCityForm_' . substr(md5($form_service . $form_city . $form_in
 <div class="svc-inline-form-wrap">
     <form id="<?php echo htmlspecialchars($form_id); ?>" class="svc-inline-form" novalidate>
         <div class="mb-3">
-            <label class="form-label text-white-50 small mb-1">Full Name</label>
-            <input type="text" name="name" class="form-control form-control-sm bg-dark text-white border-secondary" required autocomplete="name">
+            <label class="form-label text-muted small mb-1 fw-semibold">Full Name</label>
+            <input type="text" name="name" class="form-control form-control-sm" required autocomplete="name">
         </div>
         <div class="mb-3">
-            <label class="form-label text-white-50 small mb-1">Email</label>
-            <input type="email" name="email" class="form-control form-control-sm bg-dark text-white border-secondary" required autocomplete="email">
+            <label class="form-label text-muted small mb-1 fw-semibold">Email</label>
+            <input type="email" name="email" class="form-control form-control-sm" required autocomplete="email">
         </div>
         <div class="mb-3">
-            <label class="form-label text-white-50 small mb-1">Phone</label>
-            <input type="tel" name="phone" class="form-control form-control-sm bg-dark text-white border-secondary" autocomplete="tel">
+            <label class="form-label text-muted small mb-1 fw-semibold">Phone</label>
+            <input type="tel" name="phone" class="form-control form-control-sm" autocomplete="tel">
         </div>
         <input type="hidden" name="service" value="<?php echo htmlspecialchars($form_service); ?>">
         <input type="hidden" name="city" value="<?php echo htmlspecialchars($form_city); ?>">
         <div class="mb-3">
-            <label class="form-label text-white-50 small mb-1">Message</label>
-            <textarea name="message" class="form-control form-control-sm bg-dark text-white border-secondary" rows="3" placeholder="Tell us about your project..." required></textarea>
+            <label class="form-label text-muted small mb-1 fw-semibold">Message</label>
+            <textarea name="message" class="form-control form-control-sm" rows="3" placeholder="Tell us about your project..." required></textarea>
         </div>
         <button type="submit" class="btn btn-nectra w-100 btn-sm">Get Free Proposal</button>
         <div class="form-response mt-2 small"></div>
@@ -47,7 +47,7 @@ $form_id = 'serviceCityForm_' . substr(md5($form_service . $form_city . $form_in
         const original = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = 'Sending...';
-        fetch('/process', { method: 'POST', body: new FormData(form) })
+        fetch(typeof nectraWebPath === 'function' ? nectraWebPath('/process') : '/process', { method: 'POST', body: new FormData(form) })
             .then(r => r.json())
             .then(data => {
                 res.innerHTML = data.status === 'success'

@@ -3,10 +3,12 @@
  * Unified page router — Service×City → full template, industry landings, blog posts
  */
 
+require_once __DIR__ . '/includes/config.php';
+
 $slug = isset($_GET['slug']) ? preg_replace('/[^a-z0-9-]/', '', strtolower($_GET['slug'])) : '';
 
 if ($slug === '') {
-    header('Location: /404.php');
+    header('Location: ' . SITE_URL . '/404.php');
     exit;
 }
 

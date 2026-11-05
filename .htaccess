@@ -8,17 +8,30 @@
 # ========================================================
 # 2. CORE SECURITY & SETTINGS
 # ========================================================
-Options -Indexes
+# Options -Indexes
 DirectoryIndex index.php index.html
 RewriteEngine On
-RewriteBase /
+# RewriteBase / (Auto-detected by Apache per directory context)
 
 # ========================================================
-# 2B. CANONICAL HOST FIRST (must run before any other rewrite)
-# Fixes GSC "Page with redirect" for nectradigital.com / http → www https
+# 2A. LOCALHOST / DEV SAFETY RULE (ABSOLUTE TOP PRIORITY)
+# If running on localhost or 127.0.0.1, skip all canonical domain redirects!
 # ========================================================
-RewriteCond %{HTTPS} off [OR]
-RewriteCond %{HTTP_HOST} !^www\.nectradigital\.com$ [NC]
+RewriteCond %{SERVER_ADDR} ^127\.0\.0\.1$ [OR]
+RewriteCond %{SERVER_ADDR} ^::1$ [OR]
+RewriteCond %{HTTP_HOST} (localhost|127\.0\.0\.1) [NC]
+RewriteRule ^ - [S=10]
+
+# ========================================================
+# 2B. CANONICAL HOST (Production domain only)
+# ========================================================
+# 1) Non-www to www on nectradigital.com
+RewriteCond %{HTTP_HOST} ^nectradigital\.com$ [NC]
+RewriteRule ^ https://www.nectradigital.com%{REQUEST_URI} [R=301,L]
+
+# 2) HTTP to HTTPS on www.nectradigital.com
+RewriteCond %{HTTP_HOST} ^www\.nectradigital\.com$ [NC]
+RewriteCond %{HTTPS} off
 RewriteRule ^ https://www.nectradigital.com%{REQUEST_URI} [R=301,L]
 
 # Strip ?lang= on www (single hop to clean URL)
@@ -26,10 +39,12 @@ RewriteCond %{HTTP_HOST} ^www\.nectradigital\.com$ [NC]
 RewriteCond %{QUERY_STRING} (^|&)lang= [NC]
 RewriteRule ^ https://www.nectradigital.com%{REQUEST_URI}? [R=301,L]
 
-# /index → homepage
+# /index → homepage (production domain only)
+RewriteCond %{HTTP_HOST} ^(www\.)?nectradigital\.com$ [NC]
 RewriteRule ^index(\.php|\.html)?$ https://www.nectradigital.com/ [R=301,NC,L]
 
-# Remove trailing slash (except directories)
+# Remove trailing slash (production domain only)
+RewriteCond %{HTTP_HOST} ^(www\.)?nectradigital\.com$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)/$ https://www.nectradigital.com/$1 [R=301,L]
 
@@ -67,6 +82,11 @@ RewriteRule ^(.*)/$ https://www.nectradigital.com/$1 [R=301,L]
 <IfModule mod_headers.c>
   Header always set X-Robots-Tag "index, follow, max-image-preview:large" env=search_engine_bot
 </IfModule>
+
+# Block public access to dev/diagnostic scripts (production safety)
+RewriteCond %{HTTP_HOST} !(localhost|127\.0\.0\.1) [NC]
+RewriteRule ^(debug-home|health)\.php$ - [F,L]
+RewriteRule ^database/(migrate|test-db|generate-all-pages|fix-encoded-titles|refresh-seo-keywords)\.php$ - [F,L]
 
 # ========================================================
 # 3. SITEMAP, LLMS & RSS REWRITE

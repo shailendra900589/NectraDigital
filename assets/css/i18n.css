@@ -183,7 +183,7 @@ body {
 }
 
 .nectra-lang-check {
-    color: var(--nectra-neon, #00e5ff);
+    color: var(--nd-cyan, #06B6D4);
     font-size: 0.75rem;
 }
 
@@ -204,17 +204,10 @@ body {
 
 /* Mobile floating language button */
 .nectra-lang-float {
-    position: fixed;
-    left: 16px;
-    bottom: 90px;
-    z-index: 1040;
-    display: none;
+    display: none !important;
 }
 
 @media (max-width: 991.98px) {
-    .nectra-lang-float {
-        display: block;
-    }
 
     .navbar-nav .nectra-lang-switcher {
         width: 100%;

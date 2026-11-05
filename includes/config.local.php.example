@@ -1,5 +1,6 @@
 <?php
-// Server-only overrides (NOT in git). Copy to config.local.php on Hostinger.
+// Production-only overrides (NOT in git). Copy to config.local.php on Hostinger.
+// Not loaded on local XAMPP (127.0.0.1 / localhost) — local SITE_URL is auto-detected.
 if (!defined('SITE_URL')) {
     define('SITE_URL', 'https://www.nectradigital.com');
 }

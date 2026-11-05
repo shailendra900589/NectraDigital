@@ -3,6 +3,14 @@ require_once 'includes/db.php'; // DB Connection includes config settings
 header('Content-Type: application/json');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    if (!function_exists('nectra_db_is_connected') || !nectra_db_is_connected()) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Our form is temporarily unavailable. Please use the phone number or contact page email — we respond within one business day.',
+        ]);
+        exit;
+    }
     
     // 1. HONEYPOT CHECK (Hidden field that only bots fill)
     // आपको अपने HTML फॉर्म में यह लाइन जोड़नी होगी: <input type="text" name="website_url" style="display:none;">
@@ -58,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if($is_spam) {
              echo json_encode(["status" => "error", "message" => "System flagged message as spam."]);
         } else {
-             echo json_encode(["status" => "success", "message" => "Transmission Received. We will contact you shortly."]);
+             echo json_encode(["status" => "success", "message" => "Your inquiry has been received. Our team will contact you shortly."]);
         }
     } else {
         echo json_encode(["status" => "error", "message" => "Database Error."]);

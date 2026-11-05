@@ -2,6 +2,7 @@
 /**
  * Premium service page template — broad content, conversion-focused layout
  */
+require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/seo-data.php';
 require_once __DIR__ . '/seo-components.php';
 require_once __DIR__ . '/service-content.php';
@@ -12,7 +13,7 @@ require_once __DIR__ . '/eeat-copy.php';
 require_once __DIR__ . '/i18n.php';
 
 if (!isset($service_slug)) {
-    header('Location: /services');
+    header('Location: ' . SITE_URL . '/services');
     exit;
 }
 
@@ -35,7 +36,7 @@ if (empty($service) || !is_array($service) || !isset($service['process'])) {
     }
 
     if ($serviceBase === null) {
-        header('Location: /404.php');
+        header('Location: ' . SITE_URL . '/404.php');
         exit;
     }
 
@@ -81,6 +82,8 @@ if ($is_city_page) {
     ];
 }
 $page_schema = [get_breadcrumb_schema($breadcrumbs)];
+$isDarkHeader = true;
+$navAdaptive = false;
 if ($is_city_page && !empty($canonical_url)) {
     $page_schema[] = [
         '@type' => 'WebPage',
@@ -106,49 +109,50 @@ $benefits = $service['benefits'] ?? [];
 $paa = array_merge($service['paa'] ?? [], array_slice($service['faqs'] ?? [], 0, 2));
 
 include __DIR__ . '/header.php';
+require_once __DIR__ . '/ui/section-head.php';
 render_service_schema($service_slug, $service);
 if ($is_city_page && !empty($city)) {
     render_local_business_schema($city, $city_slug ?? '');
 }
 ?>
 
-<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/service-pages.css">
-
 <main class="svc-page">
-    <!-- HERO -->
-    <header class="svc-hero">
+    <!-- HERO (High-End Dark Navy Hero) -->
+    <header class="svc-hero nd-page-hero">
+        <div class="nd-hero-mesh" aria-hidden="true"></div>
         <div class="svc-hero-glow"></div>
-        <div class="container position-relative z-1 py-5">
+        <div class="container position-relative z-1 py-4">
             <?php render_breadcrumbs($breadcrumbs); ?>
-            <div class="row align-items-center g-5 py-4">
-                <div class="col-lg-7">
-                    <span class="svc-badge"><?php echo htmlspecialchars($service['silo']); ?><?php if ($is_city_page && !empty($city_name)): ?> · <?php echo htmlspecialchars($city_name); ?><?php else: ?> · Nectra Digital<?php endif; ?></span>
-                    <p class="svc-tagline text-neon mb-2"><?php echo htmlspecialchars($tagline); ?></p>
+            <div class="row svc-hero-row g-4 g-lg-5 py-3">
+                <div class="col-lg-7 svc-hero-copy">
                     <?php if ($is_city_page && !empty($city_name)): ?>
-                    <h1 class="display-4 fw-bold text-white mb-4"><?php echo htmlspecialchars($service['silo']); ?> in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h1>
+                    <h1 class="svc-hero-title fw-bold text-white mb-3 nd-hero-title"><?php echo htmlspecialchars($service['silo']); ?> in <span class="nd-text-gradient"><?php echo htmlspecialchars($city_name); ?></span></h1>
                     <?php else: ?>
-                    <h1 class="display-4 fw-bold text-white mb-4"><?php echo htmlspecialchars($service['h1']); ?></h1>
+                    <h1 class="svc-hero-title fw-bold text-white mb-3 nd-hero-title"><?php echo htmlspecialchars($service['h1']); ?></h1>
                     <?php endif; ?>
-                    <p class="lead text-white-50 mb-4"><?php echo htmlspecialchars($service['intro']); ?></p>
+                    <?php if (!empty($tagline)): ?>
+                    <p class="svc-hero-deck mb-3"><?php echo htmlspecialchars($tagline); ?></p>
+                    <?php endif; ?>
+                    <p class="lead text-white-50 mb-4 svc-hero-intro"><?php echo htmlspecialchars($service['intro']); ?></p>
                     <div class="d-flex flex-wrap gap-3 mb-4">
-                        <a href="#serviceCityForm" class="btn btn-nectra btn-lg"><?php echo $is_city_page ? 'Get Free Proposal in ' . htmlspecialchars($city_name) : 'Get Free Audit'; ?></a>
-                        <a href="/contact?service=Strategy+Call<?php echo $is_city_page ? '&city=' . urlencode($city_name) : ''; ?>" class="btn btn-outline-light btn-lg">Book Strategy Call</a>
+                        <a href="#serviceCityForm" class="btn btn-nectra-primary btn-lg nd-btn-motion"><i class="fas fa-paper-plane me-2"></i><?php echo $is_city_page ? 'Get Free Proposal in ' . htmlspecialchars($city_name) : 'Get Free Proposal'; ?></a>
+                        <a href="<?php echo htmlspecialchars(nectra_web_path('/contact?service=Strategy+Call' . ($is_city_page ? '&city=' . urlencode($city_name) : ''))); ?>" class="btn btn-nectra-outline-light btn-lg nd-btn-motion"><i class="fas fa-phone-alt me-2"></i>Book Strategy Call</a>
                     </div>
                     <div class="d-flex flex-wrap gap-4 text-white-50 small">
-                        <span><i class="fas fa-check-circle text-neon me-1"></i> Free Consultation</span>
-                        <span><i class="fas fa-check-circle text-neon me-1"></i> No Long-Term Contract</span>
-                        <span><i class="fas fa-check-circle text-neon me-1"></i> ROI-Focused</span>
+                        <span><i class="fas fa-check-circle text-success me-1"></i> Free Consultation</span>
+                        <span><i class="fas fa-check-circle text-success me-1"></i> Zero Long-Term Lock-in</span>
+                        <span><i class="fas fa-check-circle text-success me-1"></i> ROI-Focused Delivery</span>
                     </div>
                 </div>
-                <div class="col-lg-5">
-                    <div class="svc-hero-card p-4 p-lg-5">
-                        <div class="svc-hero-icon mb-4"><i class="fas <?php echo $service['icon']; ?>"></i></div>
+                <div class="col-lg-5 svc-hero-aside">
+                    <div class="svc-hero-stats-panel">
+                        <div class="svc-hero-icon mb-3 nd-icon-float"><i class="fas <?php echo $service['icon']; ?>"></i></div>
                         <div class="row g-3">
                             <?php foreach ($service['stats'] as $stat): ?>
                             <div class="col-6">
                                 <div class="svc-stat-box text-center p-3">
-                                    <div class="svc-stat-val text-neon"><?php echo htmlspecialchars($stat['value']); ?></div>
-                                    <div class="svc-stat-lbl text-white-50 small"><?php echo htmlspecialchars($stat['label']); ?></div>
+                                    <div class="svc-stat-val"><?php echo htmlspecialchars($stat['value']); ?></div>
+                                    <div class="svc-stat-lbl"><?php echo htmlspecialchars($stat['label']); ?></div>
                                 </div>
                             </div>
                             <?php endforeach; ?>
@@ -160,62 +164,70 @@ if ($is_city_page && !empty($city)) {
     </header>
 
     <!-- TRUST STRIP -->
-    <section class="svc-trust py-4 border-top border-bottom border-secondary">
+    <?php include __DIR__ . '/ui/trust-bar.php'; ?>
+
+    <!-- QUICK ANSWER BLOCK (Optimized for Featured Snippets, AEO & AI Search) -->
+    <section class="py-4 bg-white border-bottom svc-quick-answer-section">
         <div class="container">
-            <div class="row text-center g-3">
-                <div class="col-6 col-md-3"><i class="fas fa-award text-neon me-2"></i><span class="text-white-50 small">5+ Years Experience</span></div>
-                <div class="col-6 col-md-3"><i class="fas fa-users text-neon me-2"></i><span class="text-white-50 small">200+ Projects</span></div>
-                <div class="col-6 col-md-3"><i class="fas fa-star text-neon me-2"></i><span class="text-white-50 small"><?php echo htmlspecialchars(nectra_trust_rating_label()); ?></span></div>
-                <div class="col-6 col-md-3"><i class="fas fa-headset text-neon me-2"></i><span class="text-white-50 small">24/7 Support</span></div>
+            <div class="svc-quick-answer">
+                <div class="d-flex align-items-center gap-2 mb-2 text-primary fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">
+                    <i class="fas fa-bolt nd-icon-float"></i> Quick Answer
+                </div>
+                <p class="text-dark mb-0 fw-medium nd-text-lead">
+                    <?php echo htmlspecialchars($city_quick_answer); ?>
+                </p>
             </div>
         </div>
     </section>
 
-    <!-- OVERVIEW -->
-    <section class="py-5">
-        <div class="container">
-            <div class="row g-5 align-items-start">
-                <div class="col-lg-8">
-                    <h2 class="text-white h3 mb-4">Why Choose Our <span class="text-neon"><?php echo htmlspecialchars($service['silo']); ?></span><?php if ($is_city_page && !empty($city_name)): ?> in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span><?php endif; ?>?</h2>
-                    <div class="svc-overview text-white-50"><?php echo $overview; ?></div>
-
-                    <div class="mt-5 p-4 border border-neon rounded svc-glass">
-                        <h3 class="text-neon h6 text-uppercase mb-2"><i class="fas fa-bolt me-2"></i>Quick Answer</h3>
-                        <p class="text-white mb-0"><?php echo htmlspecialchars($city_quick_answer); ?></p>
-                    </div>
+    <!-- OVERVIEW & SIDEBAR CONVERSION FORM -->
+    <section class="py-5 svc-section-overview">
+        <div class="container py-2 py-md-3">
+            <div class="svc-overview-layout">
+                <div class="svc-overview-main">
+                    <?php nd_render_section_head(
+                        'Why Choose Our <span class="text-primary">' . htmlspecialchars($service['silo']) . '</span>' . ($is_city_page && !empty($city_name) ? ' in <span class="text-primary">' . htmlspecialchars($city_name) . '</span>' : '') . '?',
+                        null,
+                        'left'
+                    ); ?>
+                    <div class="svc-overview"><?php echo $overview; ?></div>
+                    <?php include __DIR__ . '/partials/service-overview-extras.php'; ?>
                 </div>
-                <div class="col-lg-4">
-                    <div class="svc-sidebar-card p-4 sticky-top" style="top:100px" id="serviceCityForm">
-                        <h3 class="text-white h6 mb-3"><?php echo $is_city_page ? 'Start Your Project in ' . htmlspecialchars($city_name) : 'Start Your Project'; ?></h3>
+                <aside class="svc-overview-aside">
+                    <div class="svc-sidebar-card p-4 svc-sidebar-sticky" id="serviceCityForm">
+                        <h3 class="h6 fw-bold text-dark mb-3"><?php echo $is_city_page ? 'Start Your Project in ' . htmlspecialchars($city_name) : 'Start Your Project'; ?></h3>
                         <?php $form_instance = 'sidebar'; include __DIR__ . '/partials/contact-form-inline.php'; ?>
-                        <hr class="border-secondary my-3">
-                        <ul class="list-unstyled text-white-50 small mb-0 svc-checklist">
-                            <li><i class="fas fa-check text-neon"></i> Free initial consultation</li>
-                            <li><i class="fas fa-check text-neon"></i> Custom strategy proposal</li>
-                            <li><i class="fas fa-check text-neon"></i> Transparent monthly reporting</li>
-                            <li><i class="fas fa-check text-neon"></i> Dedicated account manager</li>
-                            <li><i class="fas fa-check text-neon"></i> No long-term lock-in</li>
+                        <hr class="my-3 svc-sidebar-divider">
+                        <ul class="list-unstyled small mb-0 svc-checklist">
+                            <li><i class="fas fa-check"></i> Free initial consultation</li>
+                            <li><i class="fas fa-check"></i> Custom strategy proposal</li>
+                            <li><i class="fas fa-check"></i> Transparent monthly reporting</li>
+                            <li><i class="fas fa-check"></i> Dedicated account manager</li>
+                            <li><i class="fas fa-check"></i> No long-term lock-in</li>
                         </ul>
                     </div>
-                </div>
+                </aside>
             </div>
         </div>
     </section>
 
-    <!-- CHALLENGES -->
-    <section class="py-5 bg-darker border-top border-secondary">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="text-white h3">Problems We <span class="text-neon">Solve</span></h2>
-                <p class="text-white-50 mx-auto" style="max-width:600px">Most businesses struggle with these challenges before working with us.</p>
-            </div>
-            <div class="row g-4">
+    <!-- BUSINESS CHALLENGES WE SOLVE -->
+    <section class="py-5 bg-white border-top border-bottom">
+        <div class="container py-3">
+            <?php nd_render_section_head(
+                'Problems We Eliminate',
+                'Most growing businesses face these critical roadblocks before partnering with Nectra Digital.',
+                'center'
+            ); ?>
+            <div class="row g-4" data-nd-stagger>
                 <?php foreach ($service['challenges'] as $ch): ?>
                 <div class="col-md-4">
                     <div class="svc-challenge-card p-4 h-100">
-                        <i class="fas <?php echo $ch['icon']; ?> text-neon fa-2x mb-3"></i>
-                        <h3 class="text-white h6"><?php echo htmlspecialchars($ch['title']); ?></h3>
-                        <p class="text-white-50 small mb-0"><?php echo htmlspecialchars($ch['desc']); ?></p>
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary mb-3" style="width: 44px; height: 44px;">
+                            <i class="fas <?php echo $ch['icon']; ?> fa-lg"></i>
+                        </div>
+                        <h3 class="h6 fw-bold text-dark mb-2"><?php echo htmlspecialchars($ch['title']); ?></h3>
+                        <p class="text-muted small mb-0"><?php echo htmlspecialchars($ch['desc']); ?></p>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -223,20 +235,18 @@ if ($is_city_page && !empty($city)) {
         </div>
     </section>
 
-    <!-- BENEFITS -->
+    <!-- KEY BENEFITS -->
     <?php if (!empty($benefits)): ?>
-    <section class="py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="text-white h3">Key <span class="text-neon">Benefits</span></h2>
-            </div>
-            <div class="row g-4">
+    <section class="py-5" style="background: #F8FAFC;">
+        <div class="container py-3">
+            <?php nd_render_section_head('Key Value Deliverables', null, 'center'); ?>
+            <div class="row g-4" data-nd-stagger>
                 <?php foreach ($benefits as $b): ?>
                 <div class="col-md-6 col-lg-4">
                     <div class="svc-benefit-card p-4 h-100">
                         <div class="svc-benefit-icon mb-3"><i class="fas <?php echo $b['icon']; ?>"></i></div>
-                        <h3 class="text-white h6"><?php echo htmlspecialchars($b['title']); ?></h3>
-                        <p class="text-white-50 small mb-0"><?php echo htmlspecialchars($b['desc']); ?></p>
+                        <h3 class="h6 fw-bold text-dark mb-2"><?php echo htmlspecialchars($b['title']); ?></h3>
+                        <p class="text-muted small mb-0"><?php echo htmlspecialchars($b['desc']); ?></p>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -245,20 +255,21 @@ if ($is_city_page && !empty($city)) {
     </section>
     <?php endif; ?>
 
-    <!-- PROCESS -->
-    <section class="py-5 bg-darker border-top border-secondary">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="text-white h3">Our <span class="text-neon">Process</span></h2>
-                <p class="text-white-50">A proven 5-step framework for delivering measurable results.</p>
-            </div>
-            <div class="row g-4">
+    <!-- PROCESS FRAMEWORK -->
+    <section class="py-5 bg-white border-top border-bottom">
+        <div class="container py-3">
+            <?php nd_render_section_head(
+                'Our 5-Step Delivery Framework',
+                'A structured, reproducible engineering process built for predictable ROI.',
+                'center'
+            ); ?>
+            <div class="row g-4" data-nd-stagger>
                 <?php foreach ($service['process'] as $step): ?>
                 <div class="col-md-6 col-lg">
                     <div class="svc-process-step p-4 h-100 text-center">
-                        <div class="svc-step-num text-neon mb-2"><?php echo $step['step']; ?></div>
-                        <h3 class="text-white h6"><?php echo htmlspecialchars($step['title']); ?></h3>
-                        <p class="text-white-50 small mb-0"><?php echo htmlspecialchars($step['desc']); ?></p>
+                        <div class="svc-step-num mb-2"><?php echo $step['step']; ?></div>
+                        <h3 class="h6 fw-bold text-dark mb-2"><?php echo htmlspecialchars($step['title']); ?></h3>
+                        <p class="text-muted small mb-0"><?php echo htmlspecialchars($step['desc']); ?></p>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -266,72 +277,80 @@ if ($is_city_page && !empty($city)) {
         </div>
     </section>
 
-    <!-- DELIVERABLES + TOOLS -->
-    <section class="py-5">
-        <div class="container">
-            <div class="row g-5">
-                <div class="col-lg-6">
-                    <h2 class="text-white h4 mb-4">What's <span class="text-neon">Included</span></h2>
-                    <div class="row g-2">
-                        <?php foreach ($service['deliverables'] as $d): ?>
-                        <div class="col-md-6">
-                            <div class="svc-deliverable d-flex align-items-center p-3">
-                                <i class="fas fa-check-circle text-neon me-2 flex-shrink-0"></i>
-                                <span class="text-white small"><?php echo htmlspecialchars($d); ?></span>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
+    <!-- DELIVERABLES + TOOLS (stacked — no uneven column gaps) -->
+    <section class="py-5 svc-section-scope">
+        <div class="container py-2 py-md-3">
+            <?php nd_render_section_head('What Is Included', 'Deliverables included in a typical engagement with Nectra Digital.', 'left'); ?>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3 svc-deliverables-grid" data-nd-stagger>
+                <?php foreach ($service['deliverables'] as $d): ?>
+                <div class="col d-flex">
+                    <div class="svc-deliverable d-flex align-items-center p-3 w-100">
+                        <i class="fas fa-check-circle text-primary me-2 flex-shrink-0"></i>
+                        <span class="text-dark small fw-medium"><?php echo htmlspecialchars($d); ?></span>
                     </div>
                 </div>
-                <div class="col-lg-6">
-                    <h2 class="text-white h4 mb-4">Tools & <span class="text-neon">Technology</span></h2>
-                    <div class="d-flex flex-wrap gap-2">
-                        <?php foreach ($service['tools'] as $tool): ?>
-                        <span class="svc-tool-badge"><?php echo htmlspecialchars($tool); ?></span>
-                        <?php endforeach; ?>
-                    </div>
-                    <div class="mt-4 p-4 border border-secondary rounded svc-glass">
-                        <h3 class="text-white h6 mb-2"><i class="fas fa-lightbulb text-neon me-2"></i>Expert Insight</h3>
-                        <p class="text-white-50 small fst-italic mb-0">"We focus on measurable outcomes — clear strategy, transparent reporting, and continuous optimization tailored to your market and goals." — <?php echo FOUNDER_NAME; ?>, <?php echo FOUNDER_TITLE; ?></p>
-                    </div>
-                </div>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="mt-4 mt-lg-5">
+                <?php include __DIR__ . '/partials/service-scope-engagement-strip.php'; ?>
+            </div>
+
+            <div class="mt-4 mt-lg-5">
+                <?php include __DIR__ . '/partials/service-scope-tech-panel.php'; ?>
             </div>
         </div>
     </section>
 
-    <!-- INDUSTRIES -->
-    <section class="py-5 bg-darker border-top border-secondary">
-        <div class="container">
-            <h2 class="text-white h4 mb-4 text-center">Industries We <span class="text-neon">Serve</span></h2>
+    <!-- INDUSTRIES SERVED -->
+    <section class="py-5 bg-white border-top border-bottom">
+        <div class="container py-3">
+            <?php nd_render_section_head(
+                'Industries We Accelerate',
+                'Specialized workflows and regulatory knowledge across key sectors.',
+                'center'
+            ); ?>
             <div class="d-flex flex-wrap justify-content-center gap-2">
                 <?php foreach ($service['industries'] as $ind): ?>
-                <span class="svc-industry-pill"><?php echo htmlspecialchars($ind); ?></span>
+                <span class="svc-industry-pill"><i class="fas fa-building text-primary"></i> <?php echo htmlspecialchars($ind); ?></span>
                 <?php endforeach; ?>
             </div>
         </div>
     </section>
 
-    <!-- COMPARISON -->
-    <section class="py-5">
-        <div class="container">
-            <h2 class="text-white h4 mb-4 text-center">Nectra Digital vs <span class="text-neon">Typical Agencies</span></h2>
-            <div class="row g-4 justify-content-center">
+    <!-- COMPARISON MATRIX -->
+    <section class="py-5" style="background: #F8FAFC;">
+        <div class="container py-3">
+            <?php nd_render_section_head('Nectra Digital vs. Traditional Agencies', null, 'center'); ?>
+            <div class="row g-4 justify-content-center" data-nd-stagger>
                 <div class="col-md-5">
-                    <div class="svc-compare-card svc-compare-us p-4 h-100">
-                        <h3 class="text-neon h6 mb-3"><i class="fas fa-check-double me-2"></i>Nectra Digital</h3>
+                    <div class="p-4 rounded-3 h-100 bg-white border border-primary border-opacity-50 shadow-sm">
+                        <div class="d-flex align-items-center gap-2 mb-3 text-primary fw-bold">
+                            <i class="fas fa-circle-check"></i>
+                            <h3 class="h6 mb-0 fw-bold text-primary">Nectra Digital Standard</h3>
+                        </div>
                         <ul class="list-unstyled mb-0">
                             <?php foreach ($service['comparison']['us'] as $item): ?>
-                            <li class="text-white small mb-2"><i class="fas fa-check text-neon me-2"></i><?php echo htmlspecialchars($item); ?></li>
+                            <li class="text-dark small mb-2 d-flex align-items-start gap-2">
+                                <i class="fas fa-check text-primary mt-1"></i>
+                                <span><?php echo htmlspecialchars($item); ?></span>
+                            </li>
                             <?php endforeach; ?>
                         </ul>
                     </div>
                 </div>
                 <div class="col-md-5">
-                    <div class="svc-compare-card p-4 h-100">
-                        <h3 class="text-white-50 h6 mb-3"><i class="fas fa-times me-2"></i>Typical Agencies</h3>
+                    <div class="p-4 rounded-3 h-100 bg-white border text-muted">
+                        <div class="d-flex align-items-center gap-2 mb-3 text-secondary fw-bold">
+                            <i class="fas fa-circle-xmark text-danger"></i>
+                            <h3 class="h6 mb-0 fw-bold text-secondary">Typical Agencies</h3>
+                        </div>
                         <ul class="list-unstyled mb-0">
                             <?php foreach ($service['comparison']['others'] as $item): ?>
-                            <li class="text-white-50 small mb-2"><i class="fas fa-times text-danger me-2"></i><?php echo htmlspecialchars($item); ?></li>
+                            <li class="text-muted small mb-2 d-flex align-items-start gap-2">
+                                <i class="fas fa-times text-danger mt-1"></i>
+                                <span><?php echo htmlspecialchars($item); ?></span>
+                            </li>
                             <?php endforeach; ?>
                         </ul>
                     </div>
@@ -340,21 +359,23 @@ if ($is_city_page && !empty($city)) {
         </div>
     </section>
 
-    <?php render_faq_section($service['faqs'], $service['h1'] . ' — FAQ'); ?>
+    <!-- FAQ SECTION -->
+    <?php render_faq_section($service['faqs'], $service['h1'] . ' — FAQ', 'light'); ?>
 
+    <!-- LOCALIZED CITY CONTENT (If on city landing page) -->
     <?php if ($is_city_page && !empty($city_name)): ?>
-    <section class="py-5 bg-darker border-top border-secondary">
-        <div class="container">
+    <section class="py-5 bg-white border-top border-bottom">
+        <div class="container py-3">
             <div class="row g-5">
                 <div class="col-lg-8">
-                    <h2 class="text-white h3 mb-4"><?php echo htmlspecialchars($service['silo']); ?> for Businesses in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h2>
-                    <p class="text-white-50"><?php echo htmlspecialchars(ge_service_city_unique_block($service_slug, $city_slug ?? '', $city ?? [], $service)); ?></p>
-                    <p class="text-white-50">Nectra Digital supports companies in <?php echo htmlspecialchars($city_name); ?>, <?php echo htmlspecialchars($city_state ?? ''); ?> with <?php echo htmlspecialchars(strtolower($service['silo'])); ?> strategy, execution, and reporting — plus web development and AI automation when your growth plan requires custom tools.</p>
-                    <h3 class="text-white h5 mt-4">What we deliver locally</h3>
-                    <ul class="text-white-50">
-                        <li class="mb-2">Market-specific research and campaign setup for <?php echo htmlspecialchars($city_name); ?></li>
+                    <h2 class="h3 fw-bold text-dark mb-4 nd-section-title"><?php echo htmlspecialchars($service['silo']); ?> for Businesses in <span class="text-primary"><?php echo htmlspecialchars($city_name); ?></span></h2>
+                    <p class="text-muted"><?php echo htmlspecialchars(ge_service_city_unique_block($service_slug, $city_slug ?? '', $city ?? [], $service)); ?></p>
+                    <p class="text-muted">Nectra Digital supports companies in <?php echo htmlspecialchars($city_name); ?>, <?php echo htmlspecialchars($city_state ?? ''); ?> with <?php echo htmlspecialchars(strtolower($service['silo'])); ?> strategy, execution, and reporting — plus web development and AI automation when your growth plan requires custom software.</p>
+                    <h3 class="h6 fw-bold text-dark mt-4 mb-2">What we deliver locally</h3>
+                    <ul class="text-muted small">
+                        <li class="mb-2">Market-specific search research and campaign calibration for <?php echo htmlspecialchars($city_name); ?></li>
                         <li class="mb-2">Dedicated account management with transparent monthly reporting</li>
-                        <li class="mb-2">Integrated support across SEO, paid media, and development when needed</li>
+                        <li class="mb-2">Integrated engineering across SEO, paid media, and software platforms</li>
                     </ul>
                 </div>
                 <div class="col-lg-4">
@@ -365,48 +386,31 @@ if ($is_city_page && !empty($city)) {
     </section>
     <?php endif; ?>
 
+    <!-- SERVICE CITY LINKS -->
     <?php
     try {
         render_service_city_links($service_slug, $service, $is_city_page ? ($city_slug ?? null) : null);
     } catch (\Throwable $e) {
-        // Never block footer / lower sections if city links fail
+        // Safe fallback
     }
     ?>
 
-    <?php if ($is_city_page): ?>
-    <section class="py-5 border-top border-secondary">
+    <!-- RELATED SERVICES -->
+    <?php render_internal_links_service($service['related'], 'light'); ?>
+
+    <!-- CALL TO ACTION BANNER -->
+    <section class="nd-section nd-section-alt py-4 py-md-5">
         <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="svc-sidebar-card p-4 p-lg-5">
-                        <h2 class="text-white h4 mb-2 text-center">Get a Free <?php echo htmlspecialchars($service['silo']); ?> Proposal in <span class="text-neon"><?php echo htmlspecialchars($city_name); ?></span></h2>
-                        <p class="text-white-50 small text-center mb-4">Tell us about your goals — we respond within 24 hours with a custom strategy for <?php echo htmlspecialchars($city_name); ?> businesses.</p>
-                        <?php $form_instance = 'bottom'; include __DIR__ . '/partials/contact-form-inline.php'; ?>
-                    </div>
-                </div>
-            </div>
+            <?php include __DIR__ . '/ui/cta.php'; ?>
         </div>
     </section>
-    <?php endif; ?>
 
-    <?php if (!empty($paa)): ?>
-    <section class="py-5 bg-darker border-top border-secondary">
-        <div class="container py-2">
-            <h2 class="text-white h5 mb-4">People Also Ask</h2>
-            <?php foreach ($paa as $item): ?>
-            <div class="mb-4 pb-3 border-bottom border-secondary">
-                <h3 class="text-white h6 mb-2"><?php echo htmlspecialchars($item['q']); ?></h3>
-                <p class="text-white-50 small mb-0"><?php echo htmlspecialchars($item['a']); ?></p>
-            </div>
-            <?php endforeach; ?>
+    <!-- AUTHOR CREDENTIALS -->
+    <section class="nd-section bg-white border-top py-4">
+        <div class="container">
+            <?php include __DIR__ . '/ui/author-box.php'; ?>
         </div>
     </section>
-    <?php endif; ?>
-
-    <?php render_internal_links_service($service['related']); ?>
-    <?php render_cta_blocks('full'); ?>
-    <?php render_founder_section(true); ?>
-    <?php render_trust_signals(); ?>
 </main>
 
 <?php include __DIR__ . '/footer.php'; ?>

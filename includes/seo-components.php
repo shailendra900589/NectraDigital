@@ -8,32 +8,46 @@ if (!function_exists('nectra_display_text')) {
     require_once __DIR__ . '/text-utils.php';
 }
 
-function render_breadcrumbs($items) {
-    echo '<nav aria-label="breadcrumb" class="mb-4"><ol class="breadcrumb bg-transparent p-0 m-0 small">';
-    foreach ($items as $i => $item) {
-        $is_last = ($i === count($items) - 1);
-        if ($is_last) {
-            echo '<li class="breadcrumb-item active text-neon" aria-current="page">' . nectra_display_text($item['name']) . '</li>';
-        } else {
-            echo '<li class="breadcrumb-item"><a href="' . htmlspecialchars($item['url']) . '" class="text-white-50 text-decoration-none">' . nectra_display_text($item['name']) . '</a></li>';
-        }
-    }
-    echo '</ol></nav>';
+/**
+ * Visible breadcrumb UI disabled site-wide (JSON-LD via get_breadcrumb_schema() unchanged).
+ *
+ * @param array<int, array{name: string, url?: string}> $items
+ * @param 'hero'|'light' $variant Unused; kept for call-site compatibility
+ */
+function render_breadcrumbs($items, $variant = 'hero') {
+    return;
 }
 
-function render_faq_section($faqs, $title = 'Frequently Asked Questions') {
+function render_faq_section($faqs, $title = 'Frequently Asked Questions', $theme = 'dark') {
     if (empty($faqs)) return;
-    echo '<section class="py-5 border-top border-secondary"><div class="container py-4">';
-    echo '<h2 class="text-white h3 mb-4">' . htmlspecialchars($title) . '</h2>';
-    echo '<div class="accordion accordion-flush" id="faqAccordion">';
+    $isLight = ($theme === 'light');
+    $sectionClass = $isLight
+        ? 'py-5 bg-white border-top nd-faq-section nd-faq-section--light'
+        : 'py-5 nd-section-dark border-top nd-faq-section nd-faq-section--dark';
+    $titleClass = $isLight ? 'text-dark' : 'text-white';
+    $subClass = $isLight ? 'text-muted' : 'text-white-50';
+    $itemClass = $isLight ? 'bg-white border' : 'nd-faq-item-dark';
+    echo '<section class="' . $sectionClass . ' nd-no-section-animate">';
+    echo '<div class="container py-2 py-md-3">';
+    echo '<div class="row justify-content-center"><div class="col-lg-10 col-xl-9">';
+    echo '<div class="text-center mb-4 mb-md-5">';
+    echo '<h2 class="nd-section-title ' . $titleClass . ' mb-2">' . htmlspecialchars($title) . '</h2>';
+    echo '<p class="mb-0 ' . $subClass . ' nd-section-sub">Clear answers to common questions — expand any item below.</p>';
+    echo '</div>';
+    echo '<div class="accordion nd-faq-accordion" id="faqAccordion">';
     foreach ($faqs as $i => $faq) {
         $id = 'faq' . $i;
-        echo '<div class="accordion-item bg-transparent border-secondary">';
-        echo '<h3 class="accordion-header"><button class="accordion-button ' . ($i > 0 ? 'collapsed' : '') . ' bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#' . $id . '">' . htmlspecialchars($faq['q']) . '</button></h3>';
+        $collapsed = ($i > 0 ? ' collapsed' : '');
+        $btnClasses = $isLight
+            ? 'accordion-button' . $collapsed . ' shadow-none'
+            : 'accordion-button' . $collapsed . ' nd-faq-btn-dark shadow-none';
+        $bodyClass = $isLight ? 'text-secondary' : 'text-white-50';
+        echo '<div class="accordion-item ' . $itemClass . '">';
+        echo '<h3 class="accordion-header"><button class="' . $btnClasses . '" type="button" data-bs-toggle="collapse" data-bs-target="#' . $id . '" aria-expanded="' . ($i === 0 ? 'true' : 'false') . '">' . htmlspecialchars($faq['q']) . '</button></h3>';
         echo '<div id="' . $id . '" class="accordion-collapse collapse ' . ($i === 0 ? 'show' : '') . '" data-bs-parent="#faqAccordion">';
-        echo '<div class="accordion-body text-white-50">' . htmlspecialchars($faq['a']) . '</div></div></div>';
+        echo '<div class="accordion-body ' . $bodyClass . '">' . htmlspecialchars($faq['a']) . '</div></div></div>';
     }
-    echo '</div></div></section>';
+    echo '</div></div></div></div></section>';
     output_faq_schema($faqs);
 }
 
@@ -45,16 +59,24 @@ function render_cta_blocks($variant = 'full') {
         ['label' => 'Talk To Expert', 'url' => '/contact?service=Expert+Call', 'icon' => 'fa-headset'],
         ['label' => 'Schedule Strategy Call', 'url' => '/contact?service=Strategy+Call', 'icon' => 'fa-phone'],
     ];
-    echo '<section class="py-5 bg-darker border-top border-secondary"><div class="container py-3">';
-    echo '<div class="text-center mb-4"><h2 class="text-white h4">Ready to <span class="text-neon">Grow?</span></h2>';
-    echo '<p class="text-white-50 small">Choose how you\'d like to connect with our team.</p></div>';
-    echo '<div class="row g-3 justify-content-center">';
     $show = ($variant === 'full') ? $ctas : array_slice($ctas, 0, 3);
+    echo '<section class="nd-cta-band py-5 nd-no-section-animate" aria-labelledby="nd-cta-band-title">';
+    echo '<div class="container py-2">';
+    echo '<div class="text-center mb-4">';
+    echo '<h2 id="nd-cta-band-title" class="nd-cta-band__title h4 mb-2">Ready to <span class="text-tech-blue">Grow?</span></h2>';
+    echo '<p class="nd-cta-band__sub small mb-0">Choose how you\'d like to connect with our team.</p>';
+    echo '</div>';
+    echo '<div class="row g-3 justify-content-center">';
     foreach ($show as $cta) {
-        echo '<div class="col-md-6 col-lg-4 col-xl">';
-        echo '<a href="' . $cta['url'] . '" class="d-block p-3 border border-secondary rounded bg-glass text-decoration-none text-center hover-effect h-100">';
-        echo '<i class="fas ' . $cta['icon'] . ' text-neon fa-lg mb-2"></i>';
-        echo '<span class="d-block text-white small fw-bold">' . $cta['label'] . '</span></a></div>';
+        $ctaHref = $cta['url'];
+        if (is_string($ctaHref) && $ctaHref !== '' && $ctaHref[0] === '/' && function_exists('nectra_web_path')) {
+            $ctaHref = nectra_web_path($ctaHref);
+        }
+        echo '<div class="col-6 col-md-4 col-lg">';
+        echo '<a href="' . htmlspecialchars($ctaHref) . '" class="nd-cta-tile h-100">';
+        echo '<i class="fas ' . htmlspecialchars($cta['icon']) . ' nd-cta-tile__icon fa-lg" aria-hidden="true"></i>';
+        echo '<span class="nd-cta-tile__label">' . htmlspecialchars($cta['label']) . '</span>';
+        echo '</a></div>';
     }
     echo '</div></div></section>';
 }
@@ -84,11 +106,11 @@ function render_author_bio($compact = true) {
     echo '<div class="p-4 border border-secondary rounded bg-glass mt-5" itemscope itemtype="https://schema.org/Person">';
     echo '<div class="d-flex align-items-start gap-3">';
     echo '<div class="flex-shrink-0 rounded-circle border border-neon d-flex align-items-center justify-content-center bg-dark" style="width:60px;height:60px;"><i class="fas fa-user-tie text-neon"></i></div>';
-    echo '<div><h4 class="text-white h6 mb-1" itemprop="name">' . FOUNDER_NAME . '</h4>';
+    echo '<div><h4 class="text-dark h6 mb-1" itemprop="name">' . FOUNDER_NAME . '</h4>';
     echo '<p class="text-neon small mb-2" itemprop="jobTitle">' . FOUNDER_TITLE . '</p>';
-    echo '<p class="text-white-50 small mb-2" itemprop="description">SEO expert and digital strategist with ' . FOUNDER_EXPERIENCE . ' of experience. Author verified by Nectra Digital editorial team.</p>';
+    echo '<p class="text-muted small mb-2" itemprop="description">SEO expert and digital strategist with ' . FOUNDER_EXPERIENCE . ' of experience. Author verified by Nectra Digital editorial team.</p>';
     echo '<a href="' . FOUNDER_LINKEDIN . '" target="_blank" rel="noopener" class="text-neon small" itemprop="sameAs"><i class="fab fa-linkedin"></i> LinkedIn</a>';
-    echo ' · <a href="/editorial-guidelines" class="text-white-50 small">Editorial Guidelines</a></div></div></div>';
+    echo ' · <a href="/editorial-guidelines" class="text-muted small">Editorial Guidelines</a></div></div></div>';
 }
 
 function render_geo_blocks($title, $content_excerpt = '') {
@@ -97,7 +119,7 @@ function render_geo_blocks($title, $content_excerpt = '') {
     
     echo '<div class="geo-blocks mb-5">';
     echo '<div class="p-4 border border-neon rounded bg-glass mb-4"><h2 class="text-neon h6 text-uppercase mb-2"><i class="fas fa-bolt me-2"></i>Quick Answer</h2>';
-    echo '<p class="text-white mb-0">' . htmlspecialchars($quick) . '</p></div>';
+    echo '<p class="text-dark mb-0 geo-blocks__lead">' . htmlspecialchars($quick) . '</p></div>';
     
     echo '<div class="p-4 border border-secondary rounded bg-dark mb-4"><h2 class="text-white h6 mb-3"><i class="fas fa-list-check text-neon me-2"></i>Key Takeaways</h2><ul class="text-white-50 small mb-0">';
     echo '<li>Actionable strategies backed by 5+ years of industry experience</li>';
@@ -105,15 +127,15 @@ function render_geo_blocks($title, $content_excerpt = '') {
     echo '<li>Applicable for businesses in India and global markets</li>';
     echo '<li>Updated for 2026 best practices and algorithm changes</li></ul></div>';
     
-    echo '<div class="p-4 border border-secondary rounded bg-glass mb-4"><h2 class="text-white h6 mb-2"><i class="fas fa-lightbulb text-neon me-2"></i>Expert Insight</h2>';
-    echo '<p class="text-white-50 small mb-2"><strong class="text-white">' . FOUNDER_NAME . '</strong>, ' . FOUNDER_TITLE . ':</p>';
-    echo '<p class="text-white-50 small fst-italic mb-0">"The strategies outlined here reflect what we implement daily for clients achieving 340%+ organic growth. Focus on fundamentals first — technical SEO, content authority, and user experience — before chasing trends."</p></div>';
+    echo '<div class="p-4 border border-secondary rounded bg-glass mb-4"><h2 class="text-dark h6 mb-2"><i class="fas fa-lightbulb text-neon me-2"></i>Expert Insight</h2>';
+    echo '<p class="text-muted small mb-2"><strong class="text-dark">' . FOUNDER_NAME . '</strong>, ' . FOUNDER_TITLE . ':</p>';
+    echo '<p class="text-muted small fst-italic mb-0">"The strategies outlined here reflect what we implement daily for clients achieving 340%+ organic growth. Focus on fundamentals first — technical SEO, content authority, and user experience — before chasing trends."</p></div>';
     echo '</div>';
 }
 
 function render_geo_summary($title) {
-    echo '<div class="p-4 border-start border-neon border-3 bg-glass mt-5"><h2 class="text-white h5 mb-3">Summary</h2>';
-    echo '<p class="text-white-50 small mb-0">This guide on ' . htmlspecialchars($title) . ' provides comprehensive, expert-verified information from Nectra Digital. For personalized strategy and implementation, <a href="/contact" class="text-neon">book a free consultation</a> with our team.</p></div>';
+    echo '<div class="p-4 border-start border-neon border-3 bg-glass mt-5"><h2 class="text-dark h5 mb-3">Summary</h2>';
+    echo '<p class="text-muted small mb-0">This guide on ' . htmlspecialchars($title) . ' provides comprehensive, expert-verified information from Nectra Digital. For personalized strategy and implementation, <a href="/contact" class="text-neon">book a free consultation</a> with our team.</p></div>';
 }
 
 function render_money_services_strip(?array $slugs = null, string $heading = 'Explore Our Services'): void
@@ -137,19 +159,30 @@ function render_money_services_strip(?array $slugs = null, string $heading = 'Ex
     echo '</div></div></section>';
 }
 
-function render_internal_links_service($related_slugs) {
+function render_internal_links_service($related_slugs, $theme = 'dark') {
     $services = get_services_data();
-    echo '<section class="py-4 border-top border-secondary"><div class="container"><h3 class="text-white h6 mb-3">Related Services</h3><div class="row g-2">';
+    $isLight = ($theme === 'light');
+    $sectionClass = $isLight ? 'py-5 bg-white border-top' : 'py-4 border-top border-secondary nd-section-dark';
+    $headingClass = $isLight ? 'text-dark' : 'text-white';
+    $cardClass = $isLight
+        ? 'd-block p-3 border rounded text-decoration-none h-100 nd-card'
+        : 'd-block p-3 border border-secondary rounded text-decoration-none hover-effect';
+    $textClass = $isLight ? 'text-dark' : 'text-white';
+    $iconClass = $isLight ? 'text-primary' : 'text-neon';
+    $href = static function (string $path): string {
+        return function_exists('nectra_web_path') ? nectra_web_path($path) : $path;
+    };
+    echo '<section class="' . $sectionClass . '"><div class="container py-2"><h3 class="' . $headingClass . ' h5 mb-3">Related Services</h3><div class="row g-3">';
     foreach ($related_slugs as $slug) {
         if (!isset($services[$slug])) continue;
         $s = $services[$slug];
-        echo '<div class="col-md-6 col-lg-4"><a href="/' . $slug . '" class="d-block p-3 border border-secondary rounded text-decoration-none hover-effect">';
-        echo '<i class="fas ' . $s['icon'] . ' text-neon me-2"></i><span class="text-white small">' . htmlspecialchars($s['h1']) . '</span></a></div>';
+        echo '<div class="col-md-6 col-lg-4"><a href="' . htmlspecialchars($href('/' . $slug)) . '" class="' . $cardClass . '">';
+        echo '<i class="fas ' . $s['icon'] . ' ' . $iconClass . ' me-2"></i><span class="' . $textClass . ' small fw-medium">' . htmlspecialchars($s['h1']) . '</span></a></div>';
     }
-    echo '<div class="col-md-6 col-lg-4"><a href="/insights" class="d-block p-3 border border-secondary rounded text-decoration-none hover-effect">';
-    echo '<i class="fas fa-newspaper text-neon me-2"></i><span class="text-white small">Latest Intel & Blog</span></a></div>';
-    echo '<div class="col-md-6 col-lg-4"><a href="/contact" class="d-block p-3 border border-secondary rounded text-decoration-none hover-effect">';
-    echo '<i class="fas fa-envelope text-neon me-2"></i><span class="text-white small">Contact Our Team</span></a></div>';
+    echo '<div class="col-md-6 col-lg-4"><a href="' . htmlspecialchars($href('/insights')) . '" class="' . $cardClass . '">';
+    echo '<i class="fas fa-newspaper ' . $iconClass . ' me-2"></i><span class="' . $textClass . ' small fw-medium">Latest Intel &amp; Blog</span></a></div>';
+    echo '<div class="col-md-6 col-lg-4"><a href="' . htmlspecialchars($href('/contact')) . '" class="' . $cardClass . '">';
+    echo '<i class="fas fa-envelope ' . $iconClass . ' me-2"></i><span class="' . $textClass . ' small fw-medium">Contact Our Team</span></a></div>';
     echo '</div></div></section>';
 }
 

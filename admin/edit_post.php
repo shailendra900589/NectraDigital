@@ -91,66 +91,61 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 $post_is_orphan = blog_is_orphan($post);
 $blog_faqs = blog_faq_decode($post['faq_json'] ?? null);
+
+require_once __DIR__ . '/includes/admin-layout.php';
+admin_layout_start('Edit Blog Post', 'blog', ['ckeditor' => true]);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Edit Protocol</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <?php nectra_ckeditor_styles(); ?>
-    <style>body{background:#111; color:#fff;} body.admin-editor { padding: 2rem; }</style>
-</head>
-<body class="admin-editor p-5">
-    <div class="container">
-        <h3>Edit Intelligence: <span class="text-info"><?php echo nectra_display_text($post['title']); ?></span></h3>
-        <?php if($error): ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
-        <form method="POST" class="mt-4" enctype="multipart/form-data">
+        <?php if ($error): ?><div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
+        <div class="ge-card ge-editor-form">
+        <p class="text-muted small mb-4">Editing: <strong><?php echo nectra_display_text($post['title']); ?></strong></p>
+        <form method="POST" enctype="multipart/form-data">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label>Title</label>
-                    <input type="text" name="title" id="post_title" value="<?php echo nectra_display_text($post['title']); ?>" class="form-control bg-dark text-white" required>
+                    <label class="form-label">Title</label>
+                    <input type="text" name="title" id="post_title" value="<?php echo nectra_display_text($post['title']); ?>" class="form-control" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label>Custom URL Slug</label>
-                    <input type="text" name="slug" id="post_slug" value="<?php echo isset($post['slug']) ? htmlspecialchars($post['slug']) : ''; ?>" class="form-control bg-dark text-white">
+                    <label class="form-label">Custom URL slug</label>
+                    <input type="text" name="slug" id="post_slug" value="<?php echo isset($post['slug']) ? htmlspecialchars($post['slug']) : ''; ?>" class="form-control">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label>Category</label>
-                    <input type="text" name="category" value="<?php echo nectra_display_text($post['category']); ?>" class="form-control bg-dark text-white" required>
+                    <label class="form-label">Category</label>
+                    <input type="text" name="category" value="<?php echo nectra_display_text($post['category']); ?>" class="form-control" required>
                 </div>
                 <div class="col-md-8 mb-3">
-                    <label>Current Image</label><br>
-                    <?php if(!empty($post['image'])): ?>
-                        <img src="../<?php echo htmlspecialchars($post['image']); ?>" height="50" class="mb-2 border border-secondary" style="object-fit: cover;">
+                    <label class="form-label">Featured image</label><br>
+                    <?php if (!empty($post['image'])): ?>
+                        <img src="../<?php echo htmlspecialchars($post['image']); ?>" height="50" class="mb-2 border rounded" style="object-fit: cover;" alt="">
                     <?php endif; ?>
-                    <label class="d-block text-white-50 small">Upload New to Replace</label>
-                    <input type="file" name="image" class="form-control bg-dark text-white" accept=".webp, .svg">
+                    <label class="d-block text-muted small">Upload new to replace</label>
+                    <input type="file" name="image" class="form-control" accept=".webp,.svg,image/webp,image/svg+xml">
                 </div>
                 <div class="col-12 mb-3">
-                    <label>SEO Meta Description (Max 160 chars)</label>
-                    <textarea name="meta_description" class="form-control bg-dark text-white" rows="2" maxlength="160"><?php echo isset($post['meta_description']) ? nectra_display_text($post['meta_description']) : ''; ?></textarea>
+                    <label class="form-label">SEO meta description (max 160 chars)</label>
+                    <textarea name="meta_description" class="form-control" rows="2" maxlength="160"><?php echo isset($post['meta_description']) ? nectra_display_text($post['meta_description']) : ''; ?></textarea>
                 </div>
                 <div class="col-12 mb-3">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" role="switch" name="is_orphan" id="is_orphan" value="1" <?php echo !empty($post_is_orphan) ? 'checked' : ''; ?>>
                         <label class="form-check-label" for="is_orphan">
-                            <strong>Orphan post</strong> — direct URL only, hidden from Insights &amp; site listings, still auto-indexed
+                            <strong>Orphan post</strong> — direct URL only, hidden from Insights listings, still indexed
                         </label>
                     </div>
                 </div>
                 <div class="col-12 mb-3">
-                    <label>Content Protocol</label>
+                    <label class="form-label">Content</label>
                     <textarea id="post_content" name="content" class="ckeditor-full"><?php echo $post['content']; ?></textarea>
                 </div>
                 <?php include __DIR__ . '/includes/blog-faq-form.php'; ?>
             </div>
-            <button type="submit" class="btn btn-warning">UPDATE</button>
-            <a href="dashboard.php?page=blog" class="btn btn-outline-secondary ms-2">CANCEL</a>
+            <div class="ge-form-actions">
+                <button type="submit" class="btn btn-ge-primary"><i class="fas fa-save me-2"></i>Update post</button>
+                <a href="dashboard.php?page=blog" class="btn btn-outline-secondary">Cancel</a>
+            </div>
         </form>
-    </div>
-    <?php nectra_ckeditor_scripts('../assets'); ?>
-    <script>
+        </div>
+        <script>
         document.getElementById('post_slug').addEventListener('input', function() { this.dataset.manual = '1'; });
-    </script>
-</body>
-</html>
+        </script>
+<?php
+admin_layout_end(['ckeditor' => true]);

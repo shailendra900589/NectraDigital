@@ -1,43 +1,99 @@
+/**
+ * Nectra Digital — Production Client-side Application Scripts
+ * Lightweight, Performant, WCAG 2.2 AA Accessible
+ */
+
 document.addEventListener("DOMContentLoaded", function() {
-    
-    const form = document.getElementById('contactForm');
-    
-    if(form) {
+    "use strict";
+
+    // 1. Sticky Navigation Scroll Effect
+    const navbar = document.querySelector('.nd-navbar, .navbar');
+    if (navbar) {
+        const handleScroll = function() {
+            if (window.scrollY > 40) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+
+        if (document.body.getAttribute('data-nd-nav-theme') === 'dark') {
+            navbar.classList.add('nd-navbar-dark');
+        }
+    }
+
+    // 2. Scroll reveal handled by assets/js/motion.js
+
+    // 3. Lead Contact Form AJAX Handling
+    const forms = document.querySelectorAll('#contactForm, .nd-ajax-form');
+    forms.forEach(function(form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const btn = form.querySelector('button');
-            const responseDiv = document.getElementById('responseMsg');
-            const originalText = btn.innerHTML;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const responseDiv = form.querySelector('.response-msg') || document.getElementById('responseMsg');
+            const originalBtnHtml = submitBtn ? submitBtn.innerHTML : 'Submit';
             
-            // Loading State (Mars Speed)
-            btn.innerHTML = 'CONNECTING...';
-            btn.style.opacity = '0.7';
-            btn.disabled = true;
+            // Set loading state
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Sending...';
+                submitBtn.disabled = true;
+            }
 
-            const formData = new FormData(this);
+            const formData = new FormData(form);
 
-            fetch('/process', {
+            fetch(typeof nectraWebPath === 'function' ? nectraWebPath('/process') : '/process', {
                 method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.status === 'success') {
-                    responseDiv.innerHTML = `<span class="text-neon"><i class="fas fa-check-circle"></i> ${data.message}</span>`;
-                    form.reset();
-                } else {
-                    responseDiv.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> ${data.message}</span>`;
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .catch(error => {
-                responseDiv.innerHTML = '<span class="text-danger">System Error. Check Console.</span>';
+            .then(function(res) {
+                return res.json();
             })
-            .finally(() => {
-                btn.innerHTML = originalText;
-                btn.style.opacity = '1';
-                btn.disabled = false;
+            .then(function(data) {
+                if (responseDiv) {
+                    if (data.status === 'success') {
+                        responseDiv.innerHTML = '<div class="alert alert-success d-flex align-items-center gap-2"><i class="fas fa-check-circle"></i> ' + (data.message || 'Thank you! We will get in touch shortly.') + '</div>';
+                        form.reset();
+                    } else {
+                        responseDiv.innerHTML = '<div class="alert alert-danger d-flex align-items-center gap-2"><i class="fas fa-exclamation-circle"></i> ' + (data.message || 'Please check your inputs and try again.') + '</div>';
+                    }
+                }
+            })
+            .catch(function(err) {
+                if (responseDiv) {
+                    responseDiv.innerHTML = '<div class="alert alert-danger">An unexpected error occurred. Please try contacting us directly by phone or email.</div>';
+                }
+            })
+            .finally(function() {
+                if (submitBtn) {
+                    submitBtn.innerHTML = originalBtnHtml;
+                    submitBtn.disabled = false;
+                }
             });
         });
-    }
+    });
+
+    // 4. Smooth Anchor Link Scrolling
+    document.querySelectorAll('a[href^="#"]:not([href="#"]):not([data-bs-toggle])').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                e.preventDefault();
+                const navHeight = navbar ? navbar.offsetHeight : 0;
+                const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+                const offsetPosition = elementPosition - navHeight - 16;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
 });

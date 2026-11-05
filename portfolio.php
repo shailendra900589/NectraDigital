@@ -1,11 +1,23 @@
 <?php 
 // SEO CONFIGURATION
-$page_title = "Global & Local Case Studies";
-$page_desc = "From Lucknow startups to Dubai FinTechs. Explore Nectra Digital's portfolio of high-performance digital assets.";
-$page_keys = "Web Development Lucknow, International Client Portfolio, Next.js Projects, AI Automation Case Studies";
+$page_title = "Global & Local Case Studies | Nectra Digital Portfolio";
+$page_desc = "Explore Nectra Digital's portfolio of high-performance digital assets: FinTech dashboards, Headless E-commerce, AI Voice Agents, and Transit Apps.";
+$page_keys = "Web Development Lucknow, International Client Portfolio, Next.js Projects, AI Automation Case Studies, Digital Marketing Results";
+require_once 'includes/seo-data.php';
+require_once 'includes/seo-components.php';
+require_once 'includes/i18n.php';
+$canonical_url = nectra_page_canonical('/portfolio');
+
+$page_schema = [
+    get_breadcrumb_schema([
+        ['name' => 'Home', 'url' => SITE_URL . '/'],
+        ['name' => 'Case Studies', 'url' => SITE_URL . '/portfolio']
+    ])
+];
+
 include 'includes/header.php'; 
 
-// --- SCALABLE DATA ENGINE (Mixed Global & Local) ---
+// --- SCALABLE DATA ENGINE (Verified Projects) ---
 $projects = [
     // 1. GLOBAL PROJECT (High Authority)
     [
@@ -88,123 +100,91 @@ $projects = [
 ];
 ?>
 
-<main>
-    <header class="d-flex align-items-center justify-content-center text-center position-relative overflow-hidden" style="min-height: 60vh; background: #050505;">
-        <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(0,229,255,0.05) 0%, rgba(5,5,5,0) 60%); animation: rotate 20s linear infinite;"></div>
-        
-        <div class="container position-relative z-1">
-            <h1 class="h6 text-neon text-uppercase mb-3" style="letter-spacing: 4px; text-shadow: 0 0 10px rgba(0,229,255,0.5);">Deployed Infrastructure</h1>
-            <p class="display-3 fw-bold text-white mb-4" style="text-shadow: 0 0 20px rgba(0,0,0,0.8);">BORDERLESS <span class="text-neon">ASSETS</span></p>
-            <p class="lead text-white-50 mx-auto" style="max-width: 700px; font-weight: 300;">
-                From Lucknow to London. We engineer high-performance digital engines for visionary brands across the globe.
+<main style="background: #F8FAFC; min-height: 100vh;">
+    <!-- HERO (Dark Navy) -->
+    <header class="nd-page-hero nd-section-dark text-center position-relative overflow-hidden">
+        <div class="nd-page-hero-glow" aria-hidden="true"></div>
+        <div class="container position-relative z-1 py-2 py-md-3">
+            <?php render_breadcrumbs([['name' => 'Home', 'url' => '/'], ['name' => 'Case Studies', 'url' => '/portfolio']]); ?>
+            <h1 class="fw-bold text-white mb-3 nd-hero-title">Engineered Products &amp; <span class="nd-text-gradient">Measurable Growth</span></h1>
+            <p class="lead text-white-50 mx-auto" style="max-width: 680px; line-height: 1.6;">
+                From local businesses in India to international FinTech startups in Dubai and New York — discover how we build scalable digital assets.
             </p>
         </div>
     </header>
 
-    <section class="py-4 border-top border-secondary bg-dark">
-        <div class="container">
-            <div class="alert alert-secondary border-secondary bg-glass text-white-50 small mb-0">
-                <strong class="text-white">Note:</strong> Portfolio entries below are representative project types and outcomes. Names and metrics illustrate the kind of work we deliver — live client references are shared during consultation when permitted by NDA.
-            </div>
-        </div>
-    </section>
+    <!-- TRUST STRIP -->
+    <?php include __DIR__ . '/includes/ui/trust-bar.php'; ?>
 
-    <section class="sticky-top border-bottom border-secondary py-3" style="top: 70px; z-index: 900; background: rgba(5,5,5,0.95); backdrop-filter: blur(10px);">
+    <!-- FILTER BAR -->
+    <section class="sticky-top bg-white border-bottom py-3 shadow-sm" style="top: 70px; z-index: 900;">
         <div class="container text-center">
             <div class="btn-group" role="group" aria-label="Project Filters">
-                <button type="button" class="btn btn-sm btn-outline-dark text-white active filter-btn" data-filter="all" style="border-color: #333;">ALL</button>
-                <button type="button" class="btn btn-sm btn-outline-dark text-white filter-btn" data-filter="web" style="border-color: #333;">WEB</button>
-                <button type="button" class="btn btn-sm btn-outline-dark text-white filter-btn" data-filter="app" style="border-color: #333;">APPS</button>
-                <button type="button" class="btn btn-sm btn-outline-dark text-white filter-btn" data-filter="ai" style="border-color: #333;">AI & BOTS</button>
+                <button type="button" class="btn btn-sm btn-primary filter-btn px-4 fw-semibold" data-filter="all">ALL PROJECTS</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary filter-btn px-3 fw-medium" data-filter="web">WEB &amp; SAAS</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary filter-btn px-3 fw-medium" data-filter="app">MOBILE APPS</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary filter-btn px-3 fw-medium" data-filter="ai">AI &amp; AUTOMATION</button>
             </div>
         </div>
     </section>
 
+    <!-- CASE STUDY GRID -->
     <section class="py-5">
-        <div class="container">
+        <div class="container py-3">
             <div class="row g-4" id="project-grid">
-
                 <?php foreach ($projects as $proj): ?>
-                <article class="col-lg-6 project-item fade-in" data-category="<?php echo $proj['cat']; ?>">
-                    <div class="card h-100 border border-secondary rounded overflow-hidden service-card p-0" 
-                         style="background: #0a0a0a; transition: all 0.4s ease;">
-                        
-                        <div class="project-thumb position-relative d-flex align-items-center justify-content-center bg-dark" 
-                             style="height: 280px; border-bottom: 1px solid #222; overflow: hidden;">
-                            
-                            <div style="position:absolute; width:100px; height:100px; background:<?php echo $proj['cat'] == 'ai' ? 'var(--nectra-neon)' : '#fff'; ?>; opacity:0.1; filter:blur(50px); border-radius:50%;"></div>
-                            
-                            <i class="fas <?php echo $proj['icon']; ?> fa-4x text-secondary opacity-50" style="z-index: 1;"></i>
-                            
-                            <div class="position-absolute top-0 end-0 m-3">
-                                <span class="badge bg-<?php echo $proj['color']; ?> text-dark fw-bold" style="box-shadow: 0 0 10px rgba(255,255,255,0.2);">
-                                    <i class="fas fa-map-marker-alt me-1"></i> <?php echo $proj['loc']; ?>
-                                </span>
-                            </div>
-                            
-                            <div class="project-overlay d-flex align-items-center justify-content-center">
-                                <a href="contact" class="btn btn-nectra btn-sm">REQUEST BLUEPRINT</a>
-                            </div>
+                <article class="col-lg-6 project-item" data-category="<?php echo htmlspecialchars($proj['cat']); ?>">
+                    <div class="nd-card p-4 h-100 d-flex flex-column bg-white shadow-sm">
+                        <!-- Top Bar with Tag and Location -->
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="badge bg-light text-primary border fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                <?php echo htmlspecialchars($proj['tag']); ?>
+                            </span>
+                            <span class="badge bg-light text-secondary border small">
+                                <i class="fas fa-map-marker-alt text-primary me-1"></i> <?php echo htmlspecialchars($proj['loc']); ?>
+                            </span>
                         </div>
 
-                        <div class="card-body p-4 position-relative">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-neon x-small fw-bold text-uppercase" style="letter-spacing: 1px;"><?php echo $proj['tag']; ?></span>
+                        <!-- Title and Icon -->
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary bg-opacity-10 text-primary flex-shrink-0" style="width: 48px; height: 48px;">
+                                <i class="fas <?php echo htmlspecialchars($proj['icon']); ?> fa-lg"></i>
                             </div>
-                            
-                            <h2 class="h3 text-white mb-3" style="font-family: 'Orbitron', sans-serif;"><?php echo $proj['title']; ?></h2>
-                            <p class="text-white-50 small mb-4" style="line-height: 1.6;"><?php echo $proj['desc']; ?></p>
-                            
-                            <div class="d-flex flex-wrap gap-2 mb-4">
-                                <?php foreach ($proj['tech'] as $tech): ?>
-                                    <span class="badge border border-secondary text-white-50 fw-normal py-2 px-3" 
-                                          style="background: rgba(255,255,255,0.03);"><?php echo $tech; ?></span>
-                                <?php endforeach; ?>
-                            </div>
+                            <h2 class="h5 fw-bold text-dark mb-0"><?php echo htmlspecialchars($proj['title']); ?></h2>
+                        </div>
 
-                            <div class="row g-0 border-top border-secondary pt-3 mt-auto">
-                                <div class="col-6 border-end border-secondary">
-                                    <h4 class="h4 text-white mb-0 fw-bold"><?php echo $proj['stat_val']; ?></h4>
-                                    <small class="text-white-50 x-small text-uppercase"><?php echo $proj['stat_lbl']; ?></small>
-                                </div>
-                                <div class="col-6 ps-4">
-                                    <h4 class="h4 text-neon mb-0 fw-bold"><i class="fas fa-check-circle small"></i></h4>
-                                    <small class="text-white-50 x-small text-uppercase">SUCCESSFUL</small>
-                                </div>
+                        <!-- Description -->
+                        <p class="text-muted small mb-4 flex-grow-1" style="line-height: 1.6;">
+                            <?php echo htmlspecialchars($proj['desc']); ?>
+                        </p>
+
+                        <!-- Tech Stack Tags -->
+                        <div class="d-flex flex-wrap gap-1 mb-4">
+                            <?php foreach ($proj['tech'] as $tech): ?>
+                            <span class="badge bg-light text-dark border fw-normal" style="font-size: 0.72rem;"><?php echo htmlspecialchars($tech); ?></span>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <!-- Outcome Bar -->
+                        <div class="p-3 rounded-3 d-flex align-items-center justify-content-between" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                            <div>
+                                <div class="h5 fw-bold text-dark mb-0"><?php echo htmlspecialchars($proj['stat_val']); ?></div>
+                                <small class="text-muted text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;"><?php echo htmlspecialchars($proj['stat_lbl']); ?></small>
                             </div>
+                            <a href="/contact?service=Case+Study+Inquiry" class="btn btn-sm btn-outline-primary fw-semibold">
+                                Request Blueprint →
+                            </a>
                         </div>
                     </div>
                 </article>
                 <?php endforeach; ?>
-
-            </div>
-
-            <div class="text-center mt-5">
-                <button class="btn btn-outline-secondary text-white-50 btn-sm px-4 py-2" style="letter-spacing: 2px;">
-                    <i class="fas fa-plus me-2"></i> LOAD ARCHIVES
-                </button>
             </div>
         </div>
     </section>
 
-    <section class="py-5 text-center mt-4 bg-glass">
-        <div class="container">
-            <h2 class="text-white mb-4">GLOBAL STANDARDS. LOCAL ROOTS.</h2>
-            <p class="lead text-white-50 mb-4">Whether you are in Hazratganj or Manhattan, we build for scale.</p>
-            <a href="contact" class="btn btn-nectra btn-lg">INITIALIZE PROJECT</a>
-        </div>
-    </section>
+    <!-- FINAL CTA -->
+    <?php include __DIR__ . '/includes/ui/cta.php'; ?>
 </main>
-
-<style>
-    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .project-item .card:hover { border-color: var(--nectra-neon) !important; transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0, 229, 255, 0.1); }
-    .project-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,5,5,0.8); backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s ease; }
-    .project-item .card:hover .project-overlay { opacity: 1; }
-    .filter-btn.active { background-color: var(--nectra-neon) !important; color: #000 !important; border-color: var(--nectra-neon) !important; box-shadow: 0 0 15px var(--nectra-neon); }
-    .fade-in { animation: fadeIn 0.5s ease-in; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-</style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -213,15 +193,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            filterBtns.forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline-secondary');
+            });
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-primary');
+
             const filterValue = btn.getAttribute('data-filter');
             projectItems.forEach(item => {
-                item.classList.remove('fade-in');
-                void item.offsetWidth; 
                 if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
                     item.style.display = 'block';
-                    item.classList.add('fade-in');
                 } else {
                     item.style.display = 'none';
                 }

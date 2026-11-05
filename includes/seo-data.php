@@ -40,7 +40,7 @@ function get_organization_schema() {
         'name' => 'Nectra Digital',
         'url' => SITE_URL,
         'logo' => SITE_URL . '/assets/images/logo.png',
-        'description' => 'Nectra Digital is a leading SEO company in India offering search engine optimization services, AI automation, digital marketing, web development, and software development for businesses worldwide.',
+        'description' => 'Nectra Digital is a software development, website design & development, and mobile app development company in India, with AI automation and digital marketing support for growing businesses.',
         'email' => 'contact@nectradigital.com',
         'telephone' => '+917678387759',
         'foundingDate' => '2020',
@@ -307,8 +307,8 @@ function get_services_data() {
             'silo' => 'AI Automation'
         ],
         'web-development-services' => [
-            'title' => 'Web Development Agency | Website Development Company India',
-            'h1' => 'Web Development Services & Agency',
+            'title' => 'Website Design & Development Company | Nectra Digital',
+            'h1' => 'Professional Website Design & Development That Drives Business Growth',
             'meta_desc' => 'Premium web development agency building fast, SEO-optimized websites with React, Next.js, WordPress, and Laravel. Website development company India trusted by 200+ brands.',
             'keywords' => 'Web Development Agency, Website Development Company, Web Development Services, WordPress Development Company, React Development Company, Laravel Development Company',
             'icon' => 'fa-code',
@@ -323,8 +323,8 @@ function get_services_data() {
             'silo' => 'Web Development'
         ],
         'software-development-services' => [
-            'title' => 'Software Development Company | Custom Software Solutions',
-            'h1' => 'Custom Software Development Services',
+            'title' => 'Custom Software Development Company | Nectra Digital',
+            'h1' => 'Custom Software Development Company for Modern Businesses',
             'meta_desc' => 'Leading software development company building custom SaaS, enterprise software, and API solutions. Python, React, Laravel development by experienced engineers.',
             'keywords' => 'Software Development Company, Custom Software Development, Python Development Company, SaaS Development, Enterprise Software',
             'icon' => 'fa-laptop-code',
@@ -339,8 +339,8 @@ function get_services_data() {
             'silo' => 'Software Development'
         ],
         'mobile-app-development' => [
-            'title' => 'Mobile App Development Company | iOS & Android Apps',
-            'h1' => 'Mobile App Development Services',
+            'title' => 'Mobile App Development Company | Android & iOS | Nectra Digital',
+            'h1' => 'Mobile App Development for Android, iOS & Modern Businesses',
             'meta_desc' => 'Expert mobile app development company building native and cross-platform iOS & Android apps with React Native and Flutter. From MVP to enterprise-scale mobile solutions.',
             'keywords' => 'Mobile App Development Company, Android App Development, iOS App Development, React Native Development, Cross Platform App Development',
             'icon' => 'fa-mobile-alt',
@@ -409,15 +409,15 @@ function get_services_data() {
 function get_primary_services(): array
 {
     return [
+        'software-development-services',
+        'web-development-services',
+        'mobile-app-development',
+        'ecommerce-development',
+        'ai-automation-services',
         'seo-services',
-        'local-seo-services',
         'digital-marketing-services',
         'performance-marketing-services',
-        'social-media-marketing-services',
-        'ai-automation-services',
-        'web-development-services',
-        'software-development-services',
-        'mobile-app-development',
+        'local-seo-services',
     ];
 }
 
@@ -465,8 +465,8 @@ function get_homepage_faqs() {
         ['q' => 'Why is Nectra Digital considered the best SEO company in India?', 'a' => 'Nectra Digital combines 5+ years of proven SEO expertise with AI-powered analytics, technical SEO mastery, and a data-driven approach that has delivered 340%+ organic traffic growth for clients. We offer transparent reporting, dedicated strategists, and end-to-end digital solutions.'],
         ['q' => 'What services does Nectra Digital offer?', 'a' => 'We offer SEO services, local SEO, technical SEO, enterprise SEO, digital marketing, PPC management, Google Ads, Meta Ads, AI automation, AI chatbot development, WhatsApp AI bots, web development, software development, mobile app development, and ecommerce development.'],
         ['q' => 'How much does SEO cost in India?', 'a' => 'SEO packages in India typically range from ₹15,000 to ₹1,00,000+ per month depending on competition, website size, and goals. Nectra Digital offers customized packages starting with a free SEO audit to determine the optimal investment for your business.'],
-        ['q' => 'Do you serve clients outside India?', 'a' => 'Yes. While headquartered in Lucknow, India, Nectra Digital serves clients globally across USA, UK, UAE, Canada, and Australia with 24/7 support and timezone-flexible communication.'],
-        ['q' => 'How do I get started with Nectra Digital?', 'a' => 'Book a free consultation through our contact page. We\'ll audit your current digital presence, identify growth opportunities, and propose a customized strategy with clear timelines and expected ROI.']
+        ['q' => 'Do you serve clients outside India?', 'a' => 'Yes. While headquartered in Lucknow, India, Nectra Digital serves clients globally across USA, UK, UAE, Canada, and Australia with timezone-flexible communication.'],
+        ['q' => 'How do I get started with Nectra Digital?', 'a' => 'Book a free consultation through our contact page. We\'ll audit your current digital presence, identify growth opportunities, and propose a customized strategy with clear timelines and expected ROI.'],
     ];
 }
 
